@@ -13,7 +13,6 @@ app.use(cors()) //habilitar CORS
 
 //Rutas
 app.use('/api/Funcionario', FuncionarioRoutes)
-
 //conexion a la base de datos
 try{
     await db.authenticate()
