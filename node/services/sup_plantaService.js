@@ -18,7 +18,7 @@ class sup_plantasService {
     }
 
     async update(id, data) {
-        const result = await sup_plantasModel.update(data, { where: { id_sup_plantas: id } })
+        const result = await sup_plantasModel.update(data, { where: { id_supervisionplantas: id } })
         //El metodo update del ORM devuelve una promesa en forma de arreglo y la posicion 0 envia el numero de filas afectadas
         const update = result[0]
 
@@ -28,7 +28,7 @@ class sup_plantasService {
     }
 
     async delete(id) {
-        const deleted = await sup_plantasModel.destroy({ where: { id_sup_plantas: id } })
+        const deleted = await sup_plantasModel.destroy({ where: { id_supervisionplantas: id } })
 
         if (!deleted) throw new Error("Jugador no encontrado")
         return true
