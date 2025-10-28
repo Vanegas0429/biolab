@@ -2,6 +2,13 @@ import express from 'express'
 import cors from 'cors'
 import db from './database/db.js'
 import FuncionarioRoutes from './routes/FuncionarioRoutes.js'
+import EquipoRoutes from './routes/EquipoRoutes.js'
+import InsumusRoutes from './routes/InsumosRoutes.js'
+import LotesRoutes from './routes/LotesRoutes.js'
+import PlantaRoutes from './routes/PlantaRoutes.js'
+import ReactivosRoutes from './routes/ReactivosRoutes.js'
+import sup_plantasRoutes from './routes/sup_plantasRoutes.js'
+import UsoEquipoRoutes from './routes/UsoEquipoRoutes.js'
 import dotenv from 'dotenv'
 
 
@@ -13,7 +20,14 @@ app.use(cors()) //habilitar CORS
 
 //Rutas
 app.use('/api/Funcionario', FuncionarioRoutes)
-app.use('/api/sub_plantas', sub_plantasRoutes)
+app.use('/api/Equipo', EquipoRoutes)
+app.use('/api/Insumo', InsumusRoutes)
+app.use('/api/Lote', LotesRoutes)
+app.use('/api/Planta', PlantaRoutes)
+app.use('/api/Reactivo', ReactivosRoutes)
+app.use('/api/Sup_Planta', sup_plantasRoutes)
+app.use('/api/Uso_Equipo', UsoEquipoRoutes)
+
 //conexion a la base de datos
 try{
     await db.authenticate()
