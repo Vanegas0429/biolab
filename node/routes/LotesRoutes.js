@@ -1,5 +1,5 @@
 import express from 'express'
-import { getAllLotes, getLote, createLote, updateLote, deleteLote} from '../controller/LotesController.js';
+import { getAllLotes, getLote, createLote, updateLote, deleteLote} from '../controllers/LotesController.js';
 
 const router = express.Router()
 

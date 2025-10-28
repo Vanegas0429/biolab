@@ -1,5 +1,5 @@
 import express from 'express'
-import { getAllReactivos, getReactivo, createReactivo, updateReactivo, deleteReactivo } from '../controller/ReactivosController.js'
+import { getAllReactivos, getReactivo, createReactivo, updateReactivo, deleteReactivo } from '../controllers/ReactivosController.js'
 
 const router = express.Router()
 
