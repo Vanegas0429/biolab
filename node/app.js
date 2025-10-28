@@ -9,6 +9,7 @@ import PlantaRoutes from './routes/PlantaRoutes.js'
 import ReactivosRoutes from './routes/ReactivosRoutes.js'
 import sup_plantasRoutes from './routes/sup_plantasRoutes.js'
 import UsoEquipoRoutes from './routes/UsoEquipoRoutes.js'
+import CronogramaRoutes from './routes/CronogramaRoutes.js'
 import dotenv from 'dotenv'
 
 
@@ -27,6 +28,7 @@ app.use('/api/Planta', PlantaRoutes)
 app.use('/api/Reactivo', ReactivosRoutes)
 app.use('/api/Sup_Planta', sup_plantasRoutes)
 app.use('/api/Uso_Equipo', UsoEquipoRoutes)
+app.use('/api/Cronograma', CronogramaRoutes)
 
 //conexion a la base de datos
 try{
