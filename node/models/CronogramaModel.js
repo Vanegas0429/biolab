@@ -7,7 +7,7 @@ const CronogramaModel= db.define("cronograma",{
     Num_Ficha: {type: DataTypes.NUMBER},
     Can_Aprendices: {type:DataTypes.NUMBER},
     Act_Realizada: { type: DataTypes.STRING},
-    Id_FichaTecnica: {type: DataTypes.NUMBER},
+    id_equipo: {type: DataTypes.NUMBER},
     
 }, {
     //evitar prularizacion en la gestion de la tabla 
