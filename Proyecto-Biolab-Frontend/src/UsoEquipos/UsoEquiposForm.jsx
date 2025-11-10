@@ -30,7 +30,7 @@ const UsoEquipoForm = () => {
                 // Axios devuelve el cuerpo de la respuesta en response.date
                 const data = response.data;
 
-                alert('Jugador creado correctamente')
+                alert('Uso equipo creado correctamente')
 
             } catch (error) {
 
@@ -46,21 +46,21 @@ const UsoEquipoForm = () => {
 
     return (
         <>
-            <from onSubmit={gestionarForm} encType="multipart/form-data" className="col-12 col-md-6">
+            <form onSubmit={gestionarForm} encType="multipart/form-data" className="col-12 col-md-6">
                 <div className="mb-3">
                     <label htmlFor="hora_inicio" className="form-label">Hora Inicio:</label>
                     <input type="text" id="hora_inicio" className="form-control" value={hora_inicio} onChange={(e) => setHoraInicio(e.target.value)} />
                 </div>
                 <div className="mb-3">
-                    <label htmlFor="hora_fin" className="form-label">Hora Inicio:</label>
+                    <label htmlFor="hora_fin" className="form-label">Hora Fin:</label>
                     <input type="text" id="hora_fin" className="form-control" value={hora_fin} onChange={(e) => setHoraFin(e.target.value)} />
                 </div>
                 <div className="mb-3">
-                    <label htmlFor="actividad_realizada" className="form-label">Hora Inicio:</label>
+                    <label htmlFor="actividad_realizada" className="form-label">Actividad Realizada:</label>
                     <input type="text" id="actividad_realizada" className="form-control" value={actividad_realizada} onChange={(e) => setActividadRealizada(e.target.value)} />
                 </div>
                 <div className="mb-3">
-                    <label htmlFor="id_equipo" className="form-label">Hora Inicio:</label>
+                    <label htmlFor="id_equipo" className="form-label">Equipo:</label>
                     <select type="text" id="id_equipo" className="form-control" value={id_equipo} onChange={(e) => setId_Equipo(e.target.value)}>
                         <option value="">Selecciona uno</option>
                         <option value="1">Autoclave</option>
@@ -72,7 +72,7 @@ const UsoEquipoForm = () => {
                     <input type="submit" className="btn btn-primary w-50" value={textFormButton} />
                 </div>   
 
-            </from>
+            </form>
         
         </>
     )
