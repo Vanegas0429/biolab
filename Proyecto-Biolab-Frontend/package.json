@@ -13,6 +13,7 @@
     "axios": "^1.13.1",
     "bootstrap": "^5.3.8",
     "react": "^19.1.1",
+    "react-data-table-component": "^7.7.0",
     "react-dom": "^19.1.1",
     "react-router-dom": "^7.9.5",
     "sweetalert2": "^11.26.3",
