@@ -11,7 +11,7 @@ const CrudInsumos = () => {
   const columnsTable = [ //crear un arregli con las columnas que contendra la tabla
     {name: 'Nombre', selector: row => row.Nom_Insumo},
     {name: 'Tipo de Insumo', selector: row => row.Tip_Insumo},
-    {name: 'Fecha de Vencimineto', selector: row => row.Fec_Vencimiento},
+    {name: 'Fecha de Vencimiento', selector: row => row.Fec_Vencimiento},
 
 ]
 
@@ -34,7 +34,7 @@ const CrudInsumos = () => {
 
   const nombre = uso.Nom_Insumo?.toLowerCase() 
   const tipo = uso.Tip_Insumo?.toLowerCase() 
-  const fecha = uso.Fec_Vencimiento?.toLowerCase() 
+  const fecha = uso.Fec_Vencimiento?.toString()
 
   return (
     nombre.includes(textToSearch) ||

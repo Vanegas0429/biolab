@@ -13,7 +13,7 @@ const CrudPlantas = () => {
     {name: 'Metodo de Cultivo', selector: row => row.met_cultivo},
     {name: 'Metodo de Propagacion', selector: row => row.met_propagacion},
     {name: 'Planta Contaminada', selector: row => row.plan_contaminadas},
-    {name: 'Planta Desarrolada', selector: row => row.plan_desarrolladas},
+    {name: 'Planta Desarrollada', selector: row => row.plan_desarrolladas},
     {name: 'Numero de Endurecimiento', selector: row => row.numero_endurecimiento}
 ]
 

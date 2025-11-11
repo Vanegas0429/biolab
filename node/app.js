@@ -3,7 +3,7 @@ import cors from 'cors'
 import db from './database/db.js'
 import FuncionarioRoutes from './routes/FuncionarioRoutes.js'
 import EquipoRoutes from './routes/EquipoRoutes.js'
-import InsumusRoutes from './routes/InsumosRoutes.js'
+import InsumosRoutes from './routes/InsumosRoutes.js'
 import LotesRoutes from './routes/LotesRoutes.js'
 import PlantaRoutes from './routes/PlantaRoutes.js'
 import ReactivosRoutes from './routes/ReactivosRoutes.js'
@@ -22,7 +22,7 @@ app.use(cors()) //habilitar CORS
 //Rutas
 app.use('/api/Funcionario', FuncionarioRoutes)
 app.use('/api/Equipo', EquipoRoutes)
-app.use('/api/Insumo', InsumusRoutes)
+app.use('/api/Insumo', InsumosRoutes)
 app.use('/api/Lote', LotesRoutes)
 app.use('/api/Planta', PlantaRoutes)
 app.use('/api/Reactivo', ReactivosRoutes)

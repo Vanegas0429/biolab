@@ -9,8 +9,10 @@ const CrudSup_Plantas = () => {
   const [filterText, setFilterText] = useState("")
 
   const columnsTable = [ //crear un arregli con las columnas que contendra la tabla
+    {name: 'Fecha de Supervision', selector: row => row.fecha_supervision},
     {name: 'Estado de la Planta', selector: row => row.estado_planta},
-    {name: 'Funcionario', selector: row => row.id_funcionario}
+    {name: 'Funcionario', selector: row => row.id_funcionario},
+    {name: 'Planta', selector: row => row.id_planta}
 ]
 
   // El useEffect se ejecuta cuando se carga el componente
@@ -27,16 +29,15 @@ const CrudSup_Plantas = () => {
   }
 
   //Buscador
-  // Buscador por hora (inicio o fin)
   const newListSup_Plantas = Sup_Plantas.filter((uso) => {
     const textToSearch = filterText.toLowerCase()
-    
+
     const estado = uso.estado_planta?.toLowerCase() 
-    const funcionario = uso.id_funcionario?.toString().toLowerCase() 
+    const planta = uso.id_planta?.toString().toLowerCase() 
 
     return (
       estado.includes(textToSearch) ||
-      funcionario.includes(textToSearch)
+      planta.includes(textToSearch)
     )
 
   })

@@ -20,7 +20,7 @@ const InsumosForm = () => {
 
             try{
 
-                const response = await apiAxios.post('/api/Equipo', { //Se envian todos los datos como un objeto JSON
+                const response = await apiAxios.post('/api/Insumo', { //Se envian todos los datos como un objeto JSON
                     Nombre: Nombre,
                     Tip_Insumo: Tip_Insumo,
                     Fec_Vencimiento: Fec_Vencimiento,

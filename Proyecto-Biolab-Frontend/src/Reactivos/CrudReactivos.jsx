@@ -13,13 +13,13 @@ const CrudReactivos = () => {
     {name: 'Nomenclatura', selector: row => row.Nomenclatura },
     {name: 'Unidad de Medida', selector: row => row.Uni_Medida},
     {name: 'Cantidad', selector: row => row.Cantidad},
-    {name: 'Concentracion', selector: row => row.Concentración},
+    {name: 'Concentracion', selector: row => row.Concentracion},
     {name: 'Marca', selector: row => row.Marca},
     {name: 'Fecha de Vencimiento', selector: row => row.Fec_Vencimiento},
-    {name: 'Funcion Quimica', selector: row => row.Fun_Química},
+    {name: 'Funcion Quimica', selector: row => row.Fun_Quimica},
     {name: 'Estado Fisico', selector: row => row.Est_Fisico},
     {name: 'Naturaleza Quimica', selector: row => row.Nat_Quimica},
-    {name: 'Clasificacion', selector: row => row.Clasificación},
+    {name: 'Clasificacion', selector: row => row.Clasificacion},
     {name: 'Peligrosidad', selector: row => row.Peligrosidad},
     {name: 'Clasificacion de Peligro', selector: row => row.Cla_Peligro},
     {name: 'Ficha Datos Seguridad', selector: row => row.Fic_Dat_Seguridad},
@@ -44,10 +44,10 @@ const CrudReactivos = () => {
 
     const nombre = r.Nom_Reactivo?.toLowerCase() 
     const marca = r.Marca?.toLowerCase() 
-    const cantidad = r.cantidad?.toLowerCase() 
-    const fecha = r.fecha?.toLowerCase()
-    const estado = r.estado?.toLowerCase()
-    const ficha = r.ficha?.toLowerCase()
+    const cantidad = r.Cantidad?.toString().toLowerCase()
+    const fecha = r.Fec_Vencimiento?.toLowerCase()
+    const estado = r.Est_Fisico?.toLowerCase()
+    const ficha = r.Fic_Dat_Seguridad?.toLowerCase()
 
     return (
       nombre.includes(textToSearch) ||
