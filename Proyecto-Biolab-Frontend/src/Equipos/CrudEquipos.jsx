@@ -12,10 +12,11 @@ const CrudEquipos = () => {
     {name: 'Nombre', selector: row => row.nombre},
     {name: 'Marca', selector: row => row.marca},
     {name: 'Grupo', selector: row => row.grupo},
-    {name: 'Linea', selector: row => row.Linea},
+    {name: 'Linea', selector: row => row.linea},
     {name: 'Centro de costos', selector: row => row.centro_costos},
-    {name: 'Subcentro de costos', selector: row => row.subcentro_costos}
-]
+    {name: 'Subcentro de costos', selector: row => row.subcentro_costos},
+    {name: 'Observaciones', selector: row => row.observaciones}
+]   
 
   // El useEffect se ejecuta cuando se carga el componente
   useEffect(() => {
@@ -25,23 +26,18 @@ const CrudEquipos = () => {
 
   // Crear una función para la consulta
   const getAllEquipos = async () => {
-    const response = await apiAxios.get('/api/Equipo') // Se utilizará el apiAxios que tiene la URL del backend
+    const response = await apiAxios.get('/api/Equipos') // Se utilizará el apiAxios que tiene la URL del backend
     setEquipos(response.data) // Se llena la constante players con el resultado de la consulta
     console.log(response.data) // Imprimir en consola el resultado de la consulta
   }
 
   //Buscador
-  // Buscador por hora (inicio o fin)
+  // Buscador por nombre y Marca
   const newListEquipos = Equipos.filter((uso) => {
     const textToSearch = filterText.toLowerCase()
-
-    const nombre = Equipos.nombres.toLowerCase()
-    const grupo = Equipos.grupos.toLowerCase()
-    const centroCosto = Equipos.centroCostos.toLowerCase()
     return (
-      nombre.includes(textToSearch) ||
-      grupo.includes(textToSearch) ||
-      centroCosto.includes(textToSearch)
+      uso.nombre?.toLowerCase().includes(textToSearch) ||
+      uso.marca?.toLowerCase().includes(textToSearch)
     )
 
   })
@@ -50,7 +46,7 @@ const CrudEquipos = () => {
     <>
     <div className="container mt-5">
         <div className="col-4">
-            <input className="form-control" value={filterText} onChange={(e) => setFilterText(e.target.value)}/>
+            <input className="form-control" placeholder="Buscar por nombre y marca" value={filterText} onChange={(e) => setFilterText(e.target.value)}/>
 
         </div>
         <DataTable
