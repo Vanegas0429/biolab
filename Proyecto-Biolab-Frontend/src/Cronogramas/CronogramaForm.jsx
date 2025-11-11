@@ -5,6 +5,8 @@ const CronogramaForm = () => {
 
     //Definir una prop  para cada campo del formulario
     const [Id_Funcionario, setId_Funcionario] = useState('')
+    const [Fec_Prestamo, setFec_Prestamo] = useState('')
+    const [Hor_Prestamo, setHor_Prestamo] = useState('')
     const [Ficha, setFicha] = useState('')
     const [Cant_Aprendices, setCant_Aprendices] = useState('')
     const [Act_Realizada, setAct_Realizada] = useState('')
@@ -21,12 +23,15 @@ const CronogramaForm = () => {
 
             try{
 
-                const response = await apiAxios.post('/api/Equipo', { //Se envian todos los datos como un objeto JSON
+                const response = await apiAxios.post('/api/Cronograma', { //Se envian todos los datos como un objeto JSON
                     Id_Funcionario: Id_Funcionario,
+                    Fec_Prestamo: Fec_Prestamo,
+                    Hor_Prestamo: Hor_Prestamo,
                     Ficha: Ficha,
                     Cant_Aprendices: Cant_Aprendices,
                     Act_Realizada: Act_Realizada,
-                    equipo: equipo
+                    equipo: id_equipo
+                
                 })
 
                 // Axios devuelve el cuerpo de la respuesta en response.date
@@ -52,6 +57,14 @@ const CronogramaForm = () => {
                 <div className="mb-3">
                     <label htmlFor="Id_Funcionario" className="form-label">Funcionario:</label>
                     <input type="text" id="Id_Funcionario" className="form-control" value={Id_Funcionario} onChange={(e) => setId_Funcionario(e.target.value)} />
+                </div>
+                <div className="mb-3">
+                    <label htmlFor="Fec_Prestamo" className="form-label">Fecha de Prestamo:</label>
+                    <input type="date" id="Fec_Prestamo" className="form-control" value={Fec_Prestamo} onChange={(e) => setFec_Prestamo(e.target.value)} />
+                </div>
+                <div className="mb-3">
+                    <label htmlFor="Hor_Prestamo" className="form-label">Hora de Prestamo:</label>
+                    <input type="text" id="Hor_Prestamo" className="form-control" value={Hor_Prestamo} onChange={(e) => setHor_Prestamo(e.target.value)} />
                 </div>
                 <div className="mb-3">
                     <label htmlFor="Ficha" className="form-label">Ficha:</label>

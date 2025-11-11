@@ -56,7 +56,7 @@ const InsumosForm = () => {
                 </div>
                 <div className="mb-3">
                     <label htmlFor="Fec_Vencimiento" className="form-label">Fecha de Vencimiento:</label>
-                    <input type="text" id="Fec_Vencimiento" className="form-control" value={Fec_Vencimiento} onChange={(e) => setFec_Vencimiento(e.target.value)} />
+                    <input type="date" id="Fec_Vencimiento" className="form-control" value={Fec_Vencimiento} onChange={(e) => setFec_Vencimiento(e.target.value)} />
                 </div>
                 <div className="mb-3">
                     <input type="submit" className="btn btn-primary w-50" value={textFormButton} />

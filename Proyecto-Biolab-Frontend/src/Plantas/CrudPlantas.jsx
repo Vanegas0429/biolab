@@ -31,20 +31,19 @@ const CrudPlantas = () => {
   }
 
   //Buscador
-  // Buscador por hora (inicio o fin)
   const newListPlantas = Plantas.filter((uso) => {
-    const textToSearch = filterText.toLowerCase()
+  const textToSearch = filterText.toLowerCase()
 
-    const especie = Plantas.especie.toLowerCase()
-    const metCultivo = Plantas.metCultivo.toLowerCase()
-    const planContaminada = Plantas.planContaminada.toLowerCase()
-    const planDesarrollada = Plantas.planDesarrollada.toLowerCase()
-    
-    return (
-      especie.includes(textToSearch) ||
-      metCultivo.includes(textToSearch) ||
-      planContaminada.includes(textToSearch) ||
-      planDesarrollada.includes(textToSearch) 
+  const especie = uso.especie?.toLowerCase()
+  const metCultivo = uso.met_cultivo?.toLowerCase() 
+  const planContaminada = uso.plan_contaminadas?.toLowerCase() 
+  const planDesarrollada = uso.plan_desarrolladas?.toLowerCase() 
+
+  return (
+    especie.includes(textToSearch) ||
+    metCultivo.includes(textToSearch) ||
+    planContaminada.includes(textToSearch) ||
+    planDesarrollada.includes(textToSearch)
     )
 
   })

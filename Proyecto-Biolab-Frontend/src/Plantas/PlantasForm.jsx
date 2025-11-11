@@ -22,7 +22,7 @@ const PlantasForm = () => {
 
             try{
 
-                const response = await apiAxios.post('/api/Equipo', { //Se envian todos los datos como un objeto JSON
+                const response = await apiAxios.post('/api/Planta', { //Se envian todos los datos como un objeto JSON
                     especie: especie,
                     met_cultivo: met_cultivo,
                     met_propagacion: met_propagacion,
@@ -65,7 +65,7 @@ const PlantasForm = () => {
                 </div>
                 <div className="mb-3">
                     <label htmlFor="plan_contaminadas" className="form-label">Planta Contaminada:</label>
-                    <select type="text" id="plan_desarrolladas" className="form-control" value={plan_desarrolladas} onChange={(e) => setPlan_Desarrollada(e.target.value)}>
+                    <select type="text" id="plan_contaminadas" className="form-control" value={plan_contaminadas} onChange={(e) => setPlan_Contaminada(e.target.value)}>
                         <option value="">Selecciona uno</option>
                         <option value="1">Hongos</option>
                         <option value="2">Bacterias</option>
@@ -76,7 +76,7 @@ const PlantasForm = () => {
                     <label htmlFor="plan_desarrolladas" className="form-label">Planta Desarrollada:</label>
                     <select type="text" id="plan_desarrolladas" className="form-control" value={plan_desarrolladas} onChange={(e) => setPlan_Desarrollada(e.target.value)}>
                         <option value="">Selecciona uno</option>
-                        <option value="1">Desarrolada</option>
+                        <option value="1">Desarrollada</option>
                         <option value="2">No Desarrollada </option>
                     </select>
                 </div>
