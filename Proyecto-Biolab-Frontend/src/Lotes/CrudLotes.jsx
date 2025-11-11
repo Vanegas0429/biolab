@@ -27,7 +27,6 @@ const CrudLotes = () => {
   }
 
   //Buscador
-  // Buscador por hora (inicio o fin)
   const newListLotes = Lotes.filter((uso) => {
     const textToSearch = filterText.toLowerCase()
 

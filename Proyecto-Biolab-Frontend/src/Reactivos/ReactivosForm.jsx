@@ -8,7 +8,6 @@ const ReactivosForm = () => {
     const [Nomenclatura, setNomenclatura] = useState('')
     const [Uni_Medida, setUnidadMedida] = useState('')
     const [Cantidad, setCantidad] = useState('')
-    const [Pres_Reactivo, setPrestamoReactivo] = useState('')
     const [Concentración, setConcentración] = useState('')
     const [Marca, setMarca] = useState('')
     const [Fec_Vencimiento, setFechaVencimiento] = useState('')
@@ -32,12 +31,11 @@ const ReactivosForm = () => {
 
             try{
 
-                const response = await apiAxios.post('/api/Reactivos', { //Se envian todos los datos como un objeto JSON
+                const response = await apiAxios.post('/api/Reactivo', { //Se envian todos los datos como un objeto JSON
                     Nom_Reactivo: Nom_Reactivo,
                     Nomenclatura: Nomenclatura,
                     Uni_Medida: Uni_Medida,
                     Cantidad: Cantidad,
-                    Pres_Reactivo: Pres_Reactivo,
                     Concentración: Concentración,
                     Marca: Marca,
                     Fec_Vencimiento: Fec_Vencimiento,
@@ -88,10 +86,6 @@ const ReactivosForm = () => {
                     <input type="text" id="Cantidad" className="form-control" value={Cantidad} onChange={(e) => setCantidad(e.target.value)} />
                 </div>
                 <div className="mb-3">
-                    <label htmlFor="Pres_Reactivo" className="form-label">Prestamo Reactivo:</label>
-                    <input type="text" id="Pres_Reactivo" className="form-control" value={Pres_Reactivo} onChange={(e) => setPrestamoReactivo(e.target.value)} />
-                </div>
-                <div className="mb-3">
                     <label htmlFor="Concentración" className="form-label">Concentración:</label>
                     <input type="text" id="Concentración" className="form-control" value={Concentración} onChange={(e) => setConcentración(e.target.value)} />
                 </div>
@@ -101,7 +95,7 @@ const ReactivosForm = () => {
                 </div>
                 <div className="mb-3">
                     <label htmlFor="Fec_Vencimiento" className="form-label">Fecha Vencimiento:</label>
-                    <input type="text" id="Fec_Vencimiento" className="form-control" value={Fec_Vencimiento} onChange={(e) => setFechaVencimiento(e.target.value)} />
+                    <input type="date" id="Fec_Vencimiento" className="form-control" value={Fec_Vencimiento} onChange={(e) => setFechaVencimiento(e.target.value)} />
                 </div>
                 <div className="mb-3">
                     <label htmlFor="Fun_Química" className="form-label">Funcion Química:</label>
@@ -109,7 +103,12 @@ const ReactivosForm = () => {
                 </div>
                 <div className="mb-3">
                     <label htmlFor="Est_Fisico" className="form-label">Estado Fisico:</label>
-                    <input type="text" id="Est_Fisico" className="form-control" value={Est_Fisico} onChange={(e) => setEstadoFisico(e.target.value)} />
+                    <select type="text" id="Est_Fisico" className="form-control" value={Est_Fisico} onChange={(e) => setEstadoFisico(e.target.value)}>
+                        <option value="">Selecciona uno</option>
+                        <option value="1">Liquido</option>
+                        <option value="2">Solido</option>
+                        <option value="3">Gaseoso</option>
+                    </select>
                 </div>
                  <div className="mb-3">
                     <label htmlFor="Nat_Quimica" className="form-label">Naturaleza Quimica:</label>
@@ -124,13 +123,16 @@ const ReactivosForm = () => {
                     <input type="text" id="Peligrosidad" className="form-control" value={Peligrosidad} onChange={(e) => setPeligrosidad(e.target.value)} />
                 </div>
                  <div className="mb-3">
-                    <label htmlFor="Cla_Peligro" className="form-label">Cla_Peligro:</label>
+                    <label htmlFor="Cla_Peligro" className="form-label">Clasificacion de Peligro:</label>
                     <input type="text" id="Cla_Peligro" className="form-control" value={Cla_Peligro} onChange={(e) => setClasePeligro(e.target.value)} />
                 </div>
                  <div className="mb-3">
-                    <label htmlFor="Fic_Dat_Seguridad" className="form-label">FichaDatosSeguridad:</label>
+                    <label htmlFor="Fic_Dat_Seguridad" className="form-label">Ficha Datos Seguridad:</label>
                     <input type="text" id="Fic_Dat_Seguridad" className="form-control" value={Fic_Dat_Seguridad} onChange={(e) => setFichaDatosSeguridad(e.target.value)} />
                 </div>
+                 <div className="mb-3">
+                    <input type="submit" className="btn btn-primary w-50" value={textFormButton} />
+                </div>   
             </form>
         
         </>

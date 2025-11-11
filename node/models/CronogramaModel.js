@@ -4,6 +4,8 @@ import { DataTypes } from "sequelize";
 const CronogramaModel= db.define("cronograma",{
     Id_Cronograma: { type: DataTypes.NUMBER, primaryKey: true, autoIncrement: true},
     Id_Funcionario: { type: DataTypes.NUMBER},
+    Fec_Prestamo: { type: DataTypes.DATE},
+    Hor_Prestamo: { type: DataTypes.TIME},
     Ficha: {type: DataTypes.NUMBER},
     Can_Aprendices: {type:DataTypes.NUMBER},
     Act_Realizada: { type: DataTypes.STRING},

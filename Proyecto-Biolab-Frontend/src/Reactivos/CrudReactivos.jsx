@@ -9,10 +9,20 @@ const CrudReactivos = () => {
   const [filterText, setFilterText] = useState("")
 
   const columnsTable = [ //crear un arregli con las columnas que contendra la tabla
-    {name: 'Hora Inicio', selector: row => row.hora_inicio},
-    {name: 'Hora Fin', selector: row => row.hora_fin },
-    {name: 'Actvidad Realizada', selector: row => row.actvidad_realizada},
-    {name: 'Equipo', selector: row => row.id_equipo}
+    {name: 'Nombre', selector: row => row.Nom_Reactivo},
+    {name: 'Nomenclatura', selector: row => row.Nomenclatura },
+    {name: 'Unidad de Medida', selector: row => row.Uni_Medida},
+    {name: 'Cantidad', selector: row => row.Cantidad},
+    {name: 'Concentracion', selector: row => row.Concentración},
+    {name: 'Marca', selector: row => row.Marca},
+    {name: 'Fecha de Vencimiento', selector: row => row.Fec_Vencimiento},
+    {name: 'Funcion Quimica', selector: row => row.Fun_Química},
+    {name: 'Estado Fisico', selector: row => row.Est_Fisico},
+    {name: 'Naturaleza Quimica', selector: row => row.Nat_Quimica},
+    {name: 'Clasificacion', selector: row => row.Clasificación},
+    {name: 'Peligrosidad', selector: row => row.Peligrosidad},
+    {name: 'Clasificacion de Peligro', selector: row => row.Cla_Peligro},
+    {name: 'Ficha Datos Seguridad', selector: row => row.Fic_Dat_Seguridad},
 ]
 
   // El useEffect se ejecuta cuando se carga el componente
@@ -23,18 +33,29 @@ const CrudReactivos = () => {
 
   // Crear una función para la consulta
   const getAllReactivos = async () => {
-    const response = await apiAxios.get('/api/Reactivos') // Se utilizará el apiAxios que tiene la URL del backend
+    const response = await apiAxios.get('/api/Reactivo') // Se utilizará el apiAxios que tiene la URL del backend
     setReactivos(response.data) // Se llena la constante players con el resultado de la consulta
     console.log(response.data) // Imprimir en consola el resultado de la consulta
   }
 
   //Buscador
-  // Buscador por hora (inicio o fin)
-  const newListReactivos = Reactivos.filter((uso) => {
+  const newListReactivos = Reactivos.filter((r) => {
     const textToSearch = filterText.toLowerCase()
+
+    const nombre = r.Nom_Reactivo?.toLowerCase() 
+    const marca = r.Marca?.toLowerCase() 
+    const cantidad = r.cantidad?.toLowerCase() 
+    const fecha = r.fecha?.toLowerCase()
+    const estado = r.estado?.toLowerCase()
+    const ficha = r.ficha?.toLowerCase()
+
     return (
-      uso.hora_inicio?.toLowerCase().includes(textToSearch) ||
-      uso.hora_fin?.toLowerCase().includes(textToSearch)
+      nombre.includes(textToSearch) ||
+      marca.includes(textToSearch) ||
+      cantidad.includes(textToSearch) ||
+      fecha.includes(textToSearch) ||
+      estado.includes(textToSearch) ||
+      ficha.includes(textToSearch)
     )
 
   })
@@ -43,7 +64,7 @@ const CrudReactivos = () => {
     <>
     <div className="container mt-5">
         <div className="col-4">
-            <input className="form-control" placeholder="Buscar por nombre" value={filterText} onChange={(e) => setFilterText(e.target.value)}/>
+            <input className="form-control"  value={filterText} onChange={(e) => setFilterText(e.target.value)}/>
 
         </div>
         <DataTable

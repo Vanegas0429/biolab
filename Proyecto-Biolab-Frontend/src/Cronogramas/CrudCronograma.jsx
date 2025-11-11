@@ -10,6 +10,8 @@ const CrudCronograma = () => {
 
   const columnsTable = [ //crear un arregli con las columnas que contendra la tabla
     {name: 'Funcionario', selector: row => row.Id_Funcionario},
+    {name: 'Fecha de Prestamo', selector: row => row.Fec_Prestamo},
+    {name: 'Hora de Prestamo', selector: row => row.Hor_Prestamo},
     {name: 'Ficha', selector: row => row.Ficha},
     {name: 'Cantidad de Aprendices', selector: row => row.Can_Aprendices},
     {name: 'Actividad  Realizada', selector: row => row.Act_Realizada},
@@ -30,15 +32,24 @@ const CrudCronograma = () => {
   }
 
   //Buscador
-  // Buscador por hora (inicio o fin)
   const newListCronogramas = Cronogramas.filter((uso) => {
-    const textToSearch = filterText.toLowerCase()
+  const textToSearch = filterText.toLowerCase()
 
-    const funcionario = Cronogramas.funcionarios.toLowerCase()
-    const ficha = Cronogramas.fichas.toLowerCase()
-    return (
-      funcionario.includes(textToSearch) ||
-      ficha.includes(textToSearch) 
+  const funcionario = uso.Id_Funcionario?.toString().toLowerCase()
+  const fecha = uso.Fec_Prestamoe?.toString().toLowerCase()
+  const hora = uso.Hor_Prestamo?.toString().toLowerCase()
+  const ficha = uso.Ficha?.toString().toLowerCase() 
+  const actividad = uso.Act_Realizada?.toLowerCase() 
+  const equipo = uso.id_equipo?.toString().toLowerCase()
+
+  return (
+    funcionario.includes(textToSearch) ||
+    fecha.includes(textToSearch) ||
+    hora.includes(textToSearch) ||
+    ficha.includes(textToSearch) ||
+    actividad.includes(textToSearch) ||
+    equipo.includes(textToSearch) 
+    
     )
 
   })

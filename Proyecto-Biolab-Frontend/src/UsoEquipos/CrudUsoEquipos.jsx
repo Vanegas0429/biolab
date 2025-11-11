@@ -11,7 +11,7 @@ const CrudUsoEquipos = () => {
   const columnsTable = [ //crear un arregli con las columnas que contendra la tabla
     {name: 'Hora Inicio', selector: row => row.hora_inicio},
     {name: 'Hora Fin', selector: row => row.hora_fin },
-    {name: 'Actvidad Realizada', selector: row => row.actvidad_realizada},
+    {name: 'Actvidad Realizada', selector: row => row.actividad_realizada},
     {name: 'Equipo', selector: row => row.id_equipo}
 ]
 

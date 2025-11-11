@@ -29,20 +29,20 @@ const CrudInsumos = () => {
   }
 
   //Buscador
-  // Buscador por hora (inicio o fin)
   const newListInsumos = Insumos.filter((uso) => {
-    const textToSearch = filterText.toLowerCase()
+  const textToSearch = filterText.toLowerCase()
 
-    const nombre = Insumos.nombres.toLowerCase()
-    const tipInsumo = Insumos.tipInsumos.toLowerCase()
-    const fecVencimiento = Insumos.fecVencimientos.toLowerCase()
-    return (
-      nombre.includes(textToSearch) ||
-      tipInsumo.includes(textToSearch) ||
-      fecVencimiento.includes(textToSearch)
-    )
+  const nombre = uso.Nom_Insumo?.toLowerCase() 
+  const tipo = uso.Tip_Insumo?.toLowerCase() 
+  const fecha = uso.Fec_Vencimiento?.toLowerCase() 
 
-  })
+  return (
+    nombre.includes(textToSearch) ||
+    tipo.includes(textToSearch) ||
+    fecha.includes(textToSearch)
+  )
+})
+
 
   return (
     <>

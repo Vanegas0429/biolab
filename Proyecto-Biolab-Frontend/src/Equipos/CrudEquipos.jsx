@@ -32,12 +32,18 @@ const CrudEquipos = () => {
   }
 
   //Buscador
-  // Buscador por nombre y Marca
+
   const newListEquipos = Equipos.filter((uso) => {
-    const textToSearch = filterText.toLowerCase()
-    return (
-      uso.nombre?.toLowerCase().includes(textToSearch) ||
-      uso.marca?.toLowerCase().includes(textToSearch)
+  const textToSearch = filterText.toLowerCase()
+
+  const nombre = uso.nombre?.toLowerCase()  
+  const grupo = uso.grupo?.toLowerCase() 
+  const centroCosto = uso.centro_costos?.toLowerCase() 
+
+  return (
+    nombre.includes(textToSearch) ||
+    grupo.includes(textToSearch) ||
+    centroCosto.includes(textToSearch)
     )
 
   })
