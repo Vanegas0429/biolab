@@ -26,7 +26,7 @@ const CrudEquipos = () => {
 
   // Crear una función para la consulta
   const getAllEquipos = async () => {
-    const response = await apiAxios.get('/api/Equipos') // Se utilizará el apiAxios que tiene la URL del backend
+    const response = await apiAxios.get('/api/Equipo') // Se utilizará el apiAxios que tiene la URL del backend
     setEquipos(response.data) // Se llena la constante players con el resultado de la consulta
     console.log(response.data) // Imprimir en consola el resultado de la consulta
   }

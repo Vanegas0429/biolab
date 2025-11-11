@@ -36,7 +36,7 @@ const CrudCronograma = () => {
   const textToSearch = filterText.toLowerCase()
 
   const funcionario = uso.Id_Funcionario?.toString().toLowerCase()
-  const fecha = uso.Fec_Prestamoe?.toString().toLowerCase()
+  const fecha = uso.Fec_Prestamo?.toString().toLowerCase()
   const hora = uso.Hor_Prestamo?.toString().toLowerCase()
   const ficha = uso.Ficha?.toString().toLowerCase() 
   const actividad = uso.Act_Realizada?.toLowerCase() 

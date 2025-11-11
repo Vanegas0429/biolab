@@ -23,7 +23,7 @@ const EquiposForm = () => {
 
             try{
 
-                const response = await apiAxios.post('/api/Equipos', { //Se envian todos los datos como un objeto JSON
+                const response = await apiAxios.post('/api/Equipo', { //Se envian todos los datos como un objeto JSON
                     nombre: nombre,
                     marca: marca,
                     grupo: grupo,

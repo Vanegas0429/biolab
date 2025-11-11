@@ -1,7 +1,7 @@
 import { useState } from "react";
 import apiAxios from "../api/axiosConfig.js"
 
-const EquiposForm = () => {
+const LotesForm = () => {
 
     //Definir una prop  para cada campo del formulario
     const [Id_planta, setId_Planta] = useState('')
@@ -17,13 +17,8 @@ const EquiposForm = () => {
 
             try{
 
-                const response = await apiAxios.post('/api/Equipo', { //Se envian todos los datos como un objeto JSON
+                const response = await apiAxios.post('/api/Lote', { //Se envian todos los datos como un objeto JSON
                     Id_planta: Id_planta,
-                    marca: marca,
-                    grupo: grupo,
-                    Linea: Linea,
-                    centro_costos: centro_costos,
-                    subcentro_costos: subcentro_costos
                 })
 
                 // Axios devuelve el cuerpo de la respuesta en response.date
@@ -48,7 +43,7 @@ const EquiposForm = () => {
             <form onSubmit={gestionarForm} encType="multipart/form-data" className="col-12 col-md-6">
                 <div className="mb-3">
                     <label htmlFor="Id_planta" className="form-label">Planta:</label>
-                    <select type="text" id="id_equipo" className="form-control" value={id_equipo} onChange={(e) => setId_Equipo(e.target.value)}>
+                    <select type="text" id="Id_planta" className="form-control" value={Id_planta} onChange={(e) => setId_planta(e.target.value)}>
                         <option value="">Selecciona uno</option>
                     </select>
                 </div>
@@ -62,4 +57,4 @@ const EquiposForm = () => {
     )
 }
 
-export default EquiposForm
+export default LotesForm

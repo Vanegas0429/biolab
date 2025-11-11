@@ -9,7 +9,8 @@ const CrudLotes = () => {
   const [filterText, setFilterText] = useState("")
 
   const columnsTable = [ //crear un arregli con las columnas que contendra la tabla
-    {name: 'Planta', selector: row => row.Id_planta}
+    {name: 'Planta', selector: row => row.Id_planta},
+    {name: 'Nombre', selector: row => row.Nombre}
     
 ]
 
@@ -30,10 +31,9 @@ const CrudLotes = () => {
   const newListLotes = Lotes.filter((uso) => {
     const textToSearch = filterText.toLowerCase()
 
-    const planta = Lotes.plantas.toLowerCase()
-
+    const nombre = uso.Nombre?.toLowerCase()
     return (
-      planta.includes(textToSearch) 
+      nombre.includes(textToSearch)
     )
 
   })
