@@ -63,7 +63,11 @@ const FuncionariosForm = () => {
                 </div>
                 <div className="mb-3">
                     <label htmlFor="Correo" className="form-label">Correo:</label>
-                    <select type="text" id="Correo" className="form-control" value={Correo} onChange={(e) => setCorreo(e.target.value)}>
+                    <input type="text" id="Correo" className="form-control" value={Correo} onChange={(e) => setCorreo(e.target.value)} />
+                </div>
+                <div className="mb-3">
+                    <label htmlFor="Cargo_Funcionario" className="form-label">Cargo funcionario:</label>
+                    <select type="text" id="Cargo_Funcionario" className="form-control" value={Cargo_Funcionario} onChange={(e) => setCargoFuncionario(e.target.value)}>
                         <option value="">Selecciona uno</option>
                         <option value="1">Subdirector</option>
                         <option value="2">Coordinador</option>
