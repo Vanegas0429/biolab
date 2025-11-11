@@ -5,8 +5,7 @@ const InsumosModel = db.define('insumos', {
     Id_insumo: { type: DataTypes.NUMBER, primaryKey: true, autoIncrement: true},
     Nom_Insumo: { type: DataTypes.STRING },
     Tip_Insumo: { type: DataTypes.STRING},
-    Responsable: { type: DataTypes.STRING },
-    Fec_Insumo: { type: DataTypes.DATE } 
+    Fec_Vencimineto: { type: DataTypes.DATE } 
 }, {
     freezeTableName: true
 })
