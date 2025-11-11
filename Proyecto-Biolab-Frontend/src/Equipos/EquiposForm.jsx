@@ -7,9 +7,10 @@ const EquiposForm = () => {
     const [nombre, setNombre] = useState('')
     const [marca, setMarca] = useState('')
     const [grupo, setGrupo] = useState('')
-    const [Linea, setLinea] = useState('')
-    const [centro_costos, setCentro_Costos] = useState('')
-    const [subcentro_costos, setSubcentro_Costos] = useState('')
+    const [linea, setLinea] = useState('')
+    const [centro_costos, setCentroCostos] = useState('')
+    const [subcentro_costos, setSubcentroCostos] = useState('')
+    const [observaciones, setObservaciones] = useState('')
 
     const [textFormButton, setFormButton] = useState('Enviar')
 
@@ -22,13 +23,14 @@ const EquiposForm = () => {
 
             try{
 
-                const response = await apiAxios.post('/api/Equipo', { //Se envian todos los datos como un objeto JSON
+                const response = await apiAxios.post('/api/Equipos', { //Se envian todos los datos como un objeto JSON
                     nombre: nombre,
                     marca: marca,
                     grupo: grupo,
-                    Linea: Linea,
+                    linea: linea,
                     centro_costos: centro_costos,
-                    subcentro_costos: subcentro_costos
+                    subcentro_costos: subcentro_costos,
+                    observaciones: observaciones,
                 })
 
                 // Axios devuelve el cuerpo de la respuesta en response.date
@@ -38,7 +40,7 @@ const EquiposForm = () => {
 
             } catch (error) {
 
-                console.error("Error registrando equipo:", error.response ? error.response.data : error.message);
+                console.error("Error registrando Equipo:", error.response ? error.response.data : error.message);
                 alert(error.message)
 
             }
@@ -52,28 +54,32 @@ const EquiposForm = () => {
         <>
             <form onSubmit={gestionarForm} encType="multipart/form-data" className="col-12 col-md-6">
                 <div className="mb-3">
-                    <label htmlFor="nombre" className="form-label">Nombre:</label>
+                    <label htmlFor="nombre" className="form-label">nombre:</label>
                     <input type="text" id="nombre" className="form-control" value={nombre} onChange={(e) => setNombre(e.target.value)} />
                 </div>
                 <div className="mb-3">
-                    <label htmlFor="marca" className="form-label">Marca:</label>
+                    <label htmlFor="marca" className="form-label">marca:</label>
                     <input type="text" id="marca" className="form-control" value={marca} onChange={(e) => setMarca(e.target.value)} />
                 </div>
                 <div className="mb-3">
-                    <label htmlFor="grupo" className="form-label">Grupo:</label>
+                    <label htmlFor="grupo" className="form-label">grupo:</label>
                     <input type="text" id="grupo" className="form-control" value={grupo} onChange={(e) => setGrupo(e.target.value)} />
                 </div>
                 <div className="mb-3">
-                    <label htmlFor="Linea" className="form-label">Linea:</label>
-                    <input type="text" id="Linea" className="form-control" value={Linea} onChange={(e) => setLinea(e.target.value)} />
+                    <label htmlFor="linea" className="form-label">linea:</label>
+                    <input type="text" id="linea" className="form-control" value={linea} onChange={(e) => setLinea(e.target.value)} />
                 </div>
                 <div className="mb-3">
-                    <label htmlFor="centro_costos" className="form-label">Centro de Costos:</label>
-                    <input type="text" id="centro_costos" className="form-control" value={centro_costos} onChange={(e) => setCentro_Costos(e.target.value)} />
+                    <label htmlFor="centro_costos" className="form-label">centro_costos:</label>
+                    <input type="text" id="centro_costos" className="form-control" value={centro_costos} onChange={(e) => setCentroCostos(e.target.value)} />
                 </div>
                 <div className="mb-3">
-                    <label htmlFor="subcentro_costos" className="form-label">Subcentro de Costos:</label>
-                    <input type="text" id="subcentro_costos" className="form-control" value={subcentro_costos} onChange={(e) => setSubcentro_Costos(e.target.value)} />
+                    <label htmlFor="subcentro_costos" className="form-label">subcentro_costos:</label>
+                    <input type="text" id="subcentro_costos" className="form-control" value={subcentro_costos} onChange={(e) => setSubcentroCostos(e.target.value)} />
+                </div>
+                <div className="mb-3">
+                    <label htmlFor="observaciones" className="form-label">observaciones:</label>
+                    <input type="text" id="observaciones" className="form-control" value={observaciones} onChange={(e) => setObservaciones(e.target.value)} />
                 </div>
                 <div className="mb-3">
                     <input type="submit" className="btn btn-primary w-50" value={textFormButton} />
