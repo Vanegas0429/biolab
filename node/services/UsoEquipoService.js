@@ -1,9 +1,17 @@
+import EquipoModel from "../models/EquipoModel.js";
 import UsoEquipoModel from "../models/UsoEquipoModel.js";
 
 class UsoEquipoService {
 
-    async getAll() { //consultar todos los registros de la tabla
-        return await UsoEquipoModel.findAll()
+    async getAll() { //Consultar todos los registros de la tabla
+        return await UsoEquipoModel.findAll(
+            {
+                include: [{
+                    model: EquipoModel,
+                    as: 'equipo'
+                }]
+            }
+        )
     }
 
     async getById(id) {

@@ -22,7 +22,7 @@ class EquipoService {
         //El metodo update del ORM devuelve una promesa en forma de arreglo y la posicion 0 envia el numero de filas afectadas
         const update = result[0]
 
-        if (update === 0) throw new Error("Eqquipo no encontrado o sin cambios")  //Si el numero de filas afectadas es cero se lanza un error
+        if (update === 0) throw new Error("Equipo no encontrado o sin cambios")  //Si el numero de filas afectadas es cero se lanza un error
 
         return true
     }

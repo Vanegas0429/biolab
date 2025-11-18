@@ -1,7 +1,7 @@
 import db from "../database/db.js";
 import { DataTypes } from "sequelize";
 
-const ReactivosModel = db.define('Reactivos', {
+const ReactivosModel = db.define('reactivos', {
     Id_Reactivo: { type: DataTypes.NUMBER, primaryKey: true, autoIncrement: true},
     Nom_Reactivo: { type: DataTypes.STRING },
     Nomenclatura: { type: DataTypes.STRING},

@@ -1,7 +1,7 @@
 import db from "../database/db.js";
 import { DataTypes } from "sequelize";
 
-const  EquipoModel= db.define("planta",{
+const  PlantaModel= db.define("planta",{
     id_planta: { type: DataTypes.NUMBER, primaryKey: true, autoIncrement: true},
     especie: { type: DataTypes.STRING},
     met_cultivo: {type: DataTypes.STRING},
@@ -16,4 +16,4 @@ const  EquipoModel= db.define("planta",{
     freezeTableName: true
 })
 
-export default EquipoModel;
+export default PlantaModel;
