@@ -14,7 +14,8 @@ const CrudPlantas = () => {
     {name: 'Metodo de Propagacion', selector: row => row.met_propagacion},
     {name: 'Planta Contaminada', selector: row => row.plan_contaminadas},
     {name: 'Planta Desarrollada', selector: row => row.plan_desarrolladas},
-    {name: 'Numero de Endurecimiento', selector: row => row.numero_endurecimiento}
+    {name: 'Numero de Endurecimiento', selector: row => row.numero_endurecimiento},
+    {name: 'Reactivo Aplicado', selector: row => row.Id_Reactivo}
 ]
 
   // El useEffect se ejecuta cuando se carga el componente

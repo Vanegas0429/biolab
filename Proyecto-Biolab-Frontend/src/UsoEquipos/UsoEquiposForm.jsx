@@ -61,12 +61,7 @@ const UsoEquipoForm = () => {
                 </div>
                 <div className="mb-3">
                     <label htmlFor="id_equipo" className="form-label">Equipo:</label>
-                    <select type="text" id="id_equipo" className="form-control" value={id_equipo} onChange={(e) => setId_Equipo(e.target.value)}>
-                        <option value="">Selecciona uno</option>
-                        <option value="1">Autoclave</option>
-                        <option value="2">Microscopio óptico</option>
-                        <option value="3">Centrifuga</option>
-                    </select>
+                    <input type="text" id="id_equipo" className="form-control" value={id_equipo} onChange={(e) => setId_Equipo(e.target.value)} />
                 </div> 
                 <div className="mb-3">
                     <input type="submit" className="btn btn-primary w-50" value={textFormButton} />
