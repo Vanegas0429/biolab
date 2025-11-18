@@ -10,6 +10,7 @@ const PlantasForm = () => {
     const [plan_contaminadas, setPlan_Contaminada] = useState('')
     const [plan_desarrolladas, setPlan_Desarrollada] = useState('')
     const [numero_endurecimiento, setNumero_Endurecimiento] = useState('')
+    const [Id_Reactivo, setId_Reactivo] = useState('')
 
     const [textFormButton, setFormButton] = useState('Enviar')
 
@@ -28,7 +29,8 @@ const PlantasForm = () => {
                     met_propagacion: met_propagacion,
                     plan_contaminadas: plan_contaminadas,
                     plan_desarrolladas: plan_desarrolladas,
-                    numero_endurecimiento: numero_endurecimiento
+                    numero_endurecimiento: numero_endurecimiento,
+                    Id_Reactivo: Id_Reactivo
                 })
 
                 // Axios devuelve el cuerpo de la respuesta en response.date
@@ -83,6 +85,10 @@ const PlantasForm = () => {
                 <div className="mb-3">
                     <label htmlFor="numero_endurecimiento" className="form-label">Numero de Endurecimiento:</label>
                     <input type="text" id="numero_endurecimiento" className="form-control" value={numero_endurecimiento} onChange={(e) => setNumero_Endurecimiento(e.target.value)} />
+                </div>
+                <div className="mb-3">
+                    <label htmlFor="Id_Reactivo" className="form-label">Reactivo Aplicado:</label>
+                    <input type="text" id="Id_Reactivo" className="form-control" value={Id_Reactivo} onChange={(e) => setId_Reactivo(e.target.value)} />
                 </div>
                 <div className="mb-3">
                     <input type="submit" className="btn btn-primary w-50" value={textFormButton} />

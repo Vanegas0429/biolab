@@ -9,6 +9,7 @@ const  EquipoModel= db.define("planta",{
     plan_contaminadas: {type: DataTypes.ENUM("Bacterias","Hongos","No Contaminada")},
     plan_desarrolladas: {type:DataTypes.ENUM("Desarrolada","No desarollada")},
     numero_endurecimiento: { type: DataTypes.NUMBER},
+    Id_Reactivo: {type: DataTypes.NUMBER},
     
 }, {
     //evitar prularizacion en la gestion de la tabla 

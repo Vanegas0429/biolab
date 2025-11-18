@@ -47,10 +47,10 @@ createRoot(document.getElementById('root')).render(
     <CrudInsumos/>
     <InsumosForm/>
     <CrudPlantas/>
-    <PlantasForm/>
+    <PlantasForm/> */}
     <CrudUsoEquipos/>
-    <UsoEquipoForm/>  */}
-    {/* <CrudSup_Plantas/> */}
-    <Sup_PlantasForm />
+    <UsoEquipoForm/> 
+    {/* <CrudSup_Plantas/>
+    <Sup_PlantasForm /> */}
   </StrictMode>,
 )
