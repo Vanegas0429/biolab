@@ -1,7 +1,7 @@
 import db from "../database/db.js";
 import { DataTypes } from "sequelize";
 
-const  Sub_plantasModel= db.define("Sub_plantas",{
+const  Sup_plantasModel= db.define("Sub_plantas",{
     id_supervisionplantas: { type: DataTypes.NUMBER, primaryKey: true, autoIncrement: true},
     fecha_supervision: { type: DataTypes.TIME},
     estado_planta: {type: DataTypes.CHAR},
@@ -12,4 +12,4 @@ const  Sub_plantasModel= db.define("Sub_plantas",{
     freezeTableName: true
 })
 
-export default Sub_plantasModel;
+export default Sup_plantasModel;

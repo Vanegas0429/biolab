@@ -11,6 +11,8 @@ import sup_plantasRoutes from './routes/sup_plantasRoutes.js'
 import UsoEquipoRoutes from './routes/UsoEquipoRoutes.js'
 import CronogramaRoutes from './routes/CronogramaRoutes.js'
 import dotenv from 'dotenv'
+import UsoEquipoModel from './models/UsoEquipoModel.js'
+import EquipoModel from './models/EquipoModel.js'
 
 
 const app = express()
@@ -50,4 +52,10 @@ const PORT = process.env.PORT || 8000
 app.listen(PORT, () => {
     console.log(`Server up running in http://localhost:${PORT}`)
 })
+
+EquipoModel.hasMany(UsoEquipoModel, { foreignKey: 'id_equipo', as: 'usoequipo'})
+UsoEquipoModel.belongsTo(EquipoModel, { foreignKey: 'id_equipo', as: 'equipo'})
+
+
+
 export default app

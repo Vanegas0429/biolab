@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
 import apiAxios from "../api/axiosConfig.js"
 import DataTable from 'react-data-table-component'
+import UsoEquipoForm from "./UsoEquiposForm.jsx"
 
 const CrudUsoEquipos = () => {
 
@@ -9,15 +10,18 @@ const CrudUsoEquipos = () => {
   const [filterText, setFilterText] = useState("")
 
   const columnsTable = [ //crear un arregli con las columnas que contendra la tabla
-    {name: 'Hora Inicio', selector: row => row.hora_inicio},
-    {name: 'Hora Fin', selector: row => row.hora_fin },
-    {name: 'Actvidad Realizada', selector: row => row.actividad_realizada},
-    {name: 'Equipo', selector: row => row.id_equipo}
-]
+    { name: 'Hora Inicio', selector: row => row.hora_inicio },
+    { name: 'Hora Fin', selector: row => row.hora_fin },
+    { name: 'Actvidad Realizada', selector: row => row.actividad_realizada },
+    { name: 'id_equipo', selector: row =>row.equipo.nombre},
+    { name: 'Acciones', selector: row => (
+        <button className="btn btn-sm bg-info"><i className="fa-solid fa-pencil"></i></button>
+    )}
+  ]
 
   // El useEffect se ejecuta cuando se carga el componente
   useEffect(() => {
-    
+
     getAllUsoEquipos()
   }, [])
 
@@ -39,22 +43,50 @@ const CrudUsoEquipos = () => {
 
   })
 
+  const hideModal = () => {
+
+    document.getElementById('closeModal').click()
+  }
+
   return (
     <>
-    <div className="container mt-5">
-        <div className="col-4">
-            <input className="form-control" placeholder="Buscar por hora (ej: 08:00)" value={filterText} onChange={(e) => setFilterText(e.target.value)}/>
+      <div className="container mt-5">
 
+        <div className="row d-flex justify-content-between">
+          <div className="col-4">
+            <input className="form-control" placeholder="Buscar por hora (ej: 08:00)" value={filterText} onChange={(e) => setFilterText(e.target.value)} />
+          </div>
+          <div className="col-2">
+            <button type="button" className="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal" id="closeModal">
+              Nuevo
+            </button>
+          </div>
         </div>
         <DataTable
-            title="Uso Equipos" //Titulo de la tabla
-            columns={columnsTable} //Columns de la tabla
-            data={newListUsoEquipos} //Fuente de los datos
-            keyField="id" //Identficador de cada registro
-            pagination //Activar paginacion
-            highlightOnHover //Resalta la fila por donde pase el mouse
-            striped //Estilo de tabla - tono en filas intercaladas
+          title="Uso Equipos" //Titulo de la tabla
+          columns={columnsTable} //Columns de la tabla
+          data={newListUsoEquipos} //Fuente de los datos
+          keyField="id" //Identficador de cada registro
+          pagination //Activar paginacion
+          highlightOnHover //Resalta la fila por donde pase el mouse
+          striped //Estilo de tabla - tono en filas intercaladas
         />
+
+        {/* <!-- Modal --> */}
+        <div className="modal fade" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h1 className="modal-title fs-5" id="exampleModalLabel">Agregar Uso de Equipo</h1>
+                <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="close" id="closeModal"></button>
+              </div>
+              <div className="modal-body">
+                <UsoEquipoForm hideModal={hideModal} />
+              </div>
+
+            </div>
+          </div>
+        </div>
       </div>
     </>
   )
