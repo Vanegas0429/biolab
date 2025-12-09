@@ -9,6 +9,7 @@ const CrudEquipos = () => {
   const [filterText, setFilterText] = useState("")
 
   const columnsTable = [ //crear un arregli con las columnas que contendra la tabla
+    {name: 'Id_Equipo', selector: row => row.id_equipo},
     {name: 'Nombre', selector: row => row.nombre},
     {name: 'Marca', selector: row => row.marca},
     {name: 'Grupo', selector: row => row.grupo},

@@ -3,16 +3,16 @@ import cors from 'cors'
 import db from './database/db.js'
 import FuncionarioRoutes from './routes/FuncionarioRoutes.js'
 import EquipoRoutes from './routes/EquipoRoutes.js'
-import InsumosRoutes from './routes/InsumosRoutes.js'
-import LotesRoutes from './routes/LotesRoutes.js'
-import PlantaRoutes from './routes/PlantaRoutes.js'
 import ReactivosRoutes from './routes/ReactivosRoutes.js'
 import sup_plantasRoutes from './routes/sup_plantasRoutes.js'
-import UsoEquipoRoutes from './routes/UsoEquipoRoutes.js'
 import CronogramaRoutes from './routes/CronogramaRoutes.js'
+import PracticaRoutes from './routes/PracticaRoutes.js'
+import ReservaRoutes from './routes/ReservaRoutes.js'
+
 import dotenv from 'dotenv'
-import UsoEquipoModel from './models/UsoEquipoModel.js'
-import EquipoModel from './models/EquipoModel.js'
+
+import PracticaModel from './models/PracticaModel.js'
+import ReservaModel from './models/ReservaModel.js'
 
 
 const app = express()
@@ -24,13 +24,11 @@ app.use(cors()) //habilitar CORS
 //Rutas
 app.use('/api/Funcionario', FuncionarioRoutes)
 app.use('/api/Equipo', EquipoRoutes)
-app.use('/api/Insumo', InsumosRoutes)
-app.use('/api/Lote', LotesRoutes)
-app.use('/api/Planta', PlantaRoutes)
 app.use('/api/Reactivo', ReactivosRoutes)
 app.use('/api/Sup_Planta', sup_plantasRoutes)
-app.use('/api/Uso_Equipo', UsoEquipoRoutes)
 app.use('/api/Cronograma', CronogramaRoutes)
+app.use('/api/Practica', PracticaRoutes)
+app.use('/api/Reserva', ReservaRoutes)
 
 //conexion a la base de datos
 try{
@@ -53,8 +51,18 @@ app.listen(PORT, () => {
     console.log(`Server up running in http://localhost:${PORT}`)
 })
 
-EquipoModel.hasMany(UsoEquipoModel, { foreignKey: 'id_equipo', as: 'usoequipo'})
-UsoEquipoModel.belongsTo(EquipoModel, { foreignKey: 'id_equipo', as: 'equipo'})
+// UNA reserva tiene muchas prácticas
+ReservaModel.hasMany(PracticaModel, {
+  foreignKey: 'Id_Reserva',
+  as: 'Practicas'
+});
+
+// UNA práctica pertenece a UNA reserva
+PracticaModel.belongsTo(ReservaModel, {
+  foreignKey: 'Id_Reserva',
+  as: 'Reserva'
+});
+
 
 
 
