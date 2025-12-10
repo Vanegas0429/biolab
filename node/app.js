@@ -1,6 +1,9 @@
 import express from 'express'
 import cors from 'cors'
+import dotenv from 'dotenv'
 import db from './database/db.js'
+
+// Rutas
 import FuncionarioRoutes from './routes/FuncionarioRoutes.js'
 import EquipoRoutes from './routes/EquipoRoutes.js'
 import ReactivosRoutes from './routes/ReactivosRoutes.js'
@@ -9,19 +12,20 @@ import CronogramaRoutes from './routes/CronogramaRoutes.js'
 import PracticaRoutes from './routes/PracticaRoutes.js'
 import ReservaRoutes from './routes/ReservaRoutes.js'
 
-import dotenv from 'dotenv'
-
+// Modelos
 import PracticaModel from './models/PracticaModel.js'
 import ReservaModel from './models/ReservaModel.js'
 
+// Configuración
+dotenv.config()
 
 const app = express()
 
-//Middleware
-app.use(express.json())//para leer json en req.body
-app.use(cors()) //habilitar CORS
+// Middlewares
+app.use(express.json())
+app.use(cors())
 
-//Rutas
+// Rutas API
 app.use('/api/Funcionario', FuncionarioRoutes)
 app.use('/api/Equipo', EquipoRoutes)
 app.use('/api/Reactivo', ReactivosRoutes)
@@ -30,40 +34,35 @@ app.use('/api/Cronograma', CronogramaRoutes)
 app.use('/api/Practica', PracticaRoutes)
 app.use('/api/Reserva', ReservaRoutes)
 
-//conexion a la base de datos
-try{
+// Conexión a BD
+try {
     await db.authenticate()
-    console.log('Conexion a la base de datos establecida')
-}catch(error){
-    console.error('Error al conectar a la base de datos:', error)
-    process.exit(1) //finaliza la app si no conecta
+    console.log('Conexión a la base de datos')
+} catch (error) {
+    console.error('Error al conectar la base de datos: ', error)
+    process.exit(1)
 }
 
+// Ruta base
 app.get('/', (req, res) => {
-    res.send('API de gestion de funcionario')
+    res.send('Hola Mundo ADSO')
 })
 
-dotenv.config() //cargar .env
-//servidor
-const PORT = process.env.PORT || 8000
-
-app.listen(PORT, () => {
-    console.log(`Server up running in http://localhost:${PORT}`)
-})
-
-// UNA reserva tiene muchas prácticas
+// Relaciones
 ReservaModel.hasMany(PracticaModel, {
   foreignKey: 'Id_Reserva',
   as: 'Practicas'
-});
+})
 
-// UNA práctica pertenece a UNA reserva
 PracticaModel.belongsTo(ReservaModel, {
   foreignKey: 'Id_Reserva',
   as: 'Reserva'
-});
+})
 
-
-
+// Servidor
+const PORT = process.env.PORT || 8000
+app.listen(PORT, () => {
+    console.log(`Server up running in http://localhost:${PORT}`)
+})
 
 export default app

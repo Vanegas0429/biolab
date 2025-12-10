@@ -1,0 +1,30 @@
+import express from 'express'
+import { getAllEquipos, getEquipo, createEquipo, updateEquipo, deleteEquipo } from '../controllers/EquipoController.js'
+import multer from 'multer'
+import path from 'path'
+
+const router = express.Router()
+
+// storage = almacenamiento
+const almacenamiento = multer.diskStorage({
+    // Definir la carpeta donde quedarán los archivos
+    destination: (req, file, cb) => {
+        // cb es una función que se utiliza para indicar el destino del archivo
+        cb(null, 'public/uploads/')
+    },
+    // Renombrar el archivo con la marca de tiempo actual en milisegundos conservando la extensión original
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + path.extname(file.originalname))
+    }
+})
+
+const upload = multer({ storage: almacenamiento })
+
+// Rutas para Equipos - usando las funciones de EquipoController
+router.post('/', upload.single('foto'), createEquipo)
+router.get('/', getAllEquipos)
+router.get('/:id', getEquipo)
+router.put('/:id', updateEquipo)
+router.delete('/:id', deleteEquipo)
+
+export default router
