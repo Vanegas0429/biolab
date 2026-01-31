@@ -14,35 +14,39 @@ import 'bootstrap/dist/js/bootstrap.bundle.min.js'
 // import CrudEquipos from './Equipos/CrudEquipos.jsx'
 // import EquiposForm from './Equipos/EquiposForm.jsx'
 
-// import CrudUsoEquipos from './UsoEquipos/CrudUsoEquipos.jsx'
-// import UsoEquipoForm from './UsoEquipos/UsoEquiposForm.jsx'
+import CrudReservaReactivo from './ReservaReactivo/CrudReservaReactivo.jsx'
+import ReservaReactivoForm from './ReservaReactivo/ReservaReactivoForm.jsx'
 
-// import CrudSup_Plantas from './Sup_Plantas/CrudSup_Plantas.jsx'
-// import Sup_PlantasForm from './Sup_Plantas/Sup_PlantasForm.jsx'
+import CrudReservaEquipo from './ReservaEquipo/CrudReservaEquipo.jsx'
+import ReservaEquipoForm from './ReservaEquipo/ReservaEquipoForm.jsx'
 
-// import CrudReserva from './Reserva/CrudReserva.jsx'
-// import ReservaForm from './Reserva/ReservaForm.jsx'
+import CrudReservaActividad from './ReservaActividad/CrudReservaActividad.jsx'
+import ReservaActividadForm from './ReservaActividad/ReservaActividadForm.jsx'
 
-// import CrudPractica from './Practica/CrudPractica.jsx'
-// import PracticaForm from './Practica/PracticaForm.jsx'
+import CrudReservaMaterial from './ReservaMaterial/CrudReservaMaterial.jsx'
+import ReservaMaterialForm from './ReservaMaterial/ReservaMaterialForm.jsx'
 
-import { BrowserRouter} from 'react-router-dom'
-ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
+import CrudReservaEstado from './ReservaEstado/CrudReservaEstado.jsx'
+import ReservaEstadoForm from './ReservaEstado/ReservaEstadoForm.jsx'
+
+createRoot(document.getElementById('root')).render(
+  <StrictMode>
+    <App />
     {/* <CrudReactivos/>
     <ReactivosForm/>
     <CrudFuncionarios/>
     <FuncionarioForm/>
     <CrudEquipos/>
     <EquiposForm/>
-    <CrudUsoEquipos/>
-    <UsoEquiposForm/> 
-    <CrudSup_Plantas/>
-    <Sup_PlantasForm /> */}
-    {/* <CrudPractica/> */}
-    {/* <CrudReserva/> */}
-    <BrowserRouter>
-      <App/>
-    </BrowserRouter>
-  </React.StrictMode>,
+    <CrudReservaReactivo/>
+    <ReservaReactivoForm/>
+    <CrudReservaEquipo />
+    <ReservaEquipoForm />
+    <CrudReservaActividad />
+    <ReservaActividadForm />
+    <CrudReservaMaterial />
+    <ReservaMaterialForm /> */}
+    <CrudReservaEstado />
+    <ReservaEstadoForm />
+  </StrictMode>,
 )
