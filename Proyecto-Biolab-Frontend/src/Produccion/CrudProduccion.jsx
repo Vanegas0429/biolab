@@ -1,50 +1,45 @@
 import { useState, useEffect } from "react"
 import apiAxios from "../api/axiosConfig.js"
 import DataTable from 'react-data-table-component'
-import UsoEquipoForm from "./UsoEquiposForm.jsx"
+import ProduccionForm from "./ProduccionForm.jsx"
 
-const CrudUsoEquipos = () => {
+const CrudProduccion = () => {
 
   // Crear una prop para guardar los datos de la consulta
-  const [UsoEquipos, setUsoEquipos] = useState([])
+  const [Produccion, setProduccion] = useState([])
   const [filterText, setFilterText] = useState("")
 
   const columnsTable = [ //crear un arregli con las columnas que contendra la tabla
-    { name: 'Hora Inicio', selector: row => row.hora_inicio },
-    { name: 'Hora Fin', selector: row => row.hora_fin },
-    { name: 'Actvidad Realizada', selector: row => row.actividad_realizada },
-    { name: 'id_equipo', selector: row =>row.equipo.nombre},
-    { name: 'Acciones', selector: row => (
-        <button className="btn btn-sm bg-info"><i className="fa-solid fa-pencil"></i></button>
-    )}
-  ]
+    {name: 'Id', selector: row => row.Id_produccion},
+    {name: 'Tip_produccion', selector: row => row.Tip_produccion}
+    
+]
 
   // El useEffect se ejecuta cuando se carga el componente
   useEffect(() => {
-
-    getAllUsoEquipos()
+    
+    getAllProduccion()
   }, [])
 
   // Crear una función para la consulta
-  const getAllUsoEquipos = async () => {
-    const response = await apiAxios.get('/api/Uso_Equipo') // Se utilizará el apiAxios que tiene la URL del backend
-    setUsoEquipos(response.data) // Se llena la constante players con el resultado de la consulta
+  const getAllProduccion = async () => {
+    const response = await apiAxios.get('/api/Produccion') // Se utilizará el apiAxios que tiene la URL del backend
+    setProduccion(response.data) // Se llena la constante players con el resultado de la consulta
     console.log(response.data) // Imprimir en consola el resultado de la consulta
   }
 
   //Buscador
-  // Buscador por hora (inicio o fin)
-  const newListUsoEquipos = UsoEquipos.filter((uso) => {
+  const newListProduccion = Produccion.filter((uso) => {
     const textToSearch = filterText.toLowerCase()
+
+    const Tip_produccion = uso.Tip_produccion?.toLowerCase()
     return (
-      uso.hora_inicio?.toLowerCase().includes(textToSearch) ||
-      uso.hora_fin?.toLowerCase().includes(textToSearch)
+      Tip_produccion.includes(textToSearch)
     )
 
   })
 
   const hideModal = () => {
-
     document.getElementById('closeModal').click()
   }
 
@@ -54,7 +49,7 @@ const CrudUsoEquipos = () => {
 
         <div className="row d-flex justify-content-between">
           <div className="col-4">
-            <input className="form-control" placeholder="Buscar por hora (ej: 08:00)" value={filterText} onChange={(e) => setFilterText(e.target.value)} />
+            <input className="form-control" placeholder="Buscar por Produccion (ej: Limon)" value={filterText} onChange={(e) => setFilterText(e.target.value)} />
           </div>
           <div className="col-2">
             <button type="button" className="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal" id="closeModal">
@@ -63,9 +58,9 @@ const CrudUsoEquipos = () => {
           </div>
         </div>
         <DataTable
-          title="Uso Equipos" //Titulo de la tabla
+          title="Produccion" //Titulo de la tabla
           columns={columnsTable} //Columns de la tabla
-          data={newListUsoEquipos} //Fuente de los datos
+          data={newListProduccion} //Fuente de los datos
           keyField="id" //Identficador de cada registro
           pagination //Activar paginacion
           highlightOnHover //Resalta la fila por donde pase el mouse
@@ -77,11 +72,11 @@ const CrudUsoEquipos = () => {
           <div className="modal-dialog">
             <div className="modal-content">
               <div className="modal-header">
-                <h1 className="modal-title fs-5" id="exampleModalLabel">Agregar Uso de Equipo</h1>
+                <h1 className="modal-title fs-5" id="exampleModalLabel">Agregar Produccion Nueva</h1>
                 <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="close" id="closeModal"></button>
               </div>
               <div className="modal-body">
-                <UsoEquipoForm hideModal={hideModal} />
+                <ProduccionForm hideModal={hideModal} />
               </div>
 
             </div>
@@ -92,4 +87,4 @@ const CrudUsoEquipos = () => {
   )
 }
 
-export default CrudUsoEquipos
+export default CrudProduccion

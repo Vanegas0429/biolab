@@ -1,9 +1,8 @@
-import { Sequelize} from 'sequelize';
-
+import { Sequelize } from "sequelize";
 
 const db = new Sequelize('biolab', 'root', '', {
     host: 'localhost',
-    dialect: 'mysql',
+    dialect: 'mysql'
 });
 
-export default db
+export default db;

@@ -24,7 +24,7 @@ const CrudFuncionarios = () => {
 
   // Crear una función para la consulta
   const getAllFuncionarios = async () => {
-    const response = await apiAxios.get('/api/Funcionarios') // Se utilizará el apiAxios que tiene la URL del backend
+    const response = await apiAxios.get('/api/Funcionario') // Se utilizará el apiAxios que tiene la URL del backend
     setFuncionarios(response.data) // Se llena la constante players con el resultado de la consulta
     console.log(response.data) // Imprimir en consola el resultado de la consulta
   }

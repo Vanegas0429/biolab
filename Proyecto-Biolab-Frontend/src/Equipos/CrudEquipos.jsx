@@ -1,14 +1,15 @@
-import { useState, useEffect } from "react"
-import apiAxios from "../api/axiosConfig.js"
-import DataTable from 'react-data-table-component'
+import { useState, useEffect } from "react";
+import apiAxios from "../api/axiosConfig.js";
+import DataTable from "react-data-table-component";
+import EquiposForm from "./EquiposForm";   // IMPORTANTE
 
 const CrudEquipos = () => {
 
-  // Crear una prop para guardar los datos de la consulta
-  const [Equipos, setEquipos] = useState([])
-  const [filterText, setFilterText] = useState("")
+  const [Equipos, setEquipos] = useState([]);
+  const [filterText, setFilterText] = useState("");
 
-  const columnsTable = [ //crear un arregli con las columnas que contendra la tabla
+  const columnsTable = [ //crear un arreglo con las columnas que contendra la tabla
+    {name: 'Id_Equipo', selector: row => row.id_equipo},
     {name: 'Nombre', selector: row => row.nombre},
     {name: 'Marca', selector: row => row.marca},
     {name: 'Grupo', selector: row => row.grupo},
@@ -18,49 +19,90 @@ const CrudEquipos = () => {
     {name: 'Observaciones', selector: row => row.observaciones}
 ]   
 
-  // El useEffect se ejecuta cuando se carga el componente
   useEffect(() => {
-    
-    getAllEquipos()
-  }, [])
+    getAllEquipos();
+  }, []);
 
-  // Crear una función para la consulta
   const getAllEquipos = async () => {
-    const response = await apiAxios.get('/api/Equipos') // Se utilizará el apiAxios que tiene la URL del backend
-    setEquipos(response.data) // Se llena la constante players con el resultado de la consulta
-    console.log(response.data) // Imprimir en consola el resultado de la consulta
-  }
+    const response = await apiAxios.get("/api/equipo");
+    setEquipos(response.data);
+  };
 
-  //Buscador
-  // Buscador por nombre y Marca
   const newListEquipos = Equipos.filter((uso) => {
-    const textToSearch = filterText.toLowerCase()
+    const t = filterText.toLowerCase();
     return (
-      uso.nombre?.toLowerCase().includes(textToSearch) ||
-      uso.marca?.toLowerCase().includes(textToSearch)
-    )
-
-  })
+      uso.nombre?.toLowerCase().includes(t) ||
+      uso.grupo?.toLowerCase().includes(t) ||
+      uso.centro_costos?.toLowerCase().includes(t)
+    );
+  });
 
   return (
     <>
-    <div className="container mt-5">
-        <div className="col-4">
-            <input className="form-control" placeholder="Buscar por nombre y marca" value={filterText} onChange={(e) => setFilterText(e.target.value)}/>
+      <div className="container mt-5">
 
+        {/* Buscador + Botón */}
+        <div className="row d-flex justify-content-between mb-3">
+          <div className="col-4">
+            <input
+              className="form-control"
+              placeholder="Buscar..."
+              value={filterText}
+              onChange={(e) => setFilterText(e.target.value)}
+            />
+          </div>
+
+          <div className="col-2">
+            <button
+              className="btn btn-primary"
+              data-bs-toggle="modal"
+              data-bs-target="#modalEquipos"
+            >
+              Agregar Equipo
+            </button>
+          </div>
         </div>
+
+        {/* Tabla */}
         <DataTable
-            title="Equipos" //Titulo de la tabla
-            columns={columnsTable} //Columns de la tabla
-            data={newListEquipos} //Fuente de los datos
-            keyField="id" //Identficador de cada registro
-            pagination //Activar paginacion
-            highlightOnHover //Resalta la fila por donde pase el mouse
-            striped //Estilo de tabla - tono en filas intercaladas
+          title="Equipos"
+          columns={columnsTable}
+          data={newListEquipos}
+          keyField="Id_Equipo"
+          pagination
+          highlightOnHover
+          striped
         />
+
+        {/* Modal Único */}
+        <div
+          className="modal fade"
+          id="modalEquipos"
+          tabIndex="-1"
+          aria-labelledby="modalEquiposLabel"
+        >
+          <div className="modal-dialog modal-lg">
+            <div className="modal-content">
+
+              <div className="modal-header">
+                <h1 className="modal-title fs-5" id="modalEquiposLabel">
+                  Registrar Equipo
+                </h1>
+                <button type="button" className="btn-close" data-bs-dismiss="modal"></button>
+              </div>
+
+              <div className="modal-body">
+                {/* Aquí va el formulario */}
+                <EquiposForm />
+              </div>
+
+            </div>
+          </div>
+        </div>
+
       </div>
     </>
-  )
-}
+  );
+};
 
-export default CrudEquipos
+export default CrudEquipos;

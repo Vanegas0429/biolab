@@ -1,10 +1,19 @@
 import { useState, useEffect } from "react"
 import apiAxios from "../api/axiosConfig.js"
+import DataTable from 'react-data-table-component'
 
 const CrudSup_Plantas = () => {
 
   // Crear una prop para guardar los datos de la consulta
   const [Sup_Plantas, setSup_Plantas] = useState([])
+  const [filterText, setFilterText] = useState("")
+
+  const columnsTable = [ //crear un arregli con las columnas que contendra la tabla
+    {name: 'Fecha de Supervision', selector: row => row.fecha_supervision},
+    {name: 'Estado de la Planta', selector: row => row.estado_planta},
+    {name: 'Funcionario', selector: row => row.id_funcionario},
+    {name: 'Planta', selector: row => row.id_planta}
+]
 
   // El useEffect se ejecuta cuando se carga el componente
   useEffect(() => {
@@ -19,9 +28,37 @@ const CrudSup_Plantas = () => {
     console.log(response.data) // Imprimir en consola el resultado de la consulta
   }
 
+  //Buscador
+  const newListSup_Plantas = Sup_Plantas.filter((uso) => {
+    const textToSearch = filterText.toLowerCase()
+
+    const estado = uso.estado_planta?.toLowerCase() 
+    const planta = uso.id_planta?.toString().toLowerCase() 
+
+    return (
+      estado.includes(textToSearch) ||
+      planta.includes(textToSearch)
+    )
+
+  })
+
   return (
     <>
-      <h1>Hello World</h1>
+    <div className="container mt-5">
+        <div className="col-4">
+            <input className="form-control" value={filterText} onChange={(e) => setFilterText(e.target.value)}/>
+
+        </div>
+        <DataTable
+            title="Sup_Plantas" //Titulo de la tabla
+            columns={columnsTable} //Columns de la tabla
+            data={newListSup_Plantas} //Fuente de los datos
+            keyField="id" //Identficador de cada registro
+            pagination //Activar paginacion
+            highlightOnHover //Resalta la fila por donde pase el mouse
+            striped //Estilo de tabla - tono en filas intercaladas
+        />
+      </div>
     </>
   )
 }

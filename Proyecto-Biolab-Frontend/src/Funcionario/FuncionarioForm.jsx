@@ -21,7 +21,7 @@ const FuncionariosForm = () => {
 
             try{
 
-                const response = await apiAxios.post('/api/Funcionarios', { //Se envian todos los datos como un objeto JSON
+                const response = await apiAxios.post('/api/Funcionario', { //Se envian todos los datos como un objeto JSON
                     Nombre: Nombre,
                     Apellido: Apellido,
                     Telefono: Telefono,
