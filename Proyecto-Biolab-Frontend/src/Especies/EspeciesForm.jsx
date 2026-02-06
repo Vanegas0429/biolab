@@ -16,13 +16,13 @@ const EspeciesForm = () => {
                     Nom_especie
                 })
 
-                alert('Producción creada correctamente')
+                alert('Especie creada correctamente')
 
                 // Opcional: limpiar selección
                 setNom_especie('')
 
             } catch (error) {
-                console.error("Error al crear la producción:", error.response ? error.response.data : error.message);
+                console.error("Error al crear la especie:", error.response ? error.response.data : error.message);
                 alert(error.message)
             }
         }

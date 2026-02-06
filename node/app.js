@@ -17,6 +17,13 @@ import ReservaEstadoRoutes from './routes/ReservaEstadoRoutes.js'
 import EstadoRoutes from './routes/EstadoRoutes.js'
 import ReservaRoutes from './routes/ReservaRoutes.js'
 import dotenv from 'dotenv'
+import UsoEquipoModel from './models/UsoEquipoModel.js'
+import EquipoModel from './models/EquipoModel.js'
+import ProduccionRoutes from './routes/ProduccionRoutes.js'
+import EspeciesRoutes from './routes/EspeciesRoutes.js'
+import ProduccionModel from './models/ProduccionModel.js'
+import EspeciesModel from './models/EspeciesModel.js'
+import Sup_plantasModel from './models/sup_plantasModel.js'
 
 // Modelos
 import PracticaModel from './models/PracticaModel.js'
@@ -35,15 +42,11 @@ app.use(cors())
 app.use('/api/Funcionario', FuncionarioRoutes)
 app.use('/api/Equipo', EquipoRoutes)
 app.use('/api/Reactivo', ReactivosRoutes)
-app.use('/api/Sup_Planta', sup_plantasRoutes)
+app.use('/api/Sup_Plantas', sup_plantasRoutes)
+app.use('/api/Uso_Equipo', UsoEquipoRoutes)
 app.use('/api/Cronograma', CronogramaRoutes)
-app.use('/api/ReservaReactivo', ReservaReactivoRoutes)
-app.use('/api/ReservaEquipo', ReservaEquipoRoutes)
-app.use('/api/ReservaActividad', ReservaActividadRoutes)
-app.use('/api/ReservaMaterial', ReservaMaterialRoutes)
-app.use('/api/ReservaEstado', ReservaEstadoRoutes)
-app.use('/api/Estado', EstadoRoutes)
-app.use('/api/Reserva', ReservaRoutes)
+app.use('/api/Produccion', ProduccionRoutes)
+app.use('/api/Especie', EspeciesRoutes)
 
 // Conexión a BD
 try {
@@ -75,5 +78,13 @@ const PORT = process.env.PORT || 8000
 app.listen(PORT, () => {
     console.log(`Server up running in http://localhost:${PORT}`)
 })
+
+
+Sup_plantasModel.belongsTo(EspeciesModel, { foreignKey: 'Id_especie', as: 'Especie'});
+EspeciesModel.hasMany(Sup_plantasModel, { foreignKey: 'Id_especie', as: 'Sup_Plantas'});
+
+Sup_plantasModel.belongsTo(ProduccionModel, { foreignKey: 'Id_produccion', as: 'Produccion'});
+ProduccionModel.hasMany(Sup_plantasModel, { foreignKey: 'Id_produccion', as: 'SupPlantas'});
+
 
 export default app

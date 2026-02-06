@@ -10,9 +10,9 @@ const CrudProduccion = () => {
   const [filterText, setFilterText] = useState("")
 
   const columnsTable = [ //crear un arregli con las columnas que contendra la tabla
-    {name: 'Id', selector: row => row.Id_produccion},
-    {name: 'Tip_produccion', selector: row => row.Tip_produccion}
-    
+    {name: 'Id_Produccion', selector: row => row.Id_produccion},
+    {name: 'Tip_produccion', selector: row => row.Tip_produccion},
+    {name: 'Cod_produccion', selector: row => row.Cod_produccion},
 ]
 
   // El useEffect se ejecuta cuando se carga el componente
@@ -49,7 +49,7 @@ const CrudProduccion = () => {
 
         <div className="row d-flex justify-content-between">
           <div className="col-4">
-            <input className="form-control" placeholder="Buscar por Produccion (ej: Limon)" value={filterText} onChange={(e) => setFilterText(e.target.value)} />
+            <input className="form-control" placeholder="Buscar Produccion (ej: Práctica, Externa, Producción)" value={filterText} onChange={(e) => setFilterText(e.target.value)} />
           </div>
           <div className="col-2">
             <button type="button" className="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal" id="closeModal">

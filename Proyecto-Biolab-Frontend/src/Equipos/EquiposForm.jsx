@@ -15,26 +15,37 @@ const EquiposForm = () => {
     const [textFormButton, setFormButton] = useState("Enviar");
 
     const gestionarForm = async (e) => {
-        e.preventDefault();
 
-        try {
-            const formData = new FormData();
-            formData.append("nombre", nombre);
-            formData.append("marca", marca);
-            formData.append("grupo", grupo);
-            formData.append("linea", linea);
-            formData.append("centro_costos", centro_costos);
-            formData.append("subcentro_costos", subcentro_costos);
-            formData.append("observaciones", observaciones);
+        e.preventDefault()  //Evita que la pagina se actualice
 
-            if (imagen) formData.append("equipo_img", imagen);
+        if (textFormButton == 'Enviar') {
 
-           await apiAxios.post("/api/Equipo", formData);
+            try{
 
-            alert("Equipo creado correctamente");
-        } catch (error) {
-            console.error(error);
-            alert(error.response?.data?.message || error.message);
+                const response = await apiAxios.post('/api/Equipo', { //Se envian todos los datos como un objeto JSON
+                    nombre: nombre,
+                    marca: marca,
+                    grupo: grupo,
+                    linea: linea,
+                    centro_costos: centro_costos,
+                    subcentro_costos: subcentro_costos,
+                    observaciones: observaciones,
+                })
+
+                 // Axios devuelve el cuerpo de la respuesta en response.date
+                const data = response.data;
+
+                alert('Equipo creado correctamente')
+
+            } catch (error) {
+
+                console.error("Error registrando Equipo:", error.response ? error.response.data : error.message);
+                alert(error.message)
+
+            }
+            
+        } else if (textFormButton == 'Actualizar') {
+            
         }
     };
 

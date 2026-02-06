@@ -1,15 +1,28 @@
+import EspeciesModel from "../models/EspeciesModel.js";
+import ProduccionModel from "../models/ProduccionModel.js";
 import sup_plantasModel from "../models/sup_plantasModel.js";
 
 class sup_plantasService {
 
     async getAll() { //consultar todos los registros de la tabla
-        return await sup_plantasModel.findAll()
+        return await sup_plantasModel.findAll(
+            {
+                include: [{
+                    model: EspeciesModel,
+                    as: 'Especie'
+                },{
+                    model: ProduccionModel,
+                    as: 'Produccion'
+                }]
+            }
+        )
     }
+
 
     async getById(id) {
 
         const sup_plantas = await sup_plantasModel.findByPk(id)   //consultar registro por llave primaria (PK)
-        if (!sup_plantas) throw new Error("Jugador no encontrado")
+        if (!sup_plantas) throw new Error("Plantas no encontrado")
         return sup_plantas
     }
 
@@ -18,19 +31,19 @@ class sup_plantasService {
     }
 
     async update(id, data) {
-        const result = await sup_plantasModel.update(data, { where: { id_supervisionplantas: id } })
+        const result = await sup_plantasModel.update(data, { where: { id_supervision: id } })
         //El metodo update del ORM devuelve una promesa en forma de arreglo y la posicion 0 envia el numero de filas afectadas
         const update = result[0]
 
-        if (update === 0) throw new Error("Jugador no encontrado o sin cambios")  //Si el numero de filas afectadas es cero se lanza un error
+        if (update === 0) throw new Error("Plantas no encontrado o sin cambios")  //Si el numero de filas afectadas es cero se lanza un error
 
         return true
     }
 
     async delete(id) {
-        const deleted = await sup_plantasModel.destroy({ where: { id_supervisionplantas: id } })
+        const deleted = await sup_plantasModel.destroy({ where: { id_supervision: id } })
 
-        if (!deleted) throw new Error("Jugador no encontrado")
+        if (!deleted) throw new Error("Plantas no encontrado")
         return true
     }
 }

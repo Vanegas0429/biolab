@@ -9,8 +9,7 @@ const CrudEspecie = () => {
   const [filterText, setFilterText] = useState("")
 
   const columnsTable = [
-    { name: 'No.', selector: (row, index) => index + 1 },
-    { name: 'Id Especie', selector: row => row.Id_especie },
+    { name: 'Id_Especie', selector: row => row.Id_especie },
     { name: 'Nombre de especie', selector: row => row.Nom_especie }
   ]
 
