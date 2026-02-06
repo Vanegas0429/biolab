@@ -1,9 +1,9 @@
-import express from 'express'
-import { getAllReservas, getReserva, createReserva, updateReserva, deleteReserva } from '../controllers/ReservaController.js'
+import express from 'express';
+import { getAllReserva, getReserva, createReserva, updateReserva, deleteReserva } from '../controllers/ReservaController.js';
 
 const router = express.Router()
 
-router.get('/', getAllReservas);
+router.get('/', getAllReserva);
 router.get('/:id', getReserva);
 router.post('/', createReserva);
 router.put('/:id', updateReserva);

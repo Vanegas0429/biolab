@@ -1,19 +1,17 @@
 import { useState } from "react";
 import apiAxios from "../api/axiosConfig.js"
 
-const ReservaForm = () => {
+const FuncionariosForm = () => {
 
     //Definir una prop  para cada campo del formulario
     const [Tip_Reserva, setTip_Reserva] = useState('')
     const [Nom_Solicitante, setNom_Solicitante] = useState('')
     const [Doc_Solicitante, setDoc_Solicitante] = useState('')
-    const [Tel_Solicitante, setTel_Solicitante] = useState('')
     const [Cor_Solicitante, setCor_Solicitante] = useState('')
     const [Can_Aprendices, setCan_Aprendices] = useState('')
-    const [Num_Ficha, setNum_Ficha] = useState('')
     const [Fec_Reserva, setFec_Reserva] = useState('')
     const [Hor_Reserva, setHor_Reserva] = useState('')
-
+    const [Num_Ficha, setNum_Ficha] = useState('')
     const [textFormButton, setFormButton] = useState('Enviar')
 
 
@@ -25,27 +23,25 @@ const ReservaForm = () => {
 
             try{
 
-                const response = await apiAxios.post('/api/Reserva', { //Se envian todos los datos como un objeto JSON
+                const response = await apiAxios.post('/api/Funcionarios', { //Se envian todos los datos como un objeto JSON
                     Tip_Reserva: Tip_Reserva,
                     Nom_Solicitante: Nom_Solicitante,
                     Doc_Solicitante: Doc_Solicitante,
-                    Tel_Solicitante: Tel_Solicitante,
                     Cor_Solicitante: Cor_Solicitante,
                     Can_Aprendices: Can_Aprendices,
-                    Num_Ficha: Num_Ficha,
                     Fec_Reserva: Fec_Reserva,
                     Hor_Reserva: Hor_Reserva,
-
+                    Num_Ficha: Num_Ficha,
                 })
 
                 // Axios devuelve el cuerpo de la respuesta en response.date
                 const data = response.data;
 
-                alert('Reserva creado correctamente')
+                alert('Funcionario creado correctamente')
 
             } catch (error) {
 
-                console.error("Error registrando Reserva:", error.response ? error.response.data : error.message);
+                console.error("Error registrando Funcionario:", error.response ? error.response.data : error.message);
                 alert(error.message)
 
             }
@@ -59,52 +55,44 @@ const ReservaForm = () => {
         <>
             <form onSubmit={gestionarForm} encType="multipart/form-data" className="col-12 col-md-6">
                 <div className="mb-3">
-                    <label htmlFor="Tip_Reserva" className="form-label">Tipo Reserva:</label>
-                    <select type="text" id="Tip_Reserva" className="form-control" value={Tip_Reserva} onChange={(e) => setTip_Reserva(e.target.value)}>
+                    <label htmlFor="Tip_Reserva" className="form-label">Tip_Reserva:</label>
+                    <select type="text" id="Cargo_Funcionario" className="form-control" value={Cargo_Funcionario} onChange={(e) => setCargoFuncionario(e.target.value)}>
                         <option value="">Selecciona uno</option>
-                        <option value="1">Practica</option>
-                        <option value="2">Visita</option>
-                    </select>
-                </div>
+                        <option value="1">Solicitado</option>
+                        <option value="2">Aprobado</option>
+                        <option value="3">Iniciado</option>
+                        <option value="4">Finalizado</option>
+                        <option value="5">Cancelado</option>
+                    </select>                </div>
                 <div className="mb-3">
-                    <label htmlFor="Nom_Solicitante" className="form-label">Nombre Completo Solicitante:</label>
+                    <label htmlFor="Nom_Solicitante" className="form-label">Nom_Solicitante:</label>
                     <input type="text" id="Nom_Solicitante" className="form-control" value={Nom_Solicitante} onChange={(e) => setNom_Solicitante(e.target.value)} />
                 </div>
                 <div className="mb-3">
-                    <label htmlFor="Doc_Solicitante" className="form-label">Documento:</label>
+                    <label htmlFor="Doc_Solicitante" className="form-label">Doc_Solicitante:</label>
                     <input type="text" id="Doc_Solicitante" className="form-control" value={Doc_Solicitante} onChange={(e) => setDoc_Solicitante(e.target.value)} />
                 </div>
                 <div className="mb-3">
-                    <label htmlFor="Tel_Solicitante" className="form-label">Telefono:</label>
-                    <input type="text" id="Tel_Solicitante" className="form-control" value={Tel_Solicitante} onChange={(e) => setTel_Solicitante(e.target.value)} />
-                </div>
-                <div className="mb-3">
-                    <label htmlFor="Cor_Solicitante" className="form-label">Correo:</label>
+                    <label htmlFor="Cor_Solicitante" className="form-label">Cor_Solicitante:</label>
                     <input type="text" id="Cor_Solicitante" className="form-control" value={Cor_Solicitante} onChange={(e) => setCor_Solicitante(e.target.value)} />
                 </div>
                 <div className="mb-3">
-                    <label htmlFor="Can_Aprendices" className="form-label">Cantidad Aprendices:</label>
-                    <input type="number" id="Can_Aprendices" className="form-control" value={Can_Aprendices} onChange={(e) => setCan_Aprendices(e.target.value)} />
-                </div>
+                    <label htmlFor="Can_Aprendices" className="form-label">Cargo funcionario:</label>
+                    <select type="text" id="Can_Aprendices" className="form-control" value={Can_Aprendices} onChange={(e) => setCan_Aprendices(e.target.value)}>
+                        <option value="">Selecciona uno</option>
+                        <option value="1">Subdirector</option>
+                        <option value="2">Coordinador</option>
+                        <option value="3">Instructor</option>
+                    </select>
+                </div> 
                 <div className="mb-3">
-                    <label htmlFor="Num_Ficha" className="form-label">Ficha:</label>
-                    <input type="text" id="Num_Ficha" className="form-control" value={Num_Ficha} onChange={(e) => setNum_Ficha(e.target.value)} />
-                </div>
-                <div className="mb-3">
-                    <label htmlFor="Fec_Reserva" className="form-label">Fecha Reserva:</label>
-                    <input type="date" id="Fec_Reserva" className="form-control" value={Fec_Reserva} onChange={(e) => setFec_Reserva(e.target.value)} />
-                </div>
-                <div className="mb-3">
-                    <label htmlFor="Hor_Reserva" className="form-label">Hora Reserva:</label>
-                    <input type="time" id="Hor_Reserva" className="form-control" value={Hor_Reserva} onChange={(e) => setHor_Reserva(e.target.value)} />
-                </div>
-                 <div className="mb-3">
                     <input type="submit" className="btn btn-primary w-50" value={textFormButton} />
                 </div>   
+
             </form>
         
         </>
     )
 }
 
-export default ReservaForm
+export default FuncionariosForm
