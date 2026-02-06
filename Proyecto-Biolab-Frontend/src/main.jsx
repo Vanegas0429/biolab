@@ -20,9 +20,6 @@ import CronogramaForm from './Cronogramas/CronogramaForm.jsx'
 import CrudLotes from './Lotes/CrudLotes.jsx'
 import LotesForm from './Lotes/LotesForm.jsx'
 
-import CrudInsumos from './Insumos/CrudInsumos.jsx'
-import InsumosForm from './Insumos/InsumosForm.jsx'
-
 import CrudPlantas from './Plantas/CrudPlantas.jsx'
 import PlantasForm from './Plantas/PlantasForm.jsx'
 
@@ -32,10 +29,14 @@ import UsoEquipoForm from './UsoEquipos/UsoEquiposForm.jsx'
 import CrudSup_Plantas from './Sup_Plantas/CrudSup_Plantas.jsx'
 import Sup_PlantasForm from './Sup_Plantas/Sup_PlantasForm.jsx'
 
+import CrudEspecies from './Especies/CrudEspecies.jsx'
+
+import CrudProduccion from './Produccion/CrudProduccion.jsx'
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <App />
-    {/* <CrudReactivos/>
+    {/*<App />
+    <CrudReactivos/>
     <ReactivosForm/>
     <CrudFuncionarios/>
     <FuncionarioForm/>
@@ -48,10 +49,12 @@ createRoot(document.getElementById('root')).render(
     <CrudInsumos/>
     <InsumosForm/>
     <CrudPlantas/>
-    <PlantasForm/> */}
-    <CrudUsoEquipos/>
-    {/* <UsoEquipoForm/> 
+    <PlantasForm/> 
+    <Sup_PlantasForm /> 
+    <CrudEspecies/>
+    <CrudProduccion/>  
+    <CrudEspecies/>
+    <CrudProduccion/>*/}
     <CrudSup_Plantas/>
-    <Sup_PlantasForm /> */}
   </StrictMode>,
 )

@@ -33,7 +33,7 @@ const EquiposForm = () => {
                     observaciones: observaciones,
                 })
 
-                // Axios devuelve el cuerpo de la respuesta en response.date
+                 // Axios devuelve el cuerpo de la respuesta en response.date
                 const data = response.data;
 
                 alert('Equipo creado correctamente')

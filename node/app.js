@@ -13,6 +13,11 @@ import CronogramaRoutes from './routes/CronogramaRoutes.js'
 import dotenv from 'dotenv'
 import UsoEquipoModel from './models/UsoEquipoModel.js'
 import EquipoModel from './models/EquipoModel.js'
+import ProduccionRoutes from './routes/ProduccionRoutes.js'
+import EspeciesRoutes from './routes/EspeciesRoutes.js'
+import ProduccionModel from './models/ProduccionModel.js'
+import EspeciesModel from './models/EspeciesModel.js'
+import Sup_plantasModel from './models/sup_plantasModel.js'
 
 
 const app = express()
@@ -28,9 +33,11 @@ app.use('/api/Insumo', InsumosRoutes)
 app.use('/api/Lote', LotesRoutes)
 app.use('/api/Planta', PlantaRoutes)
 app.use('/api/Reactivo', ReactivosRoutes)
-app.use('/api/Sup_Planta', sup_plantasRoutes)
+app.use('/api/Sup_Plantas', sup_plantasRoutes)
 app.use('/api/Uso_Equipo', UsoEquipoRoutes)
 app.use('/api/Cronograma', CronogramaRoutes)
+app.use('/api/Produccion', ProduccionRoutes)
+app.use('/api/Especie', EspeciesRoutes)
 
 //conexion a la base de datos
 try{
@@ -53,9 +60,12 @@ app.listen(PORT, () => {
     console.log(`Server up running in http://localhost:${PORT}`)
 })
 
-EquipoModel.hasMany(UsoEquipoModel, { foreignKey: 'id_equipo', as: 'usoequipo'})
-UsoEquipoModel.belongsTo(EquipoModel, { foreignKey: 'id_equipo', as: 'equipo'})
 
+Sup_plantasModel.belongsTo(EspeciesModel, { foreignKey: 'Id_especie', as: 'Especie'});
+EspeciesModel.hasMany(Sup_plantasModel, { foreignKey: 'Id_especie', as: 'Sup_Plantas'});
+
+Sup_plantasModel.belongsTo(ProduccionModel, { foreignKey: 'Id_produccion', as: 'Produccion'});
+ProduccionModel.hasMany(Sup_plantasModel, { foreignKey: 'Id_produccion', as: 'SupPlantas'});
 
 
 export default app

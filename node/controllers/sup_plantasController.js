@@ -25,7 +25,7 @@ export const getSup_planta = async (req, res) => {
 export const createSup_planta = async (req, res) => {
     try {
         const sup_planta = await sup_plantaService.create(req.body)
-        res.status(201).json({ message:"sup_planta creado",sup_planta})
+        res.status(201).json({ message:"supervision de planta creada",sup_planta})
     }catch (error) {
         res.status(400).json({ message: error.message })
     }
@@ -35,7 +35,7 @@ export const createSup_planta = async (req, res) => {
 export const updateSup_planta = async (req, res) => {
     try {
         await sup_plantaService.update(req.params.id, req.body)
-        res.status(200).json({ message: "sup_planta actualizada correctamente" })
+        res.status(200).json({ message: "supervision de planta actualizada correctamente" })
     }catch(error) {
         res.status(400).json({ message: error.message })
     }
