@@ -10,6 +10,7 @@ const  Sup_plantasModel= db.define("Sup_plantas",{
     Fra_Contaminados: { type: DataTypes.NUMBER},
     Fc_Bacterias: { type: DataTypes.NUMBER},
     Fc_Hongos: { type: DataTypes.NUMBER},
+    Fs_Desarrollo: { type: DataTypes.NUMBER},
     Fra_Desarrollo: { type: DataTypes.NUMBER},
     Fd_BR: {type: DataTypes.NUMBER},
     Fd_RA: {type: DataTypes.NUMBER},    
@@ -17,6 +18,7 @@ const  Sup_plantasModel= db.define("Sup_plantas",{
     Fd_MOR: {type: DataTypes.NUMBER},
     Fd_GER: {type: DataTypes.NUMBER},
     Num_endurecimiento: {type: DataTypes.NUMBER},
+    Estado: {type: DataTypes.ENUM('Activo','Inactivo')},
     Id_produccion: {type:DataTypes.NUMBER},     
     Id_especie: {type:DataTypes.NUMBER}
 }, {

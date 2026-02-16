@@ -14,14 +14,14 @@ import CrudEquipos from './Equipos/CrudEquipos.jsx'
 import CrudReservaReactivo from './ReservaReactivo/CrudReservaReactivo.jsx'
 import ReservaReactivoForm from './ReservaReactivo/ReservaReactivoForm.jsx'
 
-import CrudPlantas from './Plantas/CrudPlantas.jsx'
-import PlantasForm from './Plantas/PlantasForm.jsx'
-
 import CrudReservaMaterial from './ReservaMaterial/CrudReservaMaterial.jsx'
 import ReservaMaterialForm from './ReservaMaterial/ReservaMaterialForm.jsx'
 
 import CrudReservaEstado from './ReservaEstado/CrudReservaEstado.jsx'
 import ReservaEstadoForm from './ReservaEstado/ReservaEstadoForm.jsx'
+
+import CrudSup_Plantas from './Sup_Plantas/CrudSup_Plantas.jsx'
+import Sup_PlantasForm from './Sup_Plantas/Sup_PlantasForm.jsx'
 
 import CrudEspecies from './Especies/CrudEspecies.jsx'
 
@@ -42,14 +42,12 @@ createRoot(document.getElementById('root')).render(
     <LotesForm/>
     <CrudInsumos/>
     <InsumosForm/>
-    <CrudPlantas/>
-    <PlantasForm/> 
     <Sup_PlantasForm /> 
     <CrudEspecies/>
-    <CrudProduccion/>  
+    <CrudSup_Plantas/>  
+    <ProduccionForm/>
+    <CrudProduccion/> */}
     <CrudEspecies/>
-    <CrudProduccion/>*/}
-    <CrudSup_Plantas/>
   </StrictMode>,
 )
 

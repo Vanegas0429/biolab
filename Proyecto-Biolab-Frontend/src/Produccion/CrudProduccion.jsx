@@ -5,42 +5,93 @@ import ProduccionForm from "./ProduccionForm.jsx"
 
 const CrudProduccion = () => {
 
-  // Crear una prop para guardar los datos de la consulta
+  const [rowToEdit, setRowToEdit] = useState(null)
   const [Produccion, setProduccion] = useState([])
   const [filterText, setFilterText] = useState("")
 
-  const columnsTable = [ //crear un arregli con las columnas que contendra la tabla
-    {name: 'Id_Produccion', selector: row => row.Id_produccion},
-    {name: 'Tip_produccion', selector: row => row.Tip_produccion},
-    {name: 'Cod_produccion', selector: row => row.Cod_produccion},
-]
+  // 🔹 Alternar Activo/Inactivo
+  const toggleEstado = async (row) => {
+    try {
 
-  // El useEffect se ejecuta cuando se carga el componente
+      const nuevoEstado =
+        row.Estado === "Activo" ? "Inactivo" : "Activo"
+
+      const updatedData = {
+        Tip_produccion: row.Tip_produccion,
+        Cod_produccion: row.Cod_produccion,
+        Estado: nuevoEstado
+      }
+
+      await apiAxios.put(
+        `/api/Produccion/${row.Id_produccion}`,
+        updatedData
+      )
+
+      setProduccion(prev =>
+        prev.map(item =>
+          item.Id_produccion === row.Id_produccion
+            ? { ...item, Estado: nuevoEstado }
+            : item
+        )
+      )
+
+    } catch (error) {
+      console.error("Error cambiando estado:", error.response?.data || error.message)
+    }
+  }
+
+
+  // 🔹 Columnas
+  const columnsTable = [
+    { name: 'Id_Produccion', selector: row => row.Id_produccion },
+    { name: 'Tip_produccion', selector: row => row.Tip_produccion },
+    { name: 'Cod_produccion', selector: row => row.Cod_produccion },
+    {
+      name: "Estado",
+      cell: (row) => (
+        <button
+          className={`btn btn-sm ${row.Estado === "Activo" ? "btn-success" : "btn-secondary"}`}
+          onClick={() => toggleEstado(row)}
+        >
+          {row.Estado === "Activo" ? "Activo" : "Inactivo"}
+        </button>
+      ),
+    },
+    {
+      name: "Acciones",
+      cell: (row) => (
+        <button
+          className="btn btn-sm bg-info"
+          data-bs-toggle="modal"
+          data-bs-target="#exampleModal"
+          onClick={() => setRowToEdit(row)}
+        >
+          ✏️
+        </button>
+      ),
+    },
+  ]
+
+  // 🔹 Cargar datos
   useEffect(() => {
-    
     getAllProduccion()
   }, [])
 
-  // Crear una función para la consulta
   const getAllProduccion = async () => {
-    const response = await apiAxios.get('/api/Produccion') // Se utilizará el apiAxios que tiene la URL del backend
-    setProduccion(response.data) // Se llena la constante players con el resultado de la consulta
-    console.log(response.data) // Imprimir en consola el resultado de la consulta
+    const response = await apiAxios.get('/api/Produccion')
+    setProduccion(response.data)
   }
 
-  //Buscador
+  // 🔹 Buscador
   const newListProduccion = Produccion.filter((uso) => {
     const textToSearch = filterText.toLowerCase()
-
-    const Tip_produccion = uso.Tip_produccion?.toLowerCase()
-    return (
-      Tip_produccion.includes(textToSearch)
-    )
-
+    const tip = uso.Tip_produccion?.toLowerCase() || ""
+    return tip.includes(textToSearch)
   })
 
   const hideModal = () => {
     document.getElementById('closeModal').click()
+    getAllProduccion()
   }
 
   return (
@@ -49,39 +100,82 @@ const CrudProduccion = () => {
 
         <div className="row d-flex justify-content-between">
           <div className="col-4">
-            <input className="form-control" placeholder="Buscar Produccion (ej: Práctica, Externa, Producción)" value={filterText} onChange={(e) => setFilterText(e.target.value)} />
+            <input
+              className="form-control"
+              placeholder="Buscar Producción"
+              value={filterText}
+              onChange={(e) => setFilterText(e.target.value)}
+            />
           </div>
+
           <div className="col-2">
-            <button type="button" className="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal" id="closeModal">
-              Nuevo
+            <button
+              type="button"
+              className="btn btn-primary"
+              data-bs-toggle="modal"
+              data-bs-target="#exampleModal"
+              onClick={() => setRowToEdit(null)}
+            >
+              Agregar Producción
             </button>
           </div>
         </div>
+
         <DataTable
-          title="Produccion" //Titulo de la tabla
-          columns={columnsTable} //Columns de la tabla
-          data={newListProduccion} //Fuente de los datos
-          keyField="id" //Identficador de cada registro
-          pagination //Activar paginacion
-          highlightOnHover //Resalta la fila por donde pase el mouse
-          striped //Estilo de tabla - tono en filas intercaladas
+          title="Producción"
+          columns={columnsTable}
+          data={newListProduccion}
+          keyField="Id_produccion"
+          pagination
+          highlightOnHover
+          striped
+          conditionalRowStyles={[
+            {
+              when: row => row.Estado === "Activo",
+              style: {
+                backgroundColor: "#ffffff",
+                color: "#000000"
+              }
+            },
+            {
+              when: row => row.Estado === "Inactivo",
+              style: {
+                backgroundColor: "#f0f0f0",
+                color: "#6c757d"
+              }
+            }
+          ]}
         />
 
-        {/* <!-- Modal --> */}
-        <div className="modal fade" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        {/* Modal */}
+        <div className="modal fade" id="exampleModal" tabIndex="-1">
           <div className="modal-dialog">
             <div className="modal-content">
+
               <div className="modal-header">
-                <h1 className="modal-title fs-5" id="exampleModalLabel">Agregar Produccion Nueva</h1>
-                <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="close" id="closeModal"></button>
+                <h1 className="modal-title fs-5">
+                  {rowToEdit ? "Editar Producción" : "Agregar Producción"}
+                </h1>
+                <button
+                  type="button"
+                  className="btn-close"
+                  data-bs-dismiss="modal"
+                  id="closeModal"
+                ></button>
               </div>
+
               <div className="modal-body">
-                <ProduccionForm hideModal={hideModal} />
+                <ProduccionForm
+                  hideModal={hideModal}
+                  refreshList={getAllProduccion}
+                  rowToEdit={rowToEdit}
+                />
               </div>
 
             </div>
           </div>
         </div>
+
       </div>
     </>
   )

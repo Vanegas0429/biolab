@@ -3,20 +3,42 @@ import apiAxios from "../api/axiosConfig.js";
 import DataTable from "react-data-table-component";
 import Sup_PlantasForm from "./Sup_PlantasForm.jsx";
 
+
 const CrudSup_Plantas = () => {
 
   const [Sup_Plantas, setSup_Plantas] = useState([]);
   const [filterText, setFilterText] = useState("");
-  const [rowToEdit, setRowToEdit] = useState([])
+  const [rowToEdit, setRowToEdit] = useState(null);
 
+  // 🔹 Función para alternar Activo/Inactivo
+  const toggleEstado = async (row) => {
+    try {
+      const updatedData = { ...row, Estado: row.Estado === "Activo" ? "Inactivo" : "Activo" };
+
+      await apiAxios.put(`/api/Sup_Plantas/${row.Id_supervision}`, updatedData);
+
+      setSup_Plantas(prev =>
+        prev.map(item =>
+          item.Id_supervision === row.Id_supervision
+            ? { ...item, Estado: updatedData.Estado }
+            : item
+        )
+      );
+    } catch (error) {
+      console.error("Error cambiando estado:", error);
+    }
+  };
+
+
+  // 🔹 Columnas de la tabla
   const columnsTable = [
-    { name: 'Id_Supervision', selector: row => row.Id_supervision},
+    { name: 'Id_Supervision', selector: row => row.Id_supervision },
     { name: 'Num_lote', selector: row => row.Num_lote },
     { name: 'Fc_Iniciales', selector: row => row.Fc_Iniciales },
     { name: 'Fc_Bacterias', selector: row => row.Fc_Bacterias },
     { name: 'Fc_Hongos', selector: row => row.Fc_Hongos },
     { name: 'Fs_Desarrollo', selector: row => row.Fs_Desarrollo },
-    { name: 'Fra_Desarrollo', selector: row => row.Fra_Desarrollo},
+    { name: 'Fra_Desarrollo', selector: row => row.Fra_Desarrollo },
     { name: 'Fd_BR', selector: row => row.Fd_BR },
     { name: 'Fd_RA', selector: row => row.Fd_RA },
     { name: 'Fd_CA', selector: row => row.Fd_CA },
@@ -25,21 +47,38 @@ const CrudSup_Plantas = () => {
     { name: 'Num_endurecimiento', selector: row => row.Num_endurecimiento },
     { name: 'Med_Cultivo', selector: row => row.Med_Cultivo },
     { name: 'Met_Propagacion', selector: row => row.Met_Propagacion },
-    { name: 'Producción', selector: row => row.Produccion?.Tip_produccion || '—'},
-    { name: 'Especie', selector: row => row.Especie?.Nom_especie || '—'},
+    { name: 'Producción', selector: row => row.Produccion?.Tip_produccion || '—' },
+    { name: 'Especie', selector: row => row.Especie?.Nom_especie || '—' },
+    {
+      name: "Estado",
+      cell: (row) => (
+        <button
+          className={`btn btn-sm ${row.Estado === "Activo" ? "btn-success" : "btn-secondary"}`}
+          onClick={() => toggleEstado(row)}
+        >
+          {row.Estado === "Activo" ? "Activo" : "Inactivo"}
+        </button>
+      ),
+    },
+
 
     {
-      name: 'Acciones', selector: row => (
-        <button className="btn btn-sm bg-info"
-        onClick={() => setRowToEdit(row)}
-        data-bs-toggle="modal"
-        data-bs-target="#exampleModal">
-        <i className="fa-solid fa-pencil"></i>
+      name: "Acciones",
+      cell: (row) => (
+        <button
+          className="btn btn-sm bg-info"
+          data-bs-toggle="modal"
+          data-bs-target="#exampleModal"
+          onClick={() => setRowToEdit(row)}
+        >
+          ✏️
         </button>
-      )
-    }
+      ),
+    },
   ];
 
+
+  // 🔹 useEffect al nivel del componente
   useEffect(() => {
     getAllSup_Plantas();
   }, []);
@@ -54,7 +93,7 @@ const CrudSup_Plantas = () => {
     }
   };
 
-  // 🔍 Buscador corregido
+  // 🔍 Buscador
   const newListSup_Plantas = Sup_Plantas.filter((sup) => {
     const text = filterText.toLowerCase();
     return (
@@ -66,7 +105,7 @@ const CrudSup_Plantas = () => {
 
   const hideModal = () => {
     document.getElementById('btnCloseModal').click();
-    getAllSup_Plantas(); // 🔥 refresca la tabla al cerrar
+    getAllSup_Plantas(); // refresca la tabla al cerrar
   };
 
   return (
@@ -89,8 +128,9 @@ const CrudSup_Plantas = () => {
               className="btn btn-primary"
               data-bs-toggle="modal"
               data-bs-target="#exampleModal"
+              onClick={() => setRowToEdit(null)}
             >
-              Nuevo
+              Agregar supervision
             </button>
           </div>
         </div>
@@ -103,7 +143,24 @@ const CrudSup_Plantas = () => {
           pagination
           highlightOnHover
           striped
+          conditionalRowStyles={[
+            {
+              when: row => row.Estado === "Activo",
+              style: {
+                backgroundColor: "#ffffff", // fila blanca
+                color: "#000000"            // texto negro
+              }
+            },
+            {
+              when: row => row.Estado === "Inactivo",
+              style: {
+                backgroundColor: "#f0f0f0", // fila gris clarito
+                color: "#6c757d"            // texto gris oscuro
+              }
+            }
+          ]}
         />
+
 
         {/* MODAL */}
         <div className="modal fade" id="exampleModal" tabIndex="-1">
@@ -121,7 +178,7 @@ const CrudSup_Plantas = () => {
               </div>
 
               <div className="modal-body">
-                <Sup_PlantasForm hideModal={hideModal} rowToEdit={rowToEdit}/>
+                <Sup_PlantasForm hideModal={hideModal} rowToEdit={rowToEdit} />
               </div>
 
             </div>
