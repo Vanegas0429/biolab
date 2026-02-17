@@ -6,10 +6,8 @@ import 'bootstrap/dist/js/bootstrap.bundle.min.js'
 
 import { BrowserRouter } from 'react-router-dom'
 
+// Componentes
 import CrudEquipos from './Equipos/CrudEquipos.jsx'
-
-// import CrudEquipos from './Equipos/CrudEquipos.jsx'
-// import EquiposForm from './Equipos/EquiposForm.jsx'
 
 import CrudReservaReactivo from './ReservaReactivo/CrudReservaReactivo.jsx'
 import ReservaReactivoForm from './ReservaReactivo/ReservaReactivoForm.jsx'
@@ -26,25 +24,26 @@ import ReservaMaterialForm from './ReservaMaterial/ReservaMaterialForm.jsx'
 import CrudReservaEstado from './ReservaEstado/CrudReservaEstado.jsx'
 import ReservaEstadoForm from './ReservaEstado/ReservaEstadoForm.jsx'
 
+// Si tienes App.jsx, descomenta esta línea
+// import App from './App.jsx'
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <App />
-    {/* <CrudReactivos/>
-    <ReactivosForm/>
-    <CrudFuncionarios/>
-    <FuncionarioForm/>
+    {/* Si tienes App.jsx */}
+    {/* <App /> */}
+
+    {/* Tus componentes */}
     <CrudEquipos/>
-    <EquiposForm/>
-    <CrudReservaReactivo/>
-    <ReservaReactivoForm/>
-    <CrudReservaEquipo />
-    <ReservaEquipoForm />
-    <CrudReservaActividad />
-    <ReservaActividadForm />
-    <CrudReservaMaterial />
-    <ReservaMaterialForm /> */}
-    <CrudReservaEstado />
-    <ReservaEstadoForm />
+    {/* Puedes activar otros cuando los necesites */}
+    {/* <CrudReservaReactivo /> */}
+    {/* <ReservaReactivoForm /> */}
+    {/* <CrudReservaEquipo /> */}
+    {/* <ReservaEquipoForm /> */}
+    {/* <CrudReservaActividad /> */}
+    {/* <ReservaActividadForm /> */}
+    {/* <CrudReservaMaterial /> */}
+    {/* <ReservaMaterialForm /> */}
+    {/* <CrudReservaEstado /> */}
+    {/* <ReservaEstadoForm /> */}
   </StrictMode>,
 )
-
