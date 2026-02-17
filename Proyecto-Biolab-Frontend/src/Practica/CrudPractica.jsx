@@ -11,22 +11,35 @@ const CrudPractica = () => {
 
   const columnsTable = [
     { name: 'Id_Practica', selector: row => row.Id_Practica },
-    { name: 'Solicitante',selector: row => row.Reserva?.Nom_Solicitante || "Sin dato"},
-    { name: 'Tipo Reserva',selector: row => row.Reserva?.Tip_Reserva || "Sin dato"},
-    { name: 'Fecha',selector: row => row.Reserva?.Fec_Reserva || "Sin fecha"},
-    { name: 'Hora',selector: row => row.Reserva?.Hor_Reserva || "Sin hora"},
-    { name: 'Acciones', selector: row => (
-        <button 
-        className="btn btn-sm bg-info"
-        onClick={() => setRowToEdit(row)}
-        data-bs-toggle="modal"
-        data-bs-target="#exampleModal">
-        <i className="fa-solid fa-pencil"></i>
+    { name: 'Solicitante', selector: row => row.Reserva?.Nom_Solicitante || "Sin dato" },
+    { name: 'Tipo Reserva', selector: row => row.Reserva?.Tip_Reserva || "Sin dato" },
+    { name: 'Fecha', selector: row => row.Reserva?.Fec_Reserva || "Sin fecha" },
+    { name: 'Hora', selector: row => row.Reserva?.Hor_Reserva || "Sin hora" },
+    {
+      name: 'Estado',
+      cell: row => (
+        <button
+          className={`btn btn-sm ${row.Estado ? 'btn-success' : 'btn-danger'}`}
+          onClick={() => toggleEstado(row)}
+        >
+          {row.Estado ? 'Activo' : 'Inactivo'}
+        </button>
+      )
+    },
+    {
+      name: 'Acciones',
+      selector: row => (
+        <button
+          className="btn btn-sm bg-info"
+          onClick={() => setRowToEdit(row)}
+          data-bs-toggle="modal"
+          data-bs-target="#exampleModal"
+        >
+          <i className="fa-solid fa-pencil"></i>
         </button>
       )
     }
-  ];
-
+  ]
 
   useEffect(() => {
     getAllPracticas()
@@ -41,15 +54,30 @@ const CrudPractica = () => {
     }
   }
 
-  const newListPracticas = Practicas.filter((uso) => {
-    const txt = filterText.toLowerCase()
-    const solicitante = uso.Reserva?.Nom_Solicitante?.toLowerCase() ?? ""
-    return solicitante.includes(txt)
-  })
+  const newListPracticas = Practicas.filter(uso =>
+  uso.Reserva?.Nom_Solicitante?.toLowerCase().includes(filterText.toLowerCase()) ||
+  uso.Reserva?.Tip_Reserva?.toLowerCase().includes(filterText.toLowerCase()) ||
+  uso.Reserva?.Fec_Reserva?.toLowerCase().includes(filterText.toLowerCase())
+)
+
 
   const hideModal = () => {
     document.getElementById('closeModal').click()
   }
+
+  const toggleEstado = async (row) => {
+    try {
+      await apiAxios.put(`/api/Practica/${row.Id_Practica}`, {
+        ...row,
+        Estado: !row.Estado
+      })
+
+      getAllPracticas() // Recargar tabla
+    } catch (error) {
+      console.error("Error actualizando estado:", error)
+    }
+  }
+
 
   return (
     <>
@@ -84,21 +112,54 @@ const CrudPractica = () => {
           pagination
           highlightOnHover
           striped
+          conditionalRowStyles={[
+            {
+              when: row => row.Estado,
+              style: {
+                backgroundColor: "#ffffff",
+                color: "#000000"
+              }
+            },
+            {
+              when: row => !row.Estado,
+              style: {
+                backgroundColor: "#aeadad",
+                color: "#6c757d"
+              }
+            }
+          ]}
+
         />
 
-        <div className="modal fade" id="exampleModal" tabIndex="-1" aria-hidden="true">
+        <div
+          className="modal fade"
+          id="exampleModal"
+          tabIndex="-1"
+          aria-hidden="true"
+        >
           <div className="modal-dialog modal-xl">
             <div className="modal-content">
               <div className="modal-header">
-                <h1 className="modal-title fs-5">Agregar Practica</h1>
-                <button type="button" className="btn-close" data-bs-dismiss="modal" id="closeModal"></button>
+                <h1 className="modal-title fs-5">
+                  Agregar Practica
+                </h1>
+                <button
+                  type="button"
+                  className="btn-close"
+                  data-bs-dismiss="modal"
+                  id="closeModal"
+                ></button>
               </div>
               <div className="modal-body">
-                <PracticaForm hideModal={hideModal} rowToEdit={rowToEdit}/>
+                <PracticaForm
+                  hideModal={hideModal}
+                  rowToEdit={rowToEdit}
+                />
               </div>
             </div>
           </div>
         </div>
+
       </div>
     </>
   )
