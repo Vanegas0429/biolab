@@ -38,7 +38,7 @@ const CrudEspecie = () => {
       name: "Estado",
       cell: (row) => (
         <button
-          className={`btn btn-sm ${row.Estado === "Activo" ? "btn-success" : "btn-secondary"}`}
+          className={`btn btn-sm ${row.Estado === "Activo" ? "btn-success" : "btn-danger"}`}
           onClick={() => toggleEstado(row)}
         >
           {row.Estado === "Activo" ? "Activo" : "Inactivo"}
@@ -48,18 +48,18 @@ const CrudEspecie = () => {
 
 
     {
-      name: "Acciones",
-      cell: (row) => (
+      name: 'Acciones',
+      selector: row => (
         <button
           className="btn btn-sm bg-info"
+          onClick={() => setRowToEdit(row)}
           data-bs-toggle="modal"
           data-bs-target="#exampleModal"
-          onClick={() => setRowToEdit(row)}
         >
-          ✏️
+          <i className="fa-solid fa-pencil"></i>
         </button>
-      ),
-    },
+      )
+    }
   ];
 
   useEffect(() => {
@@ -91,7 +91,7 @@ const CrudEspecie = () => {
           </div>
           <div className="col-2">
             <button type="button" className="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal" id="closeModal" onClick={() => setRowToEdit(null)}>
-              Agregar Especie Nueva
+              Agregar Especie 
             </button>
           </div>
         </div>
@@ -114,7 +114,7 @@ const CrudEspecie = () => {
             {
               when: row => row.Estado === "Inactivo",
               style: {
-                backgroundColor: "#f0f0f0", // fila gris clarito
+                backgroundColor: "#aeadad", // fila gris clarito
                 color: "#6c757d"            // texto gris oscuro
               }
             }

@@ -88,7 +88,19 @@ const NavBar = () => {
                   </li>
 
                   <li className="nav-item">
-                    <Link className="nav-link" to="/Reactivo">Reactivos</Link>
+                    <Link className="nav-link" to="/Sup_Plantas">Supervsion Plantas</Link>
+                  </li>
+
+                  <li className="nav-item">
+                    <Link className="nav-link" to="/Especie">Especies</Link>
+                  </li>
+
+                  <li className="nav-item">
+                    <Link className="nav-link" to="/Produccion">Producciones</Link>
+                  </li>
+
+                  <li className="nav-item">
+                    <Link className="nav-link" to="/Equipo">Equipos</Link>
                   </li>
 
                   <li className="nav-item dropdown">
@@ -156,10 +168,42 @@ const NavBar = () => {
 
             <li className="nav-item">
               <button
+                onClick={() => revisarOffCanvas('/Reserva')}
+                className="nav-link text-start"
+              >
+                Reservas
+              </button>
+            </li>
+            <li className="nav-item">
+              <button
                 onClick={() => revisarOffCanvas('/Practica')}
                 className="nav-link text-start"
               >
                 Practicas
+              </button>
+            </li>
+            <li className="nav-item">
+              <button
+                onClick={() => revisarOffCanvas('/Sup_Plantas')}
+                className="nav-link text-start"
+              >
+                Supervision Plantas
+              </button>
+            </li>
+            <li className="nav-item">
+              <button
+                onClick={() => revisarOffCanvas('/Especie')}
+                className="nav-link text-start"
+              >
+                Especies
+              </button>
+            </li>
+            <li className="nav-item">
+              <button
+                onClick={() => revisarOffCanvas('/Produccion')}
+                className="nav-link text-start"
+              >
+                Produccion 
               </button>
             </li>
 

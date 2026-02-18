@@ -37,7 +37,7 @@ const CrudSup_Plantas = () => {
     { name: 'Fc_Iniciales', selector: row => row.Fc_Iniciales },
     { name: 'Fc_Bacterias', selector: row => row.Fc_Bacterias },
     { name: 'Fc_Hongos', selector: row => row.Fc_Hongos },
-    { name: 'Fs_Desarrollo', selector: row => row.Fs_Desarrollo },
+    { name: 'Fra_Sin_Desarrollo', selector: row => row.Fs_Desarrollo },
     { name: 'Fra_Desarrollo', selector: row => row.Fra_Desarrollo },
     { name: 'Fd_BR', selector: row => row.Fd_BR },
     { name: 'Fd_RA', selector: row => row.Fd_RA },
@@ -53,7 +53,7 @@ const CrudSup_Plantas = () => {
       name: "Estado",
       cell: (row) => (
         <button
-          className={`btn btn-sm ${row.Estado === "Activo" ? "btn-success" : "btn-secondary"}`}
+          className={`btn btn-sm ${row.Estado === "Activo" ? "btn-success" : "btn-danger"}`}
           onClick={() => toggleEstado(row)}
         >
           {row.Estado === "Activo" ? "Activo" : "Inactivo"}
@@ -63,18 +63,18 @@ const CrudSup_Plantas = () => {
 
 
     {
-      name: "Acciones",
-      cell: (row) => (
+      name: 'Acciones',
+      selector: row => (
         <button
           className="btn btn-sm bg-info"
+          onClick={() => setRowToEdit(row)}
           data-bs-toggle="modal"
           data-bs-target="#exampleModal"
-          onClick={() => setRowToEdit(row)}
         >
-          ✏️
+          <i className="fa-solid fa-pencil"></i>
         </button>
-      ),
-    },
+      )
+    }
   ];
 
 
@@ -154,7 +154,7 @@ const CrudSup_Plantas = () => {
             {
               when: row => row.Estado === "Inactivo",
               style: {
-                backgroundColor: "#f0f0f0", // fila gris clarito
+                backgroundColor: "#aeadad", // fila gris clarito
                 color: "#6c757d"            // texto gris oscuro
               }
             }

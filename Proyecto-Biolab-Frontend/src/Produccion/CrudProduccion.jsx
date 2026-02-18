@@ -50,7 +50,7 @@ const CrudProduccion = () => {
       name: "Estado",
       cell: (row) => (
         <button
-          className={`btn btn-sm ${row.Estado === "Activo" ? "btn-success" : "btn-secondary"}`}
+          className={`btn btn-sm ${row.Estado === "Activo" ? "btn-success" : "btn-danger"}`}
           onClick={() => toggleEstado(row)}
         >
           {row.Estado === "Activo" ? "Activo" : "Inactivo"}
@@ -58,18 +58,18 @@ const CrudProduccion = () => {
       ),
     },
     {
-      name: "Acciones",
-      cell: (row) => (
+      name: 'Acciones',
+      selector: row => (
         <button
           className="btn btn-sm bg-info"
+          onClick={() => setRowToEdit(row)}
           data-bs-toggle="modal"
           data-bs-target="#exampleModal"
-          onClick={() => setRowToEdit(row)}
         >
-          ✏️
+          <i className="fa-solid fa-pencil"></i>
         </button>
-      ),
-    },
+      )
+    }
   ]
 
   // 🔹 Cargar datos
@@ -140,7 +140,7 @@ const CrudProduccion = () => {
             {
               when: row => row.Estado === "Inactivo",
               style: {
-                backgroundColor: "#f0f0f0",
+                backgroundColor: "#aeadad",
                 color: "#6c757d"
               }
             }

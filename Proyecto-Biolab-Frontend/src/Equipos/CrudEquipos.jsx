@@ -70,7 +70,7 @@ const CrudEquipos = () => {
     {
       name: "Imagen",
       cell: (row) =>
-        row.equipo_img ? (
+        row.img_equipo ? (
           <img
             src={`${import.meta.env.VITE_API_URL}/uploads/${row.equipo_img}`}
             alt="Equipo"

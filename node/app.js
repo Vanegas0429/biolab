@@ -19,6 +19,7 @@ import ReservaRoutes from './routes/ReservaRoutes.js';
 import EquipoModel from './models/EquipoModel.js';
 import ProduccionRoutes from './routes/ProduccionRoutes.js';
 import EspeciesRoutes from './routes/EspeciesRoutes.js';
+import PracticaRoutes from './routes/PracticaRoutes.js';
 import ProduccionModel from './models/ProduccionModel.js';
 import EspeciesModel from './models/EspeciesModel.js';
 import Sup_plantasModel from './models/sup_plantasModel.js';
@@ -26,6 +27,7 @@ import Sup_plantasModel from './models/sup_plantasModel.js';
 // Modelos
 import PracticaModel from './models/PracticaModel.js';
 import ReservaModel from './models/ReservaModel.js';
+import UsuarioRouter from './routes/UsuarioRoutes.js';
 
 // Configuración
 dotenv.config();
@@ -44,7 +46,9 @@ app.use('/api/Sup_Plantas', sup_plantasRoutes);
 app.use('/api/Cronograma', CronogramaRoutes);
 app.use('/api/Produccion', ProduccionRoutes);
 app.use('/api/Especie', EspeciesRoutes);
-
+app.use('/api/Reserva', ReservaRoutes);
+app.use('/api/Practica', PracticaRoutes)
+app.use('/api/auth', UsuarioRouter)
 // Conexión a BD
 try {
     await db.authenticate();
@@ -80,6 +84,7 @@ ProduccionModel.hasMany(Sup_plantasModel, { foreignKey: 'Id_produccion', as: 'Su
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => {
     console.log(`Server up running in http://localhost:${PORT}`);
+
 });
 
 export default app;

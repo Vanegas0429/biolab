@@ -31,7 +31,7 @@ export const createEquipo = async (req, res) => {
 
     const data = {
       ...req.body,
-      equipo_img: req.file ? req.file.filename : null
+      img_equipo: req.file ? req.file.filename : null
     };
 
     const Equipo = await EquipoService.create(data);
