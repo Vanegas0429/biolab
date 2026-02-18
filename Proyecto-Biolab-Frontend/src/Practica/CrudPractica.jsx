@@ -11,10 +11,10 @@ const CrudPractica = () => {
 
   const columnsTable = [
     { name: 'Id_Practica', selector: row => row.Id_Practica },
-    { name: 'Solicitante', selector: row => row.Reserva?.Nom_Solicitante || "Sin dato" },
-    { name: 'Tipo Reserva', selector: row => row.Reserva?.Tip_Reserva || "Sin dato" },
-    { name: 'Fecha', selector: row => row.Reserva?.Fec_Reserva || "Sin fecha" },
-    { name: 'Hora', selector: row => row.Reserva?.Hor_Reserva || "Sin hora" },
+    { name: 'Solicitante', selector: row => row.Reserva?.Nom_Solicitante },
+    { name: 'Tipo Reserva', selector: row => row.Reserva?.Tip_Reserva },
+    { name: 'Fecha', selector: row => row.Reserva?.Fec_Reserva },
+    { name: 'Hora', selector: row => row.Reserva?.Hor_Reserva },
     {
       name: 'Estado',
       cell: row => (
@@ -99,7 +99,7 @@ const CrudPractica = () => {
               data-bs-target="#exampleModal"
               id="closeModal"
             >
-              Nuevo
+              Agregar Practica
             </button>
           </div>
         </div>

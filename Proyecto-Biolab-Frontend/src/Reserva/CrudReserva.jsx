@@ -9,6 +9,7 @@ const CrudReserva = () => {
   const [filterText, setFilterText] = useState("")
 
   const columnsTable = [ //crear un arregli con las columnas que contendra la tabla
+    {name: 'Id_Reserva', selector: row => row.Id_Reserva},
     {name: 'Tip_Reserva', selector: row => row.Tip_Reserva},
     {name: 'Nom_Solicitante', selector: row => row.Nom_Solicitante},
     {name: 'Doc_Solicitante', selector: row => row.Doc_Solicitante},
@@ -38,10 +39,10 @@ const CrudReserva = () => {
   const newListReserva = Reserva.filter((uso) => {
     const textToSearch = filterText.toLowerCase()
     return (
-      uso.Doc_Solicitante?.toLowerCase().includes(textToSearch) ||
+      String(uso.Doc_Solicitante).toLowerCase().includes(textToSearch) ||
       uso.Nom_Solicitante?.toLowerCase().includes(textToSearch) ||
-      uso.Num_Ficha?.toLowerCase().includes(textToSearch) ||
-      uso.Fec_Reserva?.toLowerCase().includes(textToSearch)
+      String(uso.Num_Ficha).toLowerCase().includes(textToSearch) ||
+      String(uso.Fec_Reserva).toLowerCase().includes(textToSearch)
     )
 
   })
@@ -50,7 +51,7 @@ const CrudReserva = () => {
     <>
     <div className="container mt-5">
         <div className="col-4">
-            <input className="form-control" placeholder="Buscar por Tip_Reserva" value={filterText} onChange={(e) => setFilterText(e.target.value)}/>
+            <input className="form-control" value={filterText} onChange={(e) => setFilterText(e.target.value)}/>
 
         </div>
         <DataTable
