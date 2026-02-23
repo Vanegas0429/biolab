@@ -1,7 +1,11 @@
 import { Link, useNavigate } from "react-router-dom";
 import * as bootstrap from "bootstrap";
 
+
+// 1. Agregamos las props isAuth y logOut (según la lógica de tus capturas)
+const NavBar = ({ isAuth, logOut }) => {
 const NavBar = () => {
+
 
   const navigate = useNavigate();
 
@@ -39,6 +43,7 @@ const NavBar = () => {
           <div className="d-flex align-items-center gap-3">
 
             {/* LOGO CON IMAGEN */}
+
             <img
               src="/logo.png"
               alt="Logo"
@@ -63,6 +68,33 @@ const NavBar = () => {
             <div className="container-fluid">
 
               <Link className="navbar-brand" to="/">Home</Link>
+
+              <div className="collapse navbar-collapse" id="navbarNavDropdown">
+                <ul className="navbar-nav">
+
+                  {/* 2. ENLACES PROTEGIDOS: Solo se muestran si isAuth es true */}
+                  {isAuth && (
+                    <>
+                      <li className="nav-item">
+                        <Link className="nav-link" to="/Reserva">Reservas</Link>
+                      </li>
+                      <li className="nav-item">
+                        <Link className="nav-link" to="/Practica">Practicas</Link>
+                      </li>
+                      <li className="nav-item">
+                        <Link className="nav-link" to="/Sup_Plantas">Supervsion Plantas</Link>
+                      </li>
+                      <li className="nav-item">
+                        <Link className="nav-link" to="/Especie">Especies</Link>
+                      </li>
+                      <li className="nav-item">
+                        <Link className="nav-link" to="/Produccion">Producciones</Link>
+                      </li>
+                      <li className="nav-item">
+                        <Link className="nav-link" to="/Equipo">Equipos</Link>
+                      </li>
+                    </>
+                  )}
 
               <button
                 className="navbar-toggler"
@@ -103,6 +135,7 @@ const NavBar = () => {
                     <Link className="nav-link" to="/Equipo">Equipos</Link>
                   </li>
 
+
                   <li className="nav-item dropdown">
                     <a
                       className="nav-link dropdown-toggle"
@@ -115,12 +148,35 @@ const NavBar = () => {
                     </a>
 
                     <ul className="dropdown-menu">
+
+                      {/* 3. Lógica de botón Cerrar Sesión vs Login */}
+                      {isAuth ? (
+                        <li>
+                          <button 
+                            className="dropdown-item text-danger" 
+                            onClick={() => logOut()}
+                          >
+                            Cerrar Sesión
+                          </button>
+                        </li>
+                      ) : (
+                        <li>
+                          <Link className="dropdown-item" to="/login">Iniciar Sesión</Link>
+                        </li>
+                      )}
+                      
+                      <li><hr className="dropdown-divider" /></li>
+                      <li>
+                        <a className="dropdown-item" href="#">Acción</a>
+                      </li>
+
                       <li>
                         <a className="dropdown-item" href="#">Acción</a>
                       </li>
                       <li>
                         <a className="dropdown-item" href="#">Otra acción</a>
                       </li>
+
                     </ul>
                   </li>
 
@@ -130,6 +186,9 @@ const NavBar = () => {
           </nav>
         </div>
       </header>
+
+
+      {/* OFFCANVAS (Móvil) */}
 
       {/* OFFCANVAS */}
       <div
@@ -165,6 +224,47 @@ const NavBar = () => {
                 Home
               </button>
             </li>
+
+            {/* 4. RUTAS PROTEGIDAS EN MÓVIL */}
+            {isAuth ? (
+              <>
+                <li className="nav-item">
+                  <button onClick={() => revisarOffCanvas('/Reserva')} className="nav-link text-start">Reservas</button>
+                </li>
+                <li className="nav-item">
+                  <button onClick={() => revisarOffCanvas('/Practica')} className="nav-link text-start">Practicas</button>
+                </li>
+                <li className="nav-item">
+                  <button onClick={() => revisarOffCanvas('/Sup_Plantas')} className="nav-link text-start">Supervision Plantas</button>
+                </li>
+                <li className="nav-item">
+                  <button onClick={() => revisarOffCanvas('/Especie')} className="nav-link text-start">Especies</button>
+                </li>
+                <li className="nav-item">
+                  <button onClick={() => revisarOffCanvas('/Produccion')} className="nav-link text-start">Produccion</button>
+                </li>
+                <li className="nav-item">
+                  <button onClick={() => revisarOffCanvas('/Equipo')} className="nav-link text-start">Equipos</button>
+                </li>
+                <li className="nav-item mt-3">
+                  <button 
+                    className="btn btn-danger w-100 text-start" 
+                    onClick={() => logOut()}
+                  >
+                    Cerrar Sesión
+                  </button>
+                </li>
+              </>
+            ) : (
+              <li className="nav-item mt-3">
+                <button 
+                  onClick={() => revisarOffCanvas('/login')} 
+                  className="btn btn-primary w-100"
+                >
+                  Iniciar Sesión
+                </button>
+              </li>
+            )}
 
             <li className="nav-item">
               <button
@@ -214,4 +314,5 @@ const NavBar = () => {
   );
 };
 
+export default NavBar;
 export default NavBar;
