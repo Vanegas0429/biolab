@@ -30,10 +30,17 @@ export const createEquipo = async (req, res) => {
         console.log("BODY:", req.body); // Muestra datos enviados desde el frontend
         console.log("FILE:", req.file); // Muestra archivo de imagen si existe
 
+
         const data = {
             ...req.body, // Copia todos los campos del formulario
             equipo_img: req.file ? req.file.filename : null // Guarda nombre de imagen si se sube
         };
+
+    const data = {
+      ...req.body,
+      img_equipo: req.file ? req.file.filename : null
+    };
+
 
         const Equipo = await EquipoService.create(data); // Crea el registro en BD
 

@@ -49,9 +49,8 @@ const CrudEquipos = () => {
     if (!id_equipo) return alert("ID no encontrado");
 
     try {
-<<<<<<< Updated upstream
       await apiAxios.delete(`/api/Equipo/${id_equipo}`);
-=======
+
       // Se agrega el token también en la petición de borrado
       await apiAxios.delete(`/api/Equipo/${id_equipo}`, {
         headers: {
@@ -59,7 +58,6 @@ const CrudEquipos = () => {
         }
       });
       alert("Equipo eliminado correctamente");
->>>>>>> Stashed changes
       getAllEquipos();
     } catch (error) {
       console.error("Error cambiando estado:", error);
@@ -67,12 +65,9 @@ const CrudEquipos = () => {
     }
   };
 
-<<<<<<< Updated upstream
-
-
-=======
+Updated upstream
   // --- El resto de tu lógica de filtrado y renderizado permanece igual ---
->>>>>>> Stashed changes
+Stashed changes
   const equiposFiltrados = equipos.filter((e) => {
     const t = filterText.toLowerCase();
     return (
@@ -88,7 +83,7 @@ const CrudEquipos = () => {
     { name: "Marca", selector: (row) => row.marca },
     { name: "Grupo", selector: (row) => row.grupo },
     { name: "Linea", selector: (row) => row.linea },
-<<<<<<< Updated upstream
+ted upstream
 
     // NUEVA COLUMNA ESTADO
     {
@@ -107,7 +102,9 @@ const CrudEquipos = () => {
     {
       name: "Imagen",
       cell: (row) =>
+
         row.equipo_img ? ( // Corregido el nombre del campo según tu tabla
+        row.img_equipo ? (
           <img
             src={`${import.meta.env.VITE_API_URL}/uploads/${row.equipo_img}`}
             alt="Equipo"
@@ -119,7 +116,6 @@ const CrudEquipos = () => {
           <span>Sin imagen</span>
         ),
     },
->>>>>>> Stashed changes
     {
       name: "Acciones", 
       cell: (row) => (
@@ -145,7 +141,7 @@ const CrudEquipos = () => {
   ];
 
   return (
-<<<<<<< Updated upstream
+
     <div className="container mt-5">
       <div className="row d-flex justify-content-between mb-3">
         <div className="col-4">
@@ -155,7 +151,7 @@ const CrudEquipos = () => {
             value={filterText}
             onChange={(e) => setFilterText(e.target.value)}
           />
-=======
+
     <>
       <div className="container mt-5">
         <div className="row d-flex justify-content-between mb-3">
@@ -177,7 +173,6 @@ const CrudEquipos = () => {
               Agregar Equipo
             </button>
           </div>
->>>>>>> Stashed changes
         </div>
         <div className="col-2">
           <button
@@ -191,7 +186,6 @@ const CrudEquipos = () => {
         </div>
       </div>
 
-<<<<<<< Updated upstream
       <DataTable
         title="Gestión de Equipos"
         columns={columnsTable}
@@ -217,7 +211,7 @@ const CrudEquipos = () => {
                 equipoEditando={equipoEditando}
                 recargarEquipos={getAllEquipos}
               />
-=======
+
         <DataTable
           title="Equipos"
           columns={columnsTable}
@@ -245,7 +239,6 @@ const CrudEquipos = () => {
                   token={user?.token} // Pasamos el token al formulario para sus peticiones
                 />
               </div>
->>>>>>> Stashed changes
             </div>
           </div>
         </div>

@@ -1,8 +1,11 @@
 import { Link, useNavigate } from "react-router-dom";
 import * as bootstrap from "bootstrap";
 
+
 // 1. Agregamos las props isAuth y logOut (según la lógica de tus capturas)
 const NavBar = ({ isAuth, logOut }) => {
+const NavBar = () => {
+
 
   const navigate = useNavigate();
 
@@ -38,6 +41,9 @@ const NavBar = ({ isAuth, logOut }) => {
 
           {/* LOGO + NOMBRE */}
           <div className="d-flex align-items-center gap-3">
+
+            {/* LOGO CON IMAGEN */}
+
             <img
               src="/logo.png"
               alt="Logo"
@@ -90,6 +96,46 @@ const NavBar = ({ isAuth, logOut }) => {
                     </>
                   )}
 
+              <button
+                className="navbar-toggler"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#navbarNavDropdown"
+                aria-controls="navbarNavDropdown"
+                aria-expanded="false"
+                aria-label="Toggle navigation"
+              >
+                <span className="navbar-toggler-icon"></span>
+              </button>
+
+              <div className="collapse navbar-collapse" id="navbarNavDropdown">
+                <ul className="navbar-nav">
+
+                  <li className="nav-item">
+                    <Link className="nav-link" to="/Reserva">Reservas</Link>
+                  </li>
+
+                  <li className="nav-item">
+                    <Link className="nav-link" to="/Practica">Practicas</Link>
+                  </li>
+
+                  <li className="nav-item">
+                    <Link className="nav-link" to="/Sup_Plantas">Supervsion Plantas</Link>
+                  </li>
+
+                  <li className="nav-item">
+                    <Link className="nav-link" to="/Especie">Especies</Link>
+                  </li>
+
+                  <li className="nav-item">
+                    <Link className="nav-link" to="/Produccion">Producciones</Link>
+                  </li>
+
+                  <li className="nav-item">
+                    <Link className="nav-link" to="/Equipo">Equipos</Link>
+                  </li>
+
+
                   <li className="nav-item dropdown">
                     <a
                       className="nav-link dropdown-toggle"
@@ -102,6 +148,7 @@ const NavBar = ({ isAuth, logOut }) => {
                     </a>
 
                     <ul className="dropdown-menu">
+
                       {/* 3. Lógica de botón Cerrar Sesión vs Login */}
                       {isAuth ? (
                         <li>
@@ -122,6 +169,14 @@ const NavBar = ({ isAuth, logOut }) => {
                       <li>
                         <a className="dropdown-item" href="#">Acción</a>
                       </li>
+
+                      <li>
+                        <a className="dropdown-item" href="#">Acción</a>
+                      </li>
+                      <li>
+                        <a className="dropdown-item" href="#">Otra acción</a>
+                      </li>
+
                     </ul>
                   </li>
 
@@ -132,7 +187,10 @@ const NavBar = ({ isAuth, logOut }) => {
         </div>
       </header>
 
+
       {/* OFFCANVAS (Móvil) */}
+
+      {/* OFFCANVAS */}
       <div
         className="offcanvas offcanvas-start"
         data-bs-scroll="true"
@@ -208,6 +266,47 @@ const NavBar = ({ isAuth, logOut }) => {
               </li>
             )}
 
+            <li className="nav-item">
+              <button
+                onClick={() => revisarOffCanvas('/Reserva')}
+                className="nav-link text-start"
+              >
+                Reservas
+              </button>
+            </li>
+            <li className="nav-item">
+              <button
+                onClick={() => revisarOffCanvas('/Practica')}
+                className="nav-link text-start"
+              >
+                Practicas
+              </button>
+            </li>
+            <li className="nav-item">
+              <button
+                onClick={() => revisarOffCanvas('/Sup_Plantas')}
+                className="nav-link text-start"
+              >
+                Supervision Plantas
+              </button>
+            </li>
+            <li className="nav-item">
+              <button
+                onClick={() => revisarOffCanvas('/Especie')}
+                className="nav-link text-start"
+              >
+                Especies
+              </button>
+            </li>
+            <li className="nav-item">
+              <button
+                onClick={() => revisarOffCanvas('/Produccion')}
+                className="nav-link text-start"
+              >
+                Produccion 
+              </button>
+            </li>
+
           </ul>
         </div>
       </div>
@@ -215,4 +314,5 @@ const NavBar = ({ isAuth, logOut }) => {
   );
 };
 
+export default NavBar;
 export default NavBar;

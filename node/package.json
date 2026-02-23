@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -11,6 +12,10 @@
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^6.0.0",
+    "axios": "^1.13.2",
+    "bcrypt": "^6.0.0",
+    "bootstrap": "^5.3.8",
+
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
@@ -18,10 +23,17 @@
     "jsonwebtoken": "^9.0.3",
     "multer": "^2.0.2",
     "mysql2": "^3.15.2",
+
     "sequelize": "^6.37.7",
     "uuid": "^13.0.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.14"
+    "react-router-dom": "^7.9.6",
+    "sequelize": "^6.37.7",
+    "sweetalert2": "^11.26.3",
+    "sweetalert2-react-content": "^5.1.0",
+    "uuid": "^13.0.0"
+
   }
 }

@@ -56,13 +56,10 @@ const FuncionariosForm = () => {
             <form onSubmit={gestionarForm} encType="multipart/form-data" className="col-12 col-md-6">
                 <div className="mb-3">
                     <label htmlFor="Tip_Reserva" className="form-label">Tip_Reserva:</label>
-                    <select type="text" id="Cargo_Funcionario" className="form-control" value={Cargo_Funcionario} onChange={(e) => setCargoFuncionario(e.target.value)}>
+                    <select type="text" id="Cargo_Funcionario" className="form-control" value={Cargo_Funcionario} onChange={(e) => setTip_Reserva(e.target.value)}>
                         <option value="">Selecciona uno</option>
-                        <option value="1">Solicitado</option>
-                        <option value="2">Aprobado</option>
-                        <option value="3">Iniciado</option>
-                        <option value="4">Finalizado</option>
-                        <option value="5">Cancelado</option>
+                        <option value="1">Practica</option>
+                        <option value="2">Visita</option>
                     </select>                </div>
                 <div className="mb-3">
                     <label htmlFor="Nom_Solicitante" className="form-label">Nom_Solicitante:</label>
