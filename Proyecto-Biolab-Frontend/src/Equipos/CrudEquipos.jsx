@@ -10,13 +10,22 @@ const CrudEquipos = () => {
   const [equipoEditando, setEquipoEditando] = useState(null);
   const [modalKey, setModalKey] = useState(0);
 
+  // Obtener los datos del usuario para extraer el token
+  const userStored = localStorage.getItem('UsuarioLaboratorio');
+  const user = userStored ? JSON.parse(userStored) : null;
+
   useEffect(() => {
     getAllEquipos();
   }, []);
 
   const getAllEquipos = async () => {
     try {
-      const response = await apiAxios.get("/api/Equipo");
+      // Se agrega el encabezado Authorization con el token Bearer
+      const response = await apiAxios.get("/api/Equipo", {
+        headers: {
+          Authorization: `Bearer ${user?.token}`
+        }
+      });
       setEquipos(response.data);
     } catch (error) {
       console.error(error);
@@ -40,7 +49,17 @@ const CrudEquipos = () => {
     if (!id_equipo) return alert("ID no encontrado");
 
     try {
+<<<<<<< Updated upstream
       await apiAxios.delete(`/api/Equipo/${id_equipo}`);
+=======
+      // Se agrega el token también en la petición de borrado
+      await apiAxios.delete(`/api/Equipo/${id_equipo}`, {
+        headers: {
+          Authorization: `Bearer ${user?.token}`
+        }
+      });
+      alert("Equipo eliminado correctamente");
+>>>>>>> Stashed changes
       getAllEquipos();
     } catch (error) {
       console.error("Error cambiando estado:", error);
@@ -48,8 +67,12 @@ const CrudEquipos = () => {
     }
   };
 
+<<<<<<< Updated upstream
 
 
+=======
+  // --- El resto de tu lógica de filtrado y renderizado permanece igual ---
+>>>>>>> Stashed changes
   const equiposFiltrados = equipos.filter((e) => {
     const t = filterText.toLowerCase();
     return (
@@ -65,6 +88,7 @@ const CrudEquipos = () => {
     { name: "Marca", selector: (row) => row.marca },
     { name: "Grupo", selector: (row) => row.grupo },
     { name: "Linea", selector: (row) => row.linea },
+<<<<<<< Updated upstream
 
     // NUEVA COLUMNA ESTADO
     {
@@ -76,6 +100,26 @@ const CrudEquipos = () => {
       ),
     },
 
+=======
+    { name: "Centro de costos", selector: (row) => row.centro_costos },
+    { name: "Subcentro de costos", selector: (row) => row.subcentro_costos },
+    { name: "Observaciones", selector: (row) => row.observaciones },
+    {
+      name: "Imagen",
+      cell: (row) =>
+        row.equipo_img ? ( // Corregido el nombre del campo según tu tabla
+          <img
+            src={`${import.meta.env.VITE_API_URL}/uploads/${row.equipo_img}`}
+            alt="Equipo"
+            width="60"
+            height="60"
+            style={{ objectFit: "cover", borderRadius: "10px", border: "1px solid #ddd" }}
+          />
+        ) : (
+          <span>Sin imagen</span>
+        ),
+    },
+>>>>>>> Stashed changes
     {
       name: "Acciones", 
       cell: (row) => (
@@ -88,7 +132,6 @@ const CrudEquipos = () => {
           >
             Editar
           </button>
-
           <button
             className={`btn btn-sm ${row.estado === "Activo" ? "btn-danger" : "btn-success"}`}
             onClick={() => handleCambiarEstado(row.id_equipo)}
@@ -102,6 +145,7 @@ const CrudEquipos = () => {
   ];
 
   return (
+<<<<<<< Updated upstream
     <div className="container mt-5">
       <div className="row d-flex justify-content-between mb-3">
         <div className="col-4">
@@ -111,6 +155,29 @@ const CrudEquipos = () => {
             value={filterText}
             onChange={(e) => setFilterText(e.target.value)}
           />
+=======
+    <>
+      <div className="container mt-5">
+        <div className="row d-flex justify-content-between mb-3">
+          <div className="col-4">
+            <input
+              className="form-control"
+              placeholder="Buscar..."
+              value={filterText}
+              onChange={(e) => setFilterText(e.target.value)}
+            />
+          </div>
+          <div className="col-2">
+            <button
+              className="btn btn-primary"
+              data-bs-toggle="modal"
+              data-bs-target="#modalEquipos"
+              onClick={handleNuevo}
+            >
+              Agregar Equipo
+            </button>
+          </div>
+>>>>>>> Stashed changes
         </div>
         <div className="col-2">
           <button
@@ -124,6 +191,7 @@ const CrudEquipos = () => {
         </div>
       </div>
 
+<<<<<<< Updated upstream
       <DataTable
         title="Gestión de Equipos"
         columns={columnsTable}
@@ -149,6 +217,35 @@ const CrudEquipos = () => {
                 equipoEditando={equipoEditando}
                 recargarEquipos={getAllEquipos}
               />
+=======
+        <DataTable
+          title="Equipos"
+          columns={columnsTable}
+          data={equiposFiltrados}
+          keyField="id_equipo"
+          pagination
+          highlightOnHover
+          striped
+        />
+
+        <div className="modal fade" id="modalEquipos" tabIndex="-1" aria-labelledby="modalEquiposLabel">
+          <div className="modal-dialog modal-lg">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h1 className="modal-title fs-5" id="modalEquiposLabel">
+                  {modoEdicion ? "Editar Equipo" : "Registrar Equipo"}
+                </h1>
+                <button type="button" className="btn-close" data-bs-dismiss="modal"></button>
+              </div>
+              <div className="modal-body">
+                <EquiposForm
+                  modoEdicion={modoEdicion}
+                  equipoEditando={equipoEditando}
+                  recargarEquipos={getAllEquipos}
+                  token={user?.token} // Pasamos el token al formulario para sus peticiones
+                />
+              </div>
+>>>>>>> Stashed changes
             </div>
           </div>
         </div>
