@@ -159,7 +159,6 @@ const gestionarForm = async (e) => {
   e.preventDefault();
 
   if (!Num_lote || !Med_Cultivo || !Met_Propagacion || !Id_produccion || !Id_especie) {
-    alert("Por favor completa todos los campos obligatorios");
      MySwal.fire({
         title: "Error",
         text: "Por favor completa todos los campos obligatorios",
@@ -199,7 +198,7 @@ const gestionarForm = async (e) => {
 
 
   return (
-    <form onSubmit={gestionarForm} className="col-12 col-md-6">
+    <form onSubmit={gestionarForm} className="col-16 col-md-6">
 
       {/* Num_lote */}
       <div className="mb-3">
@@ -210,13 +209,23 @@ const gestionarForm = async (e) => {
         </select>
       </div>
 
+      {/* Especie */}
+      <div className="mb-3">
+        <label>Especie:</label>
+        <select className="form-control" value={Id_especie} onChange={e => setId_especie(Number(e.target.value))}>
+          <option value="">Selecciona</option>
+          {Especies.map(e => (
+            <option key={e.Id_especie} value={e.Id_especie}>
+              {e.Nom_especie}
+            </option>
+          ))}
+        </select>
+      </div>
+
       {/* Fc_Iniciales */}
       <div className="mb-3">
         <label htmlFor="Fc_Iniciales">Fc Iniciales:</label>
-        <select id="Fc_Iniciales" className="form-control" value={Fc_Iniciales} onChange={e => setFc_Iniciales(e.target.value)}>
-          <option value="">Selecciona uno</option>
-          {fcOpciones.map(f => <option key={f} value={f}>{f}</option>)}
-        </select>
+        <input type="number" id="Fc_Iniciales" className="form-control" value={Fc_Iniciales} onChange={e => setFc_Iniciales(e.target.value)} />
       </div>
 
       {/* Medio de Cultivo */}
@@ -239,10 +248,14 @@ const gestionarForm = async (e) => {
 
       {/* Frascos contaminados */}
       <div className="mb-3">
-        <label htmlFor="Fc_Bacterias">Frascos contaminados - Bacterias:</label>
+        <label htmlFor="Fc_Bacterias">Frascos contaminados:</label>
+      </div>
+
+      <div className="mb-3">
+        <label htmlFor="Fc_Bacterias">Bacterias:</label>
         <input type="number" id="Fc_Bacterias" className="form-control" value={Fc_Bacterias} onChange={e => setFc_Bacterias(e.target.value)} />
 
-        <label htmlFor="Fc_Hongos" className="mt-2">Frascos contaminados - Hongos:</label>
+        <label htmlFor="Fc_Hongos" className="mt-2">Hongos:</label>
         <input type="number" id="Fc_Hongos" className="form-control" value={Fc_Hongos} onChange={e => setFc_Hongos(e.target.value)} />
       </div>
 
@@ -250,12 +263,13 @@ const gestionarForm = async (e) => {
       <div className="mb-3">
         <label htmlFor="Fs_Desarrollo">Frascos sin desarrollo:</label>
         <input type="number" id="Fs_Desarrollo" className="form-control" value={Fs_Desarrollo} onChange={e => setFs_Desarrollo(e.target.value)} />
-
-        <label htmlFor="Fra_Desarrollo" className="mt-2">Frascos con desarrollo:</label>
-        <input type="number" id="Fra_Desarrollo" className="form-control" value={Fra_Desarrollo} onChange={e => setFra_Desarrollo(e.target.value)} />
       </div>
 
       {/* Detalles Fd */}
+      <div className="mb-3">
+        <label htmlFor="Fra_Desarrollo" className="mt-2">Frascos con desarrollo:</label>
+      </div>
+
       <div className="mb-3">
         <label>BR:</label>
         <input type="number" className="form-control" value={Fd_BR} onChange={e => setFd_BR(e.target.value)} />
@@ -287,19 +301,6 @@ const gestionarForm = async (e) => {
           {Producciones.map(p => (
             <option key={p.Id_produccion} value={p.Id_produccion}>
               {p.Tip_produccion} {p.Cod_produccion}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {/* Especie */}
-      <div className="mb-3">
-        <label>Especie:</label>
-        <select className="form-control" value={Id_especie} onChange={e => setId_especie(Number(e.target.value))}>
-          <option value="">Selecciona</option>
-          {Especies.map(e => (
-            <option key={e.Id_especie} value={e.Id_especie}>
-              {e.Nom_especie}
             </option>
           ))}
         </select>

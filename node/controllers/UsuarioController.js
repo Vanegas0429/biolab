@@ -14,6 +14,7 @@ export const registerUsuario = async (req, res) => {
 export const loginUsuario = async (req, res) => {
   try {
     const usuario = await UsuarioService.login(req.body);
+    console.log(usuario)
     res.status(200).json(usuario);
   } catch (error) {
     res.status(400).json({ message: error.message });

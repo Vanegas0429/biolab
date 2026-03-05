@@ -122,23 +122,6 @@ const ProduccionForm = ({ hideModal, rowToEdit }) => {
                     onChange={(e) => setCod_produccion(e.target.value)}
                 />
             </div>
-
-            {/* Estado */}
-            <div className="mb-3">
-                <label htmlFor="Estado" className="form-label">
-                    Estado:
-                </label>
-                <select
-                    id="Estado"
-                    className="form-control"
-                    value={Estado}
-                    onChange={(e) => setEstado(e.target.value)}
-                >
-                    <option value="Activo">Activo</option>
-                    <option value="Inactivo">Inactivo</option>
-                </select>
-            </div>
-
             <div className="mb-3">
                 <input
                     type="submit"

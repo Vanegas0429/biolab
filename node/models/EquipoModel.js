@@ -2,7 +2,7 @@ import db from "../database/db.js";
 import { DataTypes } from "sequelize";
 
 const EquipoModel = db.define("equipo", {
-    id_equipo: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+    id_equipo: { type: DataTypes.NUMBER, primaryKey: true, autoIncrement: true },
     nombre: { type: DataTypes.STRING },
     marca: { type: DataTypes.STRING },
     grupo: { type: DataTypes.STRING },
@@ -10,7 +10,7 @@ const EquipoModel = db.define("equipo", {
     centro_costos: { type: DataTypes.STRING },
     subcentro_costos: { type: DataTypes.STRING },
     observaciones: { type: DataTypes.STRING },
-    id_funcionario: { type: DataTypes.INTEGER },
+    id_funcionario: { type: DataTypes.NUMBER },
     img_equipo: { type: DataTypes.STRING },
     estado: { type: DataTypes.ENUM("Activo", "Inactivo") }
 }, {

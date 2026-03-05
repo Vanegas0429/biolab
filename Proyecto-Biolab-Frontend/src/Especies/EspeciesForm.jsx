@@ -42,7 +42,6 @@ const EspeciesForm = ({ hideModal, rowToEdit }) => {
         e.preventDefault();
 
         if (!Nom_especie) {
-            alert("Por favor completa el nombre de la especie");
             MySwal.fire({
                 title: "Error",
                 text: "Por favor completa todos los campos obligatorios",
@@ -97,21 +96,6 @@ const EspeciesForm = ({ hideModal, rowToEdit }) => {
                     onChange={(e) => setNom_especie(e.target.value)}
                 />
             </div>
-
-            {/* 🔹 Selector de Estado */}
-            <div className="mb-3">
-                <label htmlFor="Estado" className="form-label">Estado:</label>
-                <select
-                    id="Estado"
-                    className="form-control"
-                    value={Estado}
-                    onChange={(e) => setEstado(e.target.value)}
-                >
-                    <option value="Activo">Activo</option>
-                    <option value="Inactivo">Inactivo</option>
-                </select>
-            </div>
-
 
             <div className="mb-3">
                 <input

@@ -8,25 +8,33 @@ class EquipoService {
 
     async getById(id_equipo) {
 
-        const Equipo = await EquipoModel.findByPk(id_equipo)   //consultar registro por llave primaria (PK)
-        if (!Equipo) throw new Error("Equipo no encontrado")
-        return Equipo
-    }
+    const equipo = await EquipoModel.findOne({
+        where: { Id_Equipo: id_equipo }
+    })
+
+    if (!equipo) throw new Error("Equipo no encontrado")
+
+    return equipo
+}
 
     async create(data) {
         return await EquipoModel.create(data)
     }
 
     async update(id_equipo, data) {
-        const result = await EquipoModel.update(data, { where: { id_equipo_equipo: id_equipo } })
-        //El metodo update del ORM devuelve una promesa en forma de arreglo y la posicion 0 envia el numero de filas afectadas
-        const update = result[0]
+    const result = await EquipoModel.update(
+        data,
+        { where: { Id_Equipo: id_equipo } }
+    )
 
-        if (update === 0) throw new Error("Equipo no encontrado o sin cambios")  //Si el numero de filas afectadas es cero se lanza un error
+    const updated = result[0]
 
-        return true
+    if (updated === 0) {
+        throw new Error("Equipo no encontrado o sin cambios")
     }
 
+    return true
+}
     async delete(id_equipo) {
         const deleted = await EquipoModel.destroy({ where: { id_equipo_equipo: id_equipo } })
 

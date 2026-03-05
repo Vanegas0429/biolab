@@ -91,9 +91,11 @@ class UsuarioService {
     // Eliminamos la contraseña del objeto antes de enviarlo al frontend
     const { contraseña: _, ...usuarioSinPassword } = usuario.toJSON();
 
+    usuarioSinPassword.token = token
+
     // Retornamos el token y los datos del usuario sin contraseña
     return {
-      token,
+      // token,
       usuario: usuarioSinPassword
     };
   }
