@@ -17,8 +17,8 @@ const almacenamiento = multer.diskStorage({
 const upload = multer({ storage: almacenamiento })  // SOLO CAMBIO: "storage" en lugar de "almacenamiento"
 router.get('/', getAllEquipos);
 router.get('/:id', getEquipo);
-router.post('/', upload.single('equipo_img'), createEquipo);
-router.put('/:id', upload.single('equipo_img'), updateEquipo);
+router.post('/', upload.single('img_equipo'), createEquipo);
+router.put('/:id', upload.single('img_equipo'), updateEquipo);
 router.delete('/:id', deleteEquipo);
 
 export default router;

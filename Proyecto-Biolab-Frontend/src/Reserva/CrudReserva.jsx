@@ -4,11 +4,10 @@ import DataTable from 'react-data-table-component'
 
 const CrudReserva = () => {
 
-  // Crear una prop para guardar los datos de la consulta
   const [Reserva, setReserva] = useState([])
   const [filterText, setFilterText] = useState("")
 
-  const columnsTable = [ //crear un arregli con las columnas que contendra la tabla
+  const columnsTable = [
     {name: 'Id_Reserva', selector: row => row.Id_Reserva},
     {name: 'Tip_Reserva', selector: row => row.Tip_Reserva},
     {name: 'Nom_Solicitante', selector: row => row.Nom_Solicitante},
@@ -19,23 +18,25 @@ const CrudReserva = () => {
     {name: 'Fec_Reserva', selector: row => row.Fec_Reserva},
     {name: 'Hor_Reserva', selector: row => row.Hor_Reserva},
     {name: 'Num_Ficha', selector: row => row.Num_Ficha}
-]
+  ]
 
-  // El useEffect se ejecuta cuando se carga el componente
   useEffect(() => {
-    
     getAllReserva()
   }, [])
 
-  // Crear una función para la consulta
+
+  const Usuario = JSON.parse(localStorage.getItem("UsuarioLaboratorio"))
+
   const getAllReserva = async () => {
-    const response = await apiAxios.get('/api/Reserva') // Se utilizará el apiAxios que tiene la URL del backend
-    setReserva(response.data) // Se llena la constante players con el resultado de la consulta
-    console.log(response.data) // Imprimir en consola el resultado de la consulta
+    const response = await apiAxios.get('/api/Reserva',{
+      headers:{
+        Authorization: `Bearer ${Usuario.token}`
+      }
+    })
+    setReserva(response.data)
+    console.log(response.data)
   }
 
-  //Buscador
-  // Buscador por Tip_Reserva y Nom_Solicitante
   const newListReserva = Reserva.filter((uso) => {
     const textToSearch = filterText.toLowerCase()
     return (
@@ -44,24 +45,26 @@ const CrudReserva = () => {
       String(uso.Num_Ficha).toLowerCase().includes(textToSearch) ||
       String(uso.Fec_Reserva).toLowerCase().includes(textToSearch)
     )
-
   })
 
   return (
     <>
-    <div className="container mt-5">
+      <div className="container mt-5">
         <div className="col-4">
-            <input className="form-control" value={filterText} onChange={(e) => setFilterText(e.target.value)}/>
-
+          <input 
+            className="form-control" 
+            value={filterText} 
+            onChange={(e) => setFilterText(e.target.value)}
+          />
         </div>
         <DataTable
-            title="Reserva" //Titulo de la tabla
-            columns={columnsTable} //Columns de la tabla
-            data={newListReserva} //Fuente de los datos
-            keyField="id" //Identficador de cada registro
-            pagination //Activar paginacion
-            highlightOnHover //Resalta la fila por donde pase el mouse
-            striped //Estilo de tabla - tono en filas intercaladas
+          title="Reserva"
+          columns={columnsTable}
+          data={newListReserva}
+          keyField="id"
+          pagination
+          highlightOnHover
+          striped
         />
       </div>
     </>

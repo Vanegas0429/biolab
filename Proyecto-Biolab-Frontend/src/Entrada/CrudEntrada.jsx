@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react"
 import apiAxios from "../api/axiosConfig.js"
 import DataTable from 'react-data-table-component'
-import EspeciesForm from "./EspeciesForm.jsx"
+import EntradaForm from "./EntradaForm.jsx"
 
-const CrudEspecie = () => {
+const CrudEntrada = () => {
 
 
   const [rowToEdit, setRowToEdit] = useState(null);
-  const [Especie, setEspecie] = useState([])
+  const [Entrada, setEntrada] = useState([])
   const [Estado, setEstado] = useState("Activo")
   const [filterText, setFilterText] = useState("")
   // 🔹 Función para alternar Activo/Inactivo
@@ -15,11 +15,11 @@ const CrudEspecie = () => {
     try {
       const updatedData = { ...row, Estado: row.Estado === "Activo" ? "Inactivo" : "Activo" };
 
-      await apiAxios.put(`/api/Especie/${row.Id_especie}`, updatedData);
+      await apiAxios.put(`/api/Entrada/${row.Id_Entrada}`, updatedData);
 
-      setEspecie(prev =>
+      setEntrada(prev =>
         prev.map(item =>
-          item.Id_especie === row.Id_especie
+          item.Id_Entrada === row.Id_Entrada
             ? { ...item, Estado: updatedData.Estado }
             : item
         )
@@ -31,8 +31,13 @@ const CrudEspecie = () => {
 
 
   const columnsTable = [
-    { name: 'Id_Especie', selector: row => row.Id_especie },
-    { name: 'Nombre de especie', selector: row => row.Nom_especie },
+    { name: 'Id_Entrada', selector: row => row.Id_Entrada },
+    { name: 'Reactivo', selector: row => row.Reactivo?.Nom_reactivo },
+    { name: 'Lote', selector: row => row.Lote },
+    { name: 'Can_Inicial', selector: row => row.Can_Inicial },
+    { name: 'Can_Salida', selector: row => row.Can_Salida },
+    { name: 'Uni_Medida', selector: row => row.Uni_Medida },
+    { name: 'Fec_Vencimiento', selector: row => row.Fec_Vencimiento },
  {
       name: "Estado",
       cell: (row) => (
@@ -62,19 +67,19 @@ const CrudEspecie = () => {
   ];
 
   useEffect(() => {
-    getAllEspecies()
+    getAllEntradas()
   }, [])
 
-  const getAllEspecies = async () => {
-    const response = await apiAxios.get('/api/Especie')
-    setEspecie(response.data)
+  const getAllEntradas = async () => {
+    const response = await apiAxios.get('/api/Entrada')
+    setEntrada(response.data)
     console.log(response.data)
   }
 
-  const newListEspecie = Especie.filter((uso) => {
+  const newListEntrada = Entrada.filter((uso) => {
     const textToSearch = filterText.toLowerCase()
-    const Nom_especie = uso.Nom_especie?.toLowerCase()
-    return Nom_especie.includes(textToSearch)
+    const Lote = uso.Lote?.toLowerCase()
+    return Lote.includes(textToSearch)
   })
 
   const hideModal = () => {
@@ -86,38 +91,32 @@ const CrudEspecie = () => {
       <div className="container mt-5">
         <div className="row d-flex justify-content-between">
           <div className="col-4">
-            <input className="form-control" placeholder="Buscar por Especie (ej: Limon)" value={filterText} onChange={(e) => setFilterText(e.target.value)} />
+            <input className="form-control" placeholder="Buscar por Entrada" value={filterText} onChange={(e) => setFilterText(e.target.value)} />
           </div>
           <div className="col-2">
             <button type="button" className="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal" id="closeModal" onClick={() => setRowToEdit(null)}>
-              Agregar Especie 
+              Agregar Entrada 
             </button>
           </div>
         </div>
          <DataTable
-          title="Especie"
+          title="Entrada"
           columns={columnsTable}
-          data={newListEspecie}
-          keyField="Id_especie"
+          data={newListEntrada}
+          keyField="Id_Entrada"
           pagination
           highlightOnHover
           striped
           conditionalRowStyles={[
-            {
-              when: row => row.Estado === "Activo",
-              style: {
-                backgroundColor: "#ffffff", // fila blanca
-                color: "#000000"            // texto negro
-              }
-            },
-            {
-              when: row => row.Estado === "Inactivo",
-              style: {
-                backgroundColor: "#aeadad", // fila gris clarito
-                color: "#6c757d"            // texto gris oscuro
-              }
-            }
-          ]}
+  {
+    when: row => row.Estado === "Activo",
+    style: { backgroundColor: "#ffffff", color: "#000000" }
+  },
+  {
+    when: row => row.Estado === "Inactivo",
+    style: { backgroundColor: "#aeadad", color: "#6c757d" }
+  }
+]}
         />
 
         
@@ -129,7 +128,7 @@ const CrudEspecie = () => {
 
               <div className="modal-header">
                 <h1 className="modal-title fs-5">
-                  {rowToEdit ? "Editar Especie" : "Agregar Especie"}
+                  {rowToEdit ? "Editar Entrada" : "Agregar Entrada"}
                 </h1>
                 <button
                   type="button"
@@ -140,9 +139,9 @@ const CrudEspecie = () => {
               </div>
 
               <div className="modal-body">
-                <EspeciesForm
+                <EntradaForm
                   hideModal={hideModal}
-                  refreshList={getAllEspecies}
+                  refreshList={getAllEntradas}
                   rowToEdit={rowToEdit}
                 />
               </div>
@@ -155,4 +154,4 @@ const CrudEspecie = () => {
     </>
   )
 }
-export default CrudEspecie
+export default CrudEntrada

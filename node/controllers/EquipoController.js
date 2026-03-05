@@ -13,13 +13,11 @@ export const getAllEquipos = async (req, res) => {
 
 //Obtener un equipo por ID
 export const getEquipo = async (req, res) => {
-    try{
-
-        const Equipo = await EquipoService.getById(req.params.id_equipo)
-        res.status(200).json(Equipo)  //200 OK
-    }catch(error){
-
-        res.statu(400).json({message: error.message})  //404 Not found
+    try {
+        const Equipo = await EquipoService.getById(req.params.id)
+        res.status(200).json(Equipo)
+    } catch (error) {
+        res.status(400).json({ message: error.message })
     }
 }
 
@@ -47,20 +45,26 @@ export const createEquipo = async (req, res) => {
 
 //Actualizar un equipo
 export const updateEquipo = async (req, res) => {
-    try{
-        await EquipoService.update(req.params.id_equipo, req.body)
-        res.status(200).json({message: "Equipo actualizado correctamente"})
-    }catch(error){
-        res.status(400).json({message: error.message})
+    try {
+
+        const data = {
+            ...req.body,
+            img_equipo: req.file ? req.file.filename : req.body.img_equipo
+        };
+
+        await EquipoService.update(req.params.id, data)
+
+        res.status(200).json({ message: "Equipo actualizado correctamente" })
+
+    } catch (error) {
+        res.status(400).json({ message: error.message })
     }
 }
-
-//Eliminar un equipo
-export const deleteEquipo = async(req, res) => {
-    try{
-        await EquipoService.delete(req.params.id_equipo)
-        res.status(204).send()  //204 No content (borrado exitoso sin cuerpo)
-    }catch(error){
-        res.status(400).json({message: error.message})
+export const deleteEquipo = async (req, res) => {
+    try {
+        await EquipoService.delete(req.params.id)
+        res.status(204).send()
+    } catch (error) {
+        res.status(400).json({ message: error.message })
     }
 }

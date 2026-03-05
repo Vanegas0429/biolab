@@ -34,11 +34,11 @@ const CrudSup_Plantas = () => {
   const columnsTable = [
     { name: 'Id_Supervision', selector: row => row.Id_supervision },
     { name: 'Num_lote', selector: row => row.Num_lote },
+    { name: 'Especie', selector: row => row.Especie?.Nom_especie || '—' },
     { name: 'Fc_Iniciales', selector: row => row.Fc_Iniciales },
     { name: 'Fc_Bacterias', selector: row => row.Fc_Bacterias },
     { name: 'Fc_Hongos', selector: row => row.Fc_Hongos },
     { name: 'Fra_Sin_Desarrollo', selector: row => row.Fs_Desarrollo },
-    { name: 'Fra_Desarrollo', selector: row => row.Fra_Desarrollo },
     { name: 'Fd_BR', selector: row => row.Fd_BR },
     { name: 'Fd_RA', selector: row => row.Fd_RA },
     { name: 'Fd_CA', selector: row => row.Fd_CA },
@@ -48,7 +48,6 @@ const CrudSup_Plantas = () => {
     { name: 'Med_Cultivo', selector: row => row.Med_Cultivo },
     { name: 'Met_Propagacion', selector: row => row.Met_Propagacion },
     { name: 'Producción', selector: row => row.Produccion?.Tip_produccion || '—' },
-    { name: 'Especie', selector: row => row.Especie?.Nom_especie || '—' },
     {
       name: "Estado",
       cell: (row) => (
@@ -162,23 +161,29 @@ const CrudSup_Plantas = () => {
         />
 
 
-        {/* MODAL */}
+        {/* Modal */}
         <div className="modal fade" id="exampleModal" tabIndex="-1">
-          <div className="modal-dialog modal-lg">
+          <div className="modal-dialog">
             <div className="modal-content">
 
               <div className="modal-header">
-                <h1 className="modal-title fs-5">Agregar Supervisión</h1>
+                <h1 className="modal-title fs-5">
+                  {rowToEdit ? "Editar Supervision" : "Agregar Supervision"}
+                </h1>
                 <button
                   type="button"
                   className="btn-close"
                   data-bs-dismiss="modal"
-                  id="btnCloseModal"
+                  id="closeModal"
                 ></button>
               </div>
 
               <div className="modal-body">
-                <Sup_PlantasForm hideModal={hideModal} rowToEdit={rowToEdit} />
+                <Sup_PlantasForm
+                  hideModal={hideModal}
+                  refreshList={getAllSup_Plantas}
+                  rowToEdit={rowToEdit}
+                />
               </div>
 
             </div>
@@ -187,7 +192,7 @@ const CrudSup_Plantas = () => {
 
       </div>
     </>
-  );
-};
+  )
+}
 
 export default CrudSup_Plantas;

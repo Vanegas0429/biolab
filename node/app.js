@@ -20,14 +20,17 @@ import EquipoModel from './models/EquipoModel.js';
 import ProduccionRoutes from './routes/ProduccionRoutes.js';
 import EspeciesRoutes from './routes/EspeciesRoutes.js';
 import PracticaRoutes from './routes/PracticaRoutes.js';
-import ProduccionModel from './models/ProduccionModel.js';
-import EspeciesModel from './models/EspeciesModel.js';
-import Sup_plantasModel from './models/sup_plantasModel.js';
+import EntradaRoutes from './routes/EntradaRoutes.js'
 
 // Modelos
 import PracticaModel from './models/PracticaModel.js';
 import ReservaModel from './models/ReservaModel.js';
 import UsuarioRouter from './routes/UsuarioRoutes.js';
+import EntradaModel from './models/EntradaModel.js';
+import ReactivosModel from './models/ReactivosModel.js';
+import ProduccionModel from './models/ProduccionModel.js';
+import EspeciesModel from './models/EspeciesModel.js';
+import Sup_plantasModel from './models/sup_plantasModel.js';
 
 // Configuración
 dotenv.config();
@@ -48,7 +51,9 @@ app.use('/api/Produccion', ProduccionRoutes);
 app.use('/api/Especie', EspeciesRoutes);
 app.use('/api/Reserva', ReservaRoutes);
 app.use('/api/Practica', PracticaRoutes)
-app.use('/api/auth', UsuarioRouter)
+app.use('/api/auth', UsuarioRouter);
+app.use('/api/Entrada', EntradaRoutes)
+app.use('/uploads', express.static('public/uploads'));
 // Conexión a BD
 try {
     await db.authenticate();
@@ -79,6 +84,9 @@ EspeciesModel.hasMany(Sup_plantasModel, { foreignKey: 'Id_especie', as: 'Sup_Pla
 
 Sup_plantasModel.belongsTo(ProduccionModel, { foreignKey: 'Id_produccion', as: 'Produccion'});
 ProduccionModel.hasMany(Sup_plantasModel, { foreignKey: 'Id_produccion', as: 'SupPlantas'});
+
+EntradaModel.belongsTo(ReactivosModel, { foreignKey: 'Id_reactivo', as: 'Reactivo'});
+ReactivosModel.hasMany(EntradaModel, { foreignKey: 'Id_reactivo', as: 'Entrada'});
 
 // Servidor
 const PORT = process.env.PORT || 8000;

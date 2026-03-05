@@ -131,17 +131,14 @@ const CrudPractica = () => {
 
         />
 
-        <div
-          className="modal fade"
-          id="exampleModal"
-          tabIndex="-1"
-          aria-hidden="true"
-        >
-          <div className="modal-dialog modal-xl">
+       {/* Modal */}
+        <div className="modal fade" id="exampleModal" tabIndex="-1">
+          <div className="modal-dialog">
             <div className="modal-content">
+
               <div className="modal-header">
                 <h1 className="modal-title fs-5">
-                  Agregar Practica
+                  {rowToEdit ? "Editar Practica" : "Agregar Practica"}
                 </h1>
                 <button
                   type="button"
@@ -150,12 +147,15 @@ const CrudPractica = () => {
                   id="closeModal"
                 ></button>
               </div>
+
               <div className="modal-body">
                 <PracticaForm
                   hideModal={hideModal}
+                  refreshList={getAllPracticas}
                   rowToEdit={rowToEdit}
                 />
               </div>
+
             </div>
           </div>
         </div>
