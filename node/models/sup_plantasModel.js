@@ -20,7 +20,6 @@ const  Sup_plantasModel= db.define("Sup_plantas",{
     Num_endurecimiento: {type: DataTypes.NUMBER},
     Estado: {type: DataTypes.ENUM('Activo','Inactivo')},
     Id_produccion: {type:DataTypes.NUMBER},     
-    Id_especie: {type:DataTypes.NUMBER}
 }, {
     //evitar prularizacion en la gestion de la tabla 
     freezeTableName: true

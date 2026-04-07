@@ -11,51 +11,48 @@ const CrudProduccion = () => {
 
   // 🔹 Alternar Activo/Inactivo
   const toggleEstado = async (row) => {
-    try {
 
-      const nuevoEstado =
-        row.Estado === "Activo" ? "Inactivo" : "Activo"
+    console.log(row.Estado)
 
-      const updatedData = {
-        Tip_produccion: row.Tip_produccion,
-        Cod_produccion: row.Cod_produccion,
-        Estado: nuevoEstado
-      }
+    let estadoNuevo = ''
 
-      await apiAxios.put(
-        `/api/Produccion/${row.Id_produccion}`,
-        updatedData
-      )
+    if(row.Estado === 'Activo'){
 
-      setProduccion(prev =>
-        prev.map(item =>
-          item.Id_produccion === row.Id_produccion
-            ? { ...item, Estado: nuevoEstado }
-            : item
-        )
-      )
+      estadoNuevo = 'Inactivo'
 
-    } catch (error) {
-      console.error("Error cambiando estado:", error.response?.data || error.message)
+    }else{
+      estadoNuevo = 'Activo'
     }
-  }
 
+    console.log(estadoNuevo)
+    try {
+      await apiAxios.put(`/api/Produccion/${row.Id_produccion}`, {
+        ...row,
+        Estado: estadoNuevo
+      });
+
+      getAllProducciones();
+    } catch (error) {
+      console.error("Error actualizando estado:", error);
+    }
+  };
 
   // 🔹 Columnas
   const columnsTable = [
     { name: 'Id_Produccion', selector: row => row.Id_produccion },
+    { name: 'Especie', selector: row => row.Especie?.Nom_especie },
     { name: 'Tip_produccion', selector: row => row.Tip_produccion },
-    { name: 'Cod_produccion', selector: row => row.Cod_produccion },
+    { name: 'Fec_produccion', selector: row => row.Fec_produccion },
     {
-      name: "Estado",
-      cell: (row) => (
+      name: 'Estado',
+      cell: row => (
         <button
-          className={`btn btn-sm ${row.Estado === "Activo" ? "btn-success" : "btn-danger"}`}
+          className={`btn btn-sm ${row.Estado =='Activo' ? 'btn-success' : 'btn-danger'}`}
           onClick={() => toggleEstado(row)}
         >
-          {row.Estado === "Activo" ? "Activo" : "Inactivo"}
+          {row.Estado}
         </button>
-      ),
+      )
     },
     {
       name: 'Acciones',

@@ -12,20 +12,29 @@ const CrudEntrada = () => {
   const [filterText, setFilterText] = useState("")
   // 🔹 Función para alternar Activo/Inactivo
   const toggleEstado = async (row) => {
+
+    console.log(row.Estado)
+
+    let estadoNuevo = ''
+
+    if(row.Estado === 'Activo'){
+
+      estadoNuevo = 'Inactivo'
+
+    }else{
+      estadoNuevo = 'Activo'
+    }
+
+    console.log(estadoNuevo)
     try {
-      const updatedData = { ...row, Estado: row.Estado === "Activo" ? "Inactivo" : "Activo" };
+      await apiAxios.put(`/api/Entrada/${row.Id_Entrada}`, {
+        ...row,
+        Estado: estadoNuevo
+      });
 
-      await apiAxios.put(`/api/Entrada/${row.Id_Entrada}`, updatedData);
-
-      setEntrada(prev =>
-        prev.map(item =>
-          item.Id_Entrada === row.Id_Entrada
-            ? { ...item, Estado: updatedData.Estado }
-            : item
-        )
-      );
+      getAllEntradas();
     } catch (error) {
-      console.error("Error cambiando estado:", error);
+      console.error("Error actualizando estado:", error);
     }
   };
 
@@ -38,16 +47,16 @@ const CrudEntrada = () => {
     { name: 'Can_Salida', selector: row => row.Can_Salida },
     { name: 'Uni_Medida', selector: row => row.Uni_Medida },
     { name: 'Fec_Vencimiento', selector: row => row.Fec_Vencimiento },
- {
-      name: "Estado",
-      cell: (row) => (
+  {
+      name: 'Estado',
+      cell: row => (
         <button
-          className={`btn btn-sm ${row.Estado === "Activo" ? "btn-success" : "btn-danger"}`}
+          className={`btn btn-sm ${row.Estado =='Activo' ? 'btn-success' : 'btn-danger'}`}
           onClick={() => toggleEstado(row)}
         >
-          {row.Estado === "Activo" ? "Activo" : "Inactivo"}
+          {row.Estado}
         </button>
-      ),
+      )
     },
 
 

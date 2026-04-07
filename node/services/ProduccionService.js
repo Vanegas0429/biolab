@@ -1,8 +1,16 @@
 import ProduccionModel from "../models/ProduccionModel.js";
+import EspeciesModel from "../models/EspeciesModel.js";
 
 class ProduccionService {
     async getAll(){
-        return await ProduccionModel.findAll()
+         return await ProduccionModel.findAll(
+            {
+                include: [{
+                    model: EspeciesModel,
+                    as: 'Especie'
+                }]
+            }
+        )
     }
     async getById(id) {
 

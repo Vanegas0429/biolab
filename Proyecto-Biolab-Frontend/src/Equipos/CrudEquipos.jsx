@@ -27,10 +27,24 @@ const CrudEquipos = () => {
   };
 
   const toggleEstado = async (row) => {
+
+    console.log(row.estado)
+
+    let estadoNuevo = ''
+
+    if(row.estado === 'Activo'){
+
+      estadoNuevo = 'Inactivo'
+
+    }else{
+      estadoNuevo = 'Activo'
+    }
+
+    console.log(estadoNuevo)
     try {
       await apiAxios.put(`/api/Equipo/${row.id_equipo}`, {
         ...row,
-        estado: !row.estado
+        estado: estadoNuevo
       });
 
       getAllEquipos();
@@ -47,21 +61,16 @@ const CrudEquipos = () => {
 
   const columnsTable = [
     { name: "Id_Equipo", selector: row => row.id_equipo },
-    { name: "Nombre", selector: row => row.nombre },
-    { name: "Marca", selector: row => row.marca },
-    { name: "Grupo", selector: row => row.grupo },
-    { name: "Linea", selector: row => row.linea },
-    { name: "Centro Costos", selector: row => row.centro_costos },
     {
   name: "Imagen",
   cell: row => (
-    row.equipo_img ? (
+    row.img_equipo ? (
       <img
         src={`http://localhost:8000/uploads/${row.img_equipo}`}
         alt="Equipo"
         style={{
-          width: "60px",
-          height: "60px",
+          width: "100px",
+          height: "100px",
           objectFit: "cover",
           borderRadius: "5px"
         }}
@@ -71,15 +80,20 @@ const CrudEquipos = () => {
     )
   )
 },
+    { name: "Nombre", selector: row => row.nombre },
+    { name: "Marca", selector: row => row.marca },
+    { name: "Grupo", selector: row => row.grupo },
+    { name: "Linea", selector: row => row.linea },
+    { name: "Centro Costos", selector: row => row.centro_costos },
 
     {
       name: 'Estado',
       cell: row => (
         <button
-          className={`btn btn-sm ${row.estado ? 'btn-success' : 'btn-danger'}`}
+          className={`btn btn-sm ${row.estado =='Activo' ? 'btn-success' : 'btn-danger'}`}
           onClick={() => toggleEstado(row)}
         >
-          {row.estado ? 'Activo' : 'Inactivo'}
+          {row.estado}
         </button>
       )
     },
@@ -136,17 +150,17 @@ const CrudEquipos = () => {
           striped
           conditionalRowStyles={[
             {
-              when: row => row.estado,
+              when: row => row.estado === "Activo",
               style: {
-                backgroundColor: "#ffffff",
-                color: "#000000"
+                backgroundColor: "#ffffff", // fila blanca
+                color: "#000000"            // texto negro
               }
             },
             {
-              when: row => !row.estado,
+              when: row => row.estado === "Inactivo",
               style: {
-                backgroundColor: "#aeadad",
-                color: "#6c757d"
+                backgroundColor: "#aeadad", // fila gris clarito
+                color: "#6c757d"            // texto gris oscuro
               }
             }
           ]}

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import apiNode from "../api/axiosConfig.js";
-import logo from "../assets/logo.png"; // 👈 IMPORTAMOS EL LOGO
+import logo from "../assets/logo.png"; 
 
 const UsuarioLogin = ({ setIsAuth }) => {
 
