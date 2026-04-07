@@ -8,6 +8,7 @@ const FuncionariosForm = () => {
     const [Nom_Solicitante, setNom_Solicitante] = useState('')
     const [Doc_Solicitante, setDoc_Solicitante] = useState('')
     const [Cor_Solicitante, setCor_Solicitante] = useState('')
+    const [Tel_Solicitante, setTel_Solicitante] = useState('')
     const [Can_Aprendices, setCan_Aprendices] = useState('')
     const [Fec_Reserva, setFec_Reserva] = useState('')
     const [Hor_Reserva, setHor_Reserva] = useState('')
@@ -23,11 +24,12 @@ const FuncionariosForm = () => {
 
             try{
 
-                const response = await apiAxios.post('/api/Funcionarios', { //Se envian todos los datos como un objeto JSON
+                const response = await apiAxios.post('/api/Reservas', { //Se envian todos los datos como un objeto JSON
                     Tip_Reserva: Tip_Reserva,
                     Nom_Solicitante: Nom_Solicitante,
                     Doc_Solicitante: Doc_Solicitante,
                     Cor_Solicitante: Cor_Solicitante,
+                    Tel_Solicitante: Tel_Solicitante,
                     Can_Aprendices: Can_Aprendices,
                     Fec_Reserva: Fec_Reserva,
                     Hor_Reserva: Hor_Reserva,
@@ -75,17 +77,29 @@ const FuncionariosForm = () => {
                     <input type="text" id="Cor_Solicitante" className="form-control" value={Cor_Solicitante} onChange={(e) => setCor_Solicitante(e.target.value)} />
                 </div>
                 <div className="mb-3">
-                    <label htmlFor="Can_Aprendices" className="form-label">Cargo funcionario:</label>
-                    <select type="text" id="Can_Aprendices" className="form-control" value={Can_Aprendices} onChange={(e) => setCan_Aprendices(e.target.value)}>
-                        <option value="">Selecciona uno</option>
-                        <option value="1">Subdirector</option>
-                        <option value="2">Coordinador</option>
-                        <option value="3">Instructor</option>
-                    </select>
-                </div> 
+                    <label htmlFor="Tel_Solicitante" className="form-label">Tel_Solicitante:</label>
+                    <input type="text" id="Tel_Solicitante" className="form-control" value={Tel_Solicitante} onChange={(e) => setTel_Solicitante(e.target.value)} />
+                </div>
+                <div className="mb-3">
+                    <label htmlFor="Can_Aprendices" className="form-label">Can_Aprendices:</label>
+                    <input type="number" id="Can_Aprendices" className="form-control" value={Can_Aprendices} onChange={(e) => setCan_Aprendices(e.target.value)} />
+                </div>
+                <div className="mb-3">
+                    <label htmlFor="Fec_Reserva" className="form-label">Fec_Reserva:</label>
+                    <input type="date" id="Fec_Reserva" className="form-control" value={Fec_Reserva} onChange={(e) => setFec_Reserva(e.target.value)} />
+                </div>
+                <div className="mb-3">
+                    <label htmlFor="Hor_Reserva" className="form-label">Hor_Reserva:</label>
+                    <input type="time" id="Hor_Reserva" className="form-control" value={Hor_Reserva} onChange={(e) => setHor_Reserva(e.target.value)} />
+                </div>
+                <div className="mb-3">
+                    <label htmlFor="Num_Ficha" className="form-label">Num_Ficha:</label>
+                    <input type="text" id="Num_Ficha" className="form-control" value={Num_Ficha} onChange={(e) => setNum_Ficha(e.target.value)} />
+                </div>
                 <div className="mb-3">
                     <input type="submit" className="btn btn-primary w-50" value={textFormButton} />
-                </div>   
+                </div>
+                
 
             </form>
         

@@ -1,4 +1,3 @@
-import EspeciesModel from "../models/EspeciesModel.js";
 import ProduccionModel from "../models/ProduccionModel.js";
 import sup_plantasModel from "../models/sup_plantasModel.js";
 
@@ -8,9 +7,6 @@ class sup_plantasService {
         return await sup_plantasModel.findAll(
             {
                 include: [{
-                    model: EspeciesModel,
-                    as: 'Especie'
-                },{
                     model: ProduccionModel,
                     as: 'Produccion'
                 }]

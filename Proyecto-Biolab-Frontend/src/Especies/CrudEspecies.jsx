@@ -8,24 +8,32 @@ const CrudEspecie = () => {
 
   const [rowToEdit, setRowToEdit] = useState(null);
   const [Especie, setEspecie] = useState([])
-  const [Estado, setEstado] = useState("Activo")
   const [filterText, setFilterText] = useState("")
   // 🔹 Función para alternar Activo/Inactivo
   const toggleEstado = async (row) => {
+
+    console.log(row.Estado)
+
+    let estadoNuevo = ''
+
+    if(row.Estado === 'Activo'){
+
+      estadoNuevo = 'Inactivo'
+
+    }else{
+      estadoNuevo = 'Activo'
+    }
+
+    console.log(estadoNuevo)
     try {
-      const updatedData = { ...row, Estado: row.Estado === "Activo" ? "Inactivo" : "Activo" };
+      await apiAxios.put(`/api/Especie/${row.Id_especie}`, {
+        ...row,
+        Estado: estadoNuevo
+      });
 
-      await apiAxios.put(`/api/Especie/${row.Id_especie}`, updatedData);
-
-      setEspecie(prev =>
-        prev.map(item =>
-          item.Id_especie === row.Id_especie
-            ? { ...item, Estado: updatedData.Estado }
-            : item
-        )
-      );
+      getAllEspecies();
     } catch (error) {
-      console.error("Error cambiando estado:", error);
+      console.error("Error actualizando estado:", error);
     }
   };
 
@@ -34,15 +42,15 @@ const CrudEspecie = () => {
     { name: 'Id_Especie', selector: row => row.Id_especie },
     { name: 'Nombre de especie', selector: row => row.Nom_especie },
  {
-      name: "Estado",
-      cell: (row) => (
+      name: 'Estado',
+      cell: row => (
         <button
-          className={`btn btn-sm ${row.Estado === "Activo" ? "btn-success" : "btn-danger"}`}
+          className={`btn btn-sm ${row.Estado =='Activo' ? 'btn-success' : 'btn-danger'}`}
           onClick={() => toggleEstado(row)}
         >
-          {row.Estado === "Activo" ? "Activo" : "Inactivo"}
+          {row.Estado}
         </button>
-      ),
+      )
     },
 
 

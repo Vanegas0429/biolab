@@ -12,20 +12,29 @@ const CrudSup_Plantas = () => {
 
   // 🔹 Función para alternar Activo/Inactivo
   const toggleEstado = async (row) => {
+
+    console.log(row.Estado)
+
+    let estadoNuevo = ''
+
+    if(row.Estado === 'Activo'){
+
+      estadoNuevo = 'Inactivo'
+
+    }else{
+      estadoNuevo = 'Activo'
+    }
+
+    console.log(estadoNuevo)
     try {
-      const updatedData = { ...row, Estado: row.Estado === "Activo" ? "Inactivo" : "Activo" };
+      await apiAxios.put(`/api/Sup_Plantas/${row.Id_supervision}`, {
+        ...row,
+        Estado: estadoNuevo
+      });
 
-      await apiAxios.put(`/api/Sup_Plantas/${row.Id_supervision}`, updatedData);
-
-      setSup_Plantas(prev =>
-        prev.map(item =>
-          item.Id_supervision === row.Id_supervision
-            ? { ...item, Estado: updatedData.Estado }
-            : item
-        )
-      );
+      getAllSup_Plantas();
     } catch (error) {
-      console.error("Error cambiando estado:", error);
+      console.error("Error actualizando estado:", error);
     }
   };
 
@@ -33,12 +42,11 @@ const CrudSup_Plantas = () => {
   // 🔹 Columnas de la tabla
   const columnsTable = [
     { name: 'Id_Supervision', selector: row => row.Id_supervision },
-    { name: 'Num_lote', selector: row => row.Num_lote },
-    { name: 'Especie', selector: row => row.Especie?.Nom_especie || '—' },
-    { name: 'Fc_Iniciales', selector: row => row.Fc_Iniciales },
+    { name: 'Numero de Lote', selector: row => row.Num_lote },
+    { name: 'Frascos Iniciales', selector: row => row.Fc_Iniciales },
     { name: 'Fc_Bacterias', selector: row => row.Fc_Bacterias },
     { name: 'Fc_Hongos', selector: row => row.Fc_Hongos },
-    { name: 'Fra_Sin_Desarrollo', selector: row => row.Fs_Desarrollo },
+    { name: 'Frascos Sin Desarrollo', selector: row => row.Fs_Desarrollo },
     { name: 'Fd_BR', selector: row => row.Fd_BR },
     { name: 'Fd_RA', selector: row => row.Fd_RA },
     { name: 'Fd_CA', selector: row => row.Fd_CA },
@@ -47,17 +55,17 @@ const CrudSup_Plantas = () => {
     { name: 'Num_endurecimiento', selector: row => row.Num_endurecimiento },
     { name: 'Med_Cultivo', selector: row => row.Med_Cultivo },
     { name: 'Met_Propagacion', selector: row => row.Met_Propagacion },
-    { name: 'Producción', selector: row => row.Produccion?.Tip_produccion || '—' },
+    { name: 'Producción', selector: row => row.Produccion?.Tip_produccion},
     {
-      name: "Estado",
-      cell: (row) => (
+      name: 'Estado',
+      cell: row => (
         <button
-          className={`btn btn-sm ${row.Estado === "Activo" ? "btn-success" : "btn-danger"}`}
+          className={`btn btn-sm ${row.Estado =='Activo' ? 'btn-success' : 'btn-danger'}`}
           onClick={() => toggleEstado(row)}
         >
-          {row.Estado === "Activo" ? "Activo" : "Inactivo"}
+          {row.Estado}
         </button>
-      ),
+      )
     },
 
 

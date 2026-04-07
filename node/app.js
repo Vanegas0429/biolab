@@ -79,8 +79,8 @@ PracticaModel.belongsTo(ReservaModel, {
   as: 'Reserva'
 });
 
-Sup_plantasModel.belongsTo(EspeciesModel, { foreignKey: 'Id_especie', as: 'Especie'});
-EspeciesModel.hasMany(Sup_plantasModel, { foreignKey: 'Id_especie', as: 'Sup_Plantas'});
+ProduccionModel.belongsTo(EspeciesModel, { foreignKey: 'Id_especie', as: 'Especie'});
+EspeciesModel.hasMany(ProduccionModel, { foreignKey: 'Id_especie', as: 'Producciones'});
 
 Sup_plantasModel.belongsTo(ProduccionModel, { foreignKey: 'Id_produccion', as: 'Produccion'});
 ProduccionModel.hasMany(Sup_plantasModel, { foreignKey: 'Id_produccion', as: 'SupPlantas'});

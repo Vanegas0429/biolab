@@ -97,6 +97,7 @@ const CrudReactivo = () => {
           <div className="col-4">
             <input
               className="form-control"
+              placeholder="Buscar..."
               value={filterText}
               onChange={(e) => setFilterText(e.target.value)}
             />

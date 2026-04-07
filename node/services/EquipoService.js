@@ -2,45 +2,51 @@ import EquipoModel from "../models/EquipoModel.js";
 
 class EquipoService {
 
-    async getAll() { //consultar todos los registros de la tabla
-        return await EquipoModel.findAll()
+    async getAll() {
+        return await EquipoModel.findAll();
     }
 
     async getById(id_equipo) {
 
-    const equipo = await EquipoModel.findOne({
-        where: { Id_Equipo: id_equipo }
-    })
+        const equipo = await EquipoModel.findOne({
+            where: { id_equipo: id_equipo }
+        });
 
-    if (!equipo) throw new Error("Equipo no encontrado")
+        if (!equipo) throw new Error("Equipo no encontrado");
 
-    return equipo
-}
+        return equipo;
+    }
 
     async create(data) {
-        return await EquipoModel.create(data)
+        return await EquipoModel.create(data);
     }
 
     async update(id_equipo, data) {
-    const result = await EquipoModel.update(
-        data,
-        { where: { Id_Equipo: id_equipo } }
-    )
 
-    const updated = result[0]
+        const result = await EquipoModel.update(
+            data,
+            { where: { id_equipo: id_equipo } }
+        );
 
-    if (updated === 0) {
-        throw new Error("Equipo no encontrado o sin cambios")
+        const updated = result[0];
+
+        if (updated === 0) {
+            throw new Error("Equipo no encontrado o sin cambios");
+        }
+
+        return true;
     }
 
-    return true
-}
     async delete(id_equipo) {
-        const deleted = await EquipoModel.destroy({ where: { id_equipo_equipo: id_equipo } })
 
-        if (!deleted) throw new Error("Equipo no encontrado")
-        return true
+        const deleted = await EquipoModel.destroy({
+            where: { id_equipo: id_equipo }
+        });
+
+        if (!deleted) throw new Error("Equipo no encontrado");
+
+        return true;
     }
 }
 
-export default new EquipoService
+export default new EquipoService();

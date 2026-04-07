@@ -17,8 +17,8 @@ const almacenamiento = multer.diskStorage({
 const upload = multer({ storage: almacenamiento });
 router.get('/', getAllReserva);
 router.get('/:id', authMiddleware, getReserva);
-router.post('/', authMiddleware, createReserva);
-router.put('/:id', authMiddleware, updateReserva);
+router.post('/', createReserva);
+router.put('/:id', authMiddleware, updateReserva);//Aquí deben incluir el middleware para validar el rol instructor
 router.delete('/:id', authMiddleware, deleteReserva);
 
 export default router;

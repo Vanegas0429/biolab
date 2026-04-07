@@ -28,10 +28,9 @@ const [Estado, setEstado] = useState("Activo");
   const [Num_endurecimiento, setNum_endurecimiento] = useState('');
 
   const [Producciones, setProducciones] = useState([]);
-  const [Especies, setEspecies] = useState([]);
 
   const [Id_produccion, setId_produccion] = useState('');
-  const [Id_especie, setId_especie] = useState('');
+
   
 useEffect(() => {
   if (rowToEdit) {
@@ -51,7 +50,6 @@ useEffect(() => {
     setFd_GER(rowToEdit.Fd_GER ?? '');
     setNum_endurecimiento(rowToEdit.Num_endurecimiento ?? '');
     setId_produccion(rowToEdit.Id_produccion ?? '');
-    setId_especie(rowToEdit.Id_especie ?? '');
   } else {
     // CREAR: limpiar todos los campos
     setEstado("Activo");
@@ -70,7 +68,6 @@ useEffect(() => {
     setFd_GER('');
     setNum_endurecimiento('');
     setId_produccion('');
-    setId_especie('');
   }
 }, [rowToEdit]);
 
@@ -86,7 +83,6 @@ useEffect(() => {
 
   useEffect(() => {
     getProduccion();
-    getEspecie();
   }, []);
 
   const getProduccion = async () => {
@@ -95,15 +91,6 @@ useEffect(() => {
       setProducciones(res.data);
     } catch (error) {
       console.log("No se pudo cargar Producción");
-    }
-  };
-
-  const getEspecie = async () => {
-    try {
-      const res = await apiAxios.get('/api/Especie');
-      setEspecies(res.data);
-    } catch (error) {
-      console.log("No se pudo cargar Especies");
     }
   };
   //CREAR
@@ -124,7 +111,6 @@ const crearSup_Planta = async () => {
     Fd_GER,
     Num_endurecimiento,
     Id_produccion: Number(Id_produccion),
-    Id_especie: Number(Id_especie),
     Estado: "Activo"
   });
 };  
@@ -149,7 +135,6 @@ const actualizarSup_Planta = async () => {
       Fd_GER,
       Num_endurecimiento,
       Id_produccion: Number(Id_produccion),
-      Id_especie: Number(Id_especie),
       Estado: rowToEdit.Estado || "Activo"
     }
   );
@@ -158,7 +143,7 @@ const actualizarSup_Planta = async () => {
 const gestionarForm = async (e) => {
   e.preventDefault();
 
-  if (!Num_lote || !Med_Cultivo || !Met_Propagacion || !Id_produccion || !Id_especie) {
+  if (!Num_lote || !Med_Cultivo || !Met_Propagacion || !Id_produccion) {
      MySwal.fire({
         title: "Error",
         text: "Por favor completa todos los campos obligatorios",
@@ -206,19 +191,6 @@ const gestionarForm = async (e) => {
         <select id="Num_lote" className="form-control" value={Num_lote} onChange={e => setNum_lote(e.target.value)}>
           <option value="">Selecciona uno</option>
           {lotes.map(l => <option key={l} value={l}>{l}</option>)}
-        </select>
-      </div>
-
-      {/* Especie */}
-      <div className="mb-3">
-        <label>Especie:</label>
-        <select className="form-control" value={Id_especie} onChange={e => setId_especie(Number(e.target.value))}>
-          <option value="">Selecciona</option>
-          {Especies.map(e => (
-            <option key={e.Id_especie} value={e.Id_especie}>
-              {e.Nom_especie}
-            </option>
-          ))}
         </select>
       </div>
 
@@ -300,7 +272,7 @@ const gestionarForm = async (e) => {
           <option value="">Selecciona</option>
           {Producciones.map(p => (
             <option key={p.Id_produccion} value={p.Id_produccion}>
-              {p.Tip_produccion} {p.Cod_produccion}
+              {p.Especie.Nom_especie} - {p.Tip_produccion} - {p.Fec_produccion}
             </option>
           ))}
         </select>
@@ -314,4 +286,4 @@ const gestionarForm = async (e) => {
   );
 };
 
-export default Sup_PlantasForm; 
+export default Sup_PlantasForm;
