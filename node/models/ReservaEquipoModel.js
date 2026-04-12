@@ -1,12 +1,30 @@
 import db from '../database/db.js';
-import { DataTypes, TIME } from 'sequelize';
+import { DataTypes } from 'sequelize';
 
 const ReservaEquipoModel = db.define('ReservaEquipo', {
-    Id_ReservaEquipo: { type: DataTypes.NUMBER, primaryKey: true, autoIncrement: true },
-    Id_Reserva: { type: DataTypes.NUMBER},
-    Id_Equipo: { type: DataTypes.NUMBER},
-    Can_Equipos: { type: DataTypes.NUMBER},
+    Id_ReservaEquipo: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+    },
+    Id_Reserva: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+    },
+    Id_Equipo: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+    },
+    Can_Equipos: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+    }
 }, {
-    freezeTableName: true
-})
+    tableName: 'reservaequipo',
+    freezeTableName: true,
+    timestamps: true,
+    createdAt: 'createdat',
+    updatedAt: 'updatedat'
+});
+
 export default ReservaEquipoModel;
