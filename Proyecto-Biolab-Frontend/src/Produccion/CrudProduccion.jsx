@@ -5,42 +5,90 @@ import ProduccionForm from "./ProduccionForm.jsx"
 
 const CrudProduccion = () => {
 
-  // Crear una prop para guardar los datos de la consulta
+  const [rowToEdit, setRowToEdit] = useState(null)
   const [Produccion, setProduccion] = useState([])
   const [filterText, setFilterText] = useState("")
 
-  const columnsTable = [ //crear un arregli con las columnas que contendra la tabla
-    {name: 'Id', selector: row => row.Id_produccion},
-    {name: 'Tip_produccion', selector: row => row.Tip_produccion}
-    
-]
+  // 🔹 Alternar Activo/Inactivo
+  const toggleEstado = async (row) => {
 
-  // El useEffect se ejecuta cuando se carga el componente
+    console.log(row.Estado)
+
+    let estadoNuevo = ''
+
+    if(row.Estado === 'Activo'){
+
+      estadoNuevo = 'Inactivo'
+
+    }else{
+      estadoNuevo = 'Activo'
+    }
+
+    console.log(estadoNuevo)
+    try {
+      await apiAxios.put(`/api/Produccion/${row.Id_produccion}`, {
+        ...row,
+        Estado: estadoNuevo
+      });
+
+      getAllProducciones();
+    } catch (error) {
+      console.error("Error actualizando estado:", error);
+    }
+  };
+
+  // 🔹 Columnas
+  const columnsTable = [
+    { name: 'Id_Produccion', selector: row => row.Id_produccion },
+    { name: 'Especie', selector: row => row.Especie?.Nom_especie },
+    { name: 'Tip_produccion', selector: row => row.Tip_produccion },
+    { name: 'Fec_produccion', selector: row => row.Fec_produccion },
+    {
+      name: 'Estado',
+      cell: row => (
+        <button
+          className={`btn btn-sm ${row.Estado =='Activo' ? 'btn-success' : 'btn-danger'}`}
+          onClick={() => toggleEstado(row)}
+        >
+          {row.Estado}
+        </button>
+      )
+    },
+    {
+      name: 'Acciones',
+      selector: row => (
+        <button
+          className="btn btn-sm bg-info"
+          onClick={() => setRowToEdit(row)}
+          data-bs-toggle="modal"
+          data-bs-target="#exampleModal"
+        >
+          <i className="fa-solid fa-pencil"></i>
+        </button>
+      )
+    }
+  ]
+
+  // 🔹 Cargar datos
   useEffect(() => {
-    
     getAllProduccion()
   }, [])
 
-  // Crear una función para la consulta
   const getAllProduccion = async () => {
-    const response = await apiAxios.get('/api/Produccion') // Se utilizará el apiAxios que tiene la URL del backend
-    setProduccion(response.data) // Se llena la constante players con el resultado de la consulta
-    console.log(response.data) // Imprimir en consola el resultado de la consulta
+    const response = await apiAxios.get('/api/Produccion')
+    setProduccion(response.data)
   }
 
-  //Buscador
+  // 🔹 Buscador
   const newListProduccion = Produccion.filter((uso) => {
     const textToSearch = filterText.toLowerCase()
-
-    const Tip_produccion = uso.Tip_produccion?.toLowerCase()
-    return (
-      Tip_produccion.includes(textToSearch)
-    )
-
+    const tip = uso.Tip_produccion?.toLowerCase() || ""
+    return tip.includes(textToSearch)
   })
 
   const hideModal = () => {
     document.getElementById('closeModal').click()
+    getAllProduccion()
   }
 
   return (
@@ -49,39 +97,82 @@ const CrudProduccion = () => {
 
         <div className="row d-flex justify-content-between">
           <div className="col-4">
-            <input className="form-control" placeholder="Buscar por Produccion (ej: Limon)" value={filterText} onChange={(e) => setFilterText(e.target.value)} />
+            <input
+              className="form-control"
+              placeholder="Buscar Producción"
+              value={filterText}
+              onChange={(e) => setFilterText(e.target.value)}
+            />
           </div>
+
           <div className="col-2">
-            <button type="button" className="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal" id="closeModal">
-              Nuevo
+            <button
+              type="button"
+              className="btn btn-primary"
+              data-bs-toggle="modal"
+              data-bs-target="#exampleModal"
+              onClick={() => setRowToEdit(null)}
+            >
+              Agregar Producción
             </button>
           </div>
         </div>
+
         <DataTable
-          title="Produccion" //Titulo de la tabla
-          columns={columnsTable} //Columns de la tabla
-          data={newListProduccion} //Fuente de los datos
-          keyField="id" //Identficador de cada registro
-          pagination //Activar paginacion
-          highlightOnHover //Resalta la fila por donde pase el mouse
-          striped //Estilo de tabla - tono en filas intercaladas
+          title="Producción"
+          columns={columnsTable}
+          data={newListProduccion}
+          keyField="Id_produccion"
+          pagination
+          highlightOnHover
+          striped
+          conditionalRowStyles={[
+            {
+              when: row => row.Estado === "Activo",
+              style: {
+                backgroundColor: "#ffffff",
+                color: "#000000"
+              }
+            },
+            {
+              when: row => row.Estado === "Inactivo",
+              style: {
+                backgroundColor: "#aeadad",
+                color: "#6c757d"
+              }
+            }
+          ]}
         />
 
-        {/* <!-- Modal --> */}
-        <div className="modal fade" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        {/* Modal */}
+        <div className="modal fade" id="exampleModal" tabIndex="-1">
           <div className="modal-dialog">
             <div className="modal-content">
+
               <div className="modal-header">
-                <h1 className="modal-title fs-5" id="exampleModalLabel">Agregar Produccion Nueva</h1>
-                <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="close" id="closeModal"></button>
+                <h1 className="modal-title fs-5">
+                  {rowToEdit ? "Editar Producción" : "Agregar Producción"}
+                </h1>
+                <button
+                  type="button"
+                  className="btn-close"
+                  data-bs-dismiss="modal"
+                  id="closeModal"
+                ></button>
               </div>
+
               <div className="modal-body">
-                <ProduccionForm hideModal={hideModal} />
+                <ProduccionForm
+                  hideModal={hideModal}
+                  refreshList={getAllProduccion}
+                  rowToEdit={rowToEdit}
+                />
               </div>
 
             </div>
           </div>
         </div>
+
       </div>
     </>
   )

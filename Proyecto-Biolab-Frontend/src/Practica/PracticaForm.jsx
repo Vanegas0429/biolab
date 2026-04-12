@@ -105,7 +105,7 @@ const PracticaForm = ({ hideModal, rowToEdit }) => {
 
                         {reservas.map(res => (
                             <option key={res.Id_Reserva} value={res.Id_Reserva}>
-                                {res.Tip_Reserva} - {res.Nom_Solicitante} - {res.Fec_Reserva}
+                                {res.Tip_Reserva} - {res.Nom_Solicitante} - {res.Fec_Reserva} - {res.Hor_Reserva}
                             </option>
                         ))}
                     </select>

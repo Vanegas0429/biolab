@@ -5,14 +5,69 @@ import EspeciesForm from "./EspeciesForm.jsx"
 
 const CrudEspecie = () => {
 
+
+  const [rowToEdit, setRowToEdit] = useState(null);
   const [Especie, setEspecie] = useState([])
   const [filterText, setFilterText] = useState("")
+  // 🔹 Función para alternar Activo/Inactivo
+  const toggleEstado = async (row) => {
+
+    console.log(row.Estado)
+
+    let estadoNuevo = ''
+
+    if(row.Estado === 'Activo'){
+
+      estadoNuevo = 'Inactivo'
+
+    }else{
+      estadoNuevo = 'Activo'
+    }
+
+    console.log(estadoNuevo)
+    try {
+      await apiAxios.put(`/api/Especie/${row.Id_especie}`, {
+        ...row,
+        Estado: estadoNuevo
+      });
+
+      getAllEspecies();
+    } catch (error) {
+      console.error("Error actualizando estado:", error);
+    }
+  };
+
 
   const columnsTable = [
-    { name: 'No.', selector: (row, index) => index + 1 },
-    { name: 'Id Especie', selector: row => row.Id_especie },
-    { name: 'Nombre de especie', selector: row => row.Nom_especie }
-  ]
+    { name: 'Id_Especie', selector: row => row.Id_especie },
+    { name: 'Nombre de especie', selector: row => row.Nom_especie },
+ {
+      name: 'Estado',
+      cell: row => (
+        <button
+          className={`btn btn-sm ${row.Estado =='Activo' ? 'btn-success' : 'btn-danger'}`}
+          onClick={() => toggleEstado(row)}
+        >
+          {row.Estado}
+        </button>
+      )
+    },
+
+
+    {
+      name: 'Acciones',
+      selector: row => (
+        <button
+          className="btn btn-sm bg-info"
+          onClick={() => setRowToEdit(row)}
+          data-bs-toggle="modal"
+          data-bs-target="#exampleModal"
+        >
+          <i className="fa-solid fa-pencil"></i>
+        </button>
+      )
+    }
+  ];
 
   useEffect(() => {
     getAllEspecies()
@@ -42,37 +97,70 @@ const CrudEspecie = () => {
             <input className="form-control" placeholder="Buscar por Especie (ej: Limon)" value={filterText} onChange={(e) => setFilterText(e.target.value)} />
           </div>
           <div className="col-2">
-            <button type="button" className="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal" id="closeModal">
-              Nuevo
+            <button type="button" className="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal" id="closeModal" onClick={() => setRowToEdit(null)}>
+              Agregar Especie 
             </button>
           </div>
         </div>
-        <DataTable
+         <DataTable
           title="Especie"
           columns={columnsTable}
           data={newListEspecie}
-          keyField="id"
+          keyField="Id_especie"
           pagination
           highlightOnHover
           striped
+          conditionalRowStyles={[
+            {
+              when: row => row.Estado === "Activo",
+              style: {
+                backgroundColor: "#ffffff", // fila blanca
+                color: "#000000"            // texto negro
+              }
+            },
+            {
+              when: row => row.Estado === "Inactivo",
+              style: {
+                backgroundColor: "#aeadad", // fila gris clarito
+                color: "#6c757d"            // texto gris oscuro
+              }
+            }
+          ]}
         />
 
-        <div className="modal fade" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        
+
+        {/* Modal */}
+        <div className="modal fade" id="exampleModal" tabIndex="-1">
           <div className="modal-dialog">
             <div className="modal-content">
+
               <div className="modal-header">
-                <h1 className="modal-title fs-5" id="exampleModalLabel">Agregar Especie Nueva</h1>
-                <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="close" id="closeModal"></button>
+                <h1 className="modal-title fs-5">
+                  {rowToEdit ? "Editar Especie" : "Agregar Especie"}
+                </h1>
+                <button
+                  type="button"
+                  className="btn-close"
+                  data-bs-dismiss="modal"
+                  id="closeModal"
+                ></button>
               </div>
+
               <div className="modal-body">
-                <EspeciesForm hideModal={hideModal} refreshList={getAllEspecies} />
+                <EspeciesForm
+                  hideModal={hideModal}
+                  refreshList={getAllEspecies}
+                  rowToEdit={rowToEdit}
+                />
               </div>
+
             </div>
           </div>
         </div>
+
       </div>
     </>
   )
 }
-
 export default CrudEspecie

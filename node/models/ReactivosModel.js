@@ -3,21 +3,12 @@ import { DataTypes } from "sequelize";
 
 const ReactivosModel = db.define('reactivos', {
     Id_Reactivo: { type: DataTypes.NUMBER, primaryKey: true, autoIncrement: true},
-    Nom_Reactivo: { type: DataTypes.STRING },
+    Nom_reactivo: { type: DataTypes.STRING },
     Nomenclatura: { type: DataTypes.STRING},
-    Uni_Medida: { type: DataTypes.STRING },
-    Cantidad: { type: DataTypes.NUMBER},
-    Concentracion: { type: DataTypes.STRING},
-    Marca: { type: DataTypes.STRING},
-    Fec_Vencimiento: { type: DataTypes.DATE},
-    Fun_Quimica: { type: DataTypes.STRING},
-    Est_Fisico: {type: DataTypes.ENUM("Liquido","Solido","Gaseoso")},
-    Nat_Quimica: { type: DataTypes.STRING},
-    Clasificacion: { type: DataTypes.STRING},
-    Peligrosidad: { type: DataTypes.NUMBER},
-    Cla_Peligro: { type: DataTypes.STRING},
-    Fic_Dat_Seguridad: { type: DataTypes.STRING}
-
+    Presentacion: { type: DataTypes.STRING},
+    Est_reactivo: { type: DataTypes.ENUM ("Bueno","Dañado")},
+    Lote: { type: DataTypes.STRING},
+    Estado: { type: DataTypes.ENUM("Activo","Inactivo")},
 
 }, {
     freezeTableName: true
