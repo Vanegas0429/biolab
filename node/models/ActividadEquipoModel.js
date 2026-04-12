@@ -1,30 +1,26 @@
 import db from '../database/db.js';
 import { DataTypes } from 'sequelize';
 
-const ReservaReactivoModel = db.define('ReservaReactivo', {
-    Id_ReservaReactivo: {
+const ActividadEquipoModel = db.define('ActividadEquipo', {
+    Id_ActividadEquipo: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true
     },
-    Id_Reserva: {
+    Id_Actividad: {
         type: DataTypes.INTEGER,
         allowNull: false
     },
-    Id_Reactivo: {
-        type: DataTypes.INTEGER,
-        allowNull: false
-    },
-    Can_Reactivo: {
+    Id_Equipo: {
         type: DataTypes.INTEGER,
         allowNull: false
     }
 }, {
-    tableName: 'reservareactivo',
+    tableName: 'actividadequipo',
     freezeTableName: true,
     timestamps: true,
     createdAt: 'createdat',
     updatedAt: 'updatedat'
 });
 
-export default ReservaReactivoModel;
+export default ActividadEquipoModel;

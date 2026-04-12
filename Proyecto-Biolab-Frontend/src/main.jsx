@@ -1,5 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { BrowserRouter } from 'react-router-dom'
 import App from './App.jsx'
 
 import 'bootstrap/dist/css/bootstrap.min.css'
@@ -14,23 +15,29 @@ import 'bootstrap/dist/js/bootstrap.bundle.min.js'
 // import CrudEquipos from './Equipos/CrudEquipos.jsx'
 // import EquiposForm from './Equipos/EquiposForm.jsx'
 
-import CrudReservaReactivo from './ReservaReactivo/CrudReservaReactivo.jsx'
-import ReservaReactivoForm from './ReservaReactivo/ReservaReactivoForm.jsx'
+// import CrudReservaReactivo from './ReservaReactivo/CrudReservaReactivo.jsx'
+// import ReservaReactivoForm from './ReservaReactivo/ReservaReactivoForm.jsx'
 
-import CrudReservaEquipo from './ReservaEquipo/CrudReservaEquipo.jsx'
-import ReservaEquipoForm from './ReservaEquipo/ReservaEquipoForm.jsx'
+// import CrudReservaEquipo from './ReservaEquipo/CrudReservaEquipo.jsx'
+// import ReservaEquipoForm from './ReservaEquipo/ReservaEquipoForm.jsx'
 
-import CrudReservaActividad from './ReservaActividad/CrudReservaActividad.jsx'
-import ReservaActividadForm from './ReservaActividad/ReservaActividadForm.jsx'
+// import CrudReservaActividad from './ReservaActividad/CrudReservaActividad.jsx'
+// import ReservaActividadForm from './ReservaActividad/ReservaActividadForm.jsx'
 
-import CrudReservaMaterial from './ReservaMaterial/CrudReservaMaterial.jsx'
-import ReservaMaterialForm from './ReservaMaterial/ReservaMaterialForm.jsx'
+// import CrudReservaMaterial from './ReservaMaterial/CrudReservaMaterial.jsx'
+// import ReservaMaterialForm from './ReservaMaterial/ReservaMaterialForm.jsx'
 
-import CrudReservaEstado from './ReservaEstado/CrudReservaEstado.jsx'
-import ReservaEstadoForm from './ReservaEstado/ReservaEstadoForm.jsx'
+// import CrudReservaEstado from './ReservaEstado/CrudReservaEstado.jsx'
+// import ReservaEstadoForm from './ReservaEstado/ReservaEstadoForm.jsx'
+
+// import CrudEstado from './Estado/CrudEstado.jsx'
+// import EstadoForm from './Estado/EstadoForm.jsx'
+
+import CrudReserva from './Reserva/CrudReserva.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
+    <BrowserRouter>
     <App />
     {/* <CrudReactivos/>
     <ReactivosForm/>
@@ -45,8 +52,12 @@ createRoot(document.getElementById('root')).render(
     <CrudReservaActividad />
     <ReservaActividadForm />
     <CrudReservaMaterial />
-    <ReservaMaterialForm /> */}
+    <ReservaMaterialForm />
     <CrudReservaEstado />
     <ReservaEstadoForm />
+    <CrudEstado/>
+    <EstadoForm/> */}
+    {/* <CrudReserva /> */}
+    </BrowserRouter>
   </StrictMode>,
 )

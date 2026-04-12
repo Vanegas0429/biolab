@@ -1,20 +1,20 @@
 import db from '../database/db.js';
 import { DataTypes } from 'sequelize';
 
-const EstadoModel = db.define('Estado', {
-    Id_Estado: {
+const ActividadModel = db.define('Actividad', {
+    Id_Actividad: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true
     },
-    Tip_Estado: {
+    Nom_Actividad: {
         type: DataTypes.STRING,
         allowNull: false
     }
 }, {
-    tableName: 'estados',
+    tableName: 'actividades',
     freezeTableName: true,
     timestamps: false
 });
 
-export default EstadoModel;
+export default ActividadModel;
