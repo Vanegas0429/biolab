@@ -866,21 +866,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [] }) => {
           />
         </div>
 
-        {isEditing && (
-          <div className="col-md-6 mb-3">
-            <label className="form-label">Actividad de reserva:</label>
-            <select
-              className="form-control"
-              value={Booleano}
-              onChange={(e) => setBooleano(e.target.value)}
-              required
-            >
-              <option value="Activo">Activo</option>
-              <option value="Inactivo">Inactivo</option>
-            </select>
-          </div>
-        )}
-
+        
         <div className="col-md-12 mt-2">
           <input type="submit" className="btn btn-primary w-25" value={textFormButton} />
         </div>

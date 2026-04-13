@@ -10,7 +10,6 @@ const EquipoModel = db.define("equipo", {
     centro_costos: { type: DataTypes.STRING },
     subcentro_costos: { type: DataTypes.STRING },
     observaciones: { type: DataTypes.STRING },
-    id_funcionario: { type: DataTypes.NUMBER },
     img_equipo: { type: DataTypes.STRING },
     estado: { type: DataTypes.ENUM("Activo", "Inactivo") }
 }, {

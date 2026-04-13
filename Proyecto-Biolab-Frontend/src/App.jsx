@@ -50,10 +50,6 @@ function App() {
       <Routes>
         {/* Home siempre visible */}
         <Route path='/' element={<Home />} />
-
-        {/* Reserva pública */}
-        <Route path='/Reserva' element={<ReservaForm />} />
-
         {/* Login */}
         <Route path='/login' element={<UsuarioLogin setIsAuth={setIsAuth} />} />
 
@@ -61,13 +57,13 @@ function App() {
         {isAuth && (
           <>
             <Route path='/Reserva' element={<CrudReserva />} />
-            <Route path='/Practica' element={<CrudPractica />} />
             <Route path='/Especie' element={<CrudEspecie />} />
             <Route path='/Sup_Plantas' element={<CrudSup_Plantas />} />
             <Route path='/Produccion' element={<CrudProduccion />} />
             <Route path='/Reactivo' element={<CrudReactivos />} />
             <Route path='/Entrada' element={<CrudEntrada />} />
             <Route path='/Equipo' element={<CrudEquipos />} />
+
           </>
         )}
 

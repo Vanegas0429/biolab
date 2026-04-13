@@ -19,7 +19,7 @@ const NavBar = ({ isAuth, logOut }) => {
       return (
         <>
           <li className="nav-item">
-            <Link className="nav-link" onClick={() => revisarOffCanvas("/Reserva")}>Reserva</Link>
+            <Link className="nav-link" onClick={() => revisarOffCanvas("/Solicitar-reserva")}>Reserva</Link>
           </li>
           <li className="nav-item">
             <Link className="nav-link" onClick={() => revisarOffCanvas("/login")}>Iniciar sesión</Link>
@@ -32,9 +32,6 @@ const NavBar = ({ isAuth, logOut }) => {
       <>
         <li className="nav-item">
           <Link className="nav-link" onClick={() => revisarOffCanvas("/Reserva")}>Reservas</Link>
-        </li>
-        <li className="nav-item">
-          <Link className="nav-link" onClick={() => revisarOffCanvas("/Practica")}>Prácticas</Link>
         </li>
         <li className="nav-item">
           <Link className="nav-link" onClick={() => revisarOffCanvas("/Sup_Plantas")}>Supervisión Plantas</Link>

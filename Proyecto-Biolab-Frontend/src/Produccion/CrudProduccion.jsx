@@ -31,7 +31,7 @@ const CrudProduccion = () => {
         Estado: estadoNuevo
       });
 
-      getAllProducciones();
+      getAllProduccion();
     } catch (error) {
       console.error("Error actualizando estado:", error);
     }
