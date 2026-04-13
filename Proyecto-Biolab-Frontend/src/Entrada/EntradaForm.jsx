@@ -157,7 +157,7 @@ const gestionarForm = async (e) => {
       </div>
 
       <div className="mb-3">
-        <label htmlFor="Uni_Medida">Fc Iniciales:</label>
+        <label htmlFor="Uni_Medida">Unidad de Medida:</label>
         <select id="Uni_Medida" className="form-control" value={Uni_Medida} onChange={e => setUni_Medida(e.target.value)}>
           <option value="">Selecciona uno</option>
           {UnidadMedida.map(f => <option key={f} value={f}>{f}</option>)}

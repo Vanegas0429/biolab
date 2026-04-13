@@ -7,7 +7,6 @@ const ReactivosModel = db.define('reactivos', {
     Nomenclatura: { type: DataTypes.STRING},
     Presentacion: { type: DataTypes.STRING},
     Est_reactivo: { type: DataTypes.ENUM ("Bueno","Dañado")},
-    Lote: { type: DataTypes.STRING},
     Estado: { type: DataTypes.ENUM("Activo","Inactivo")},
 
 }, {

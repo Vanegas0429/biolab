@@ -46,11 +46,8 @@ const ReservaModel = db.define('Reserva', {
         type: DataTypes.STRING,
         allowNull: false
     },
-    Booleano: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        defaultValue: 'Activo'
-    }
+    Booleano: { type: DataTypes.ENUM('Activo', 'Inactivo') }
+
 }, {
     tableName: 'reserva',
     freezeTableName: true,

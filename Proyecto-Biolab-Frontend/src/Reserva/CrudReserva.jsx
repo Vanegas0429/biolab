@@ -12,12 +12,41 @@ const CrudReserva = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [formOpenToken, setFormOpenToken] = useState(0);
 
+   const toggleBooleano = async (row) => {
+
+    console.log(row.Booleano)
+
+    let estadoNuevo = ''
+
+    if(row.Booleano === 'Activo'){
+
+      estadoNuevo = 'Inactivo'
+
+    }else{
+      estadoNuevo = 'Activo'
+    }
+
+    console.log(estadoNuevo)
+    try {
+      await apiAxios.put(`/api/Reserva/${row.Id_Reserva}`, {
+        ...row,
+        Booleano: estadoNuevo
+      });
+
+      fetchReservas();
+    } catch (error) {
+      console.error("Error actualizando estado:", error);
+    }
+  }; 
+
+  // 🔹 Cerrar modal
   const hideModal = () => {
     const btn = document.getElementById("closeModal");
     if (btn) btn.click();
     setRowToEdit({});
   };
 
+  // 🔹 Obtener reservas
   const fetchReservas = async () => {
     try {
       setIsLoading(true);
@@ -36,6 +65,7 @@ const CrudReserva = () => {
     }
   };
 
+  // 🔹 Obtener estados
   const fetchEstados = async () => {
     try {
       const res = await apiAxios.get("/api/Estado");
@@ -53,21 +83,24 @@ const CrudReserva = () => {
     fetchEstados();
   }, []);
 
+  // 🔹 Crear nueva reserva
   const onCreate = () => {
     setRowToEdit({});
     setFormOpenToken((prev) => prev + 1);
   };
 
+  // 🔹 Editar reserva
   const onEdit = (row) => {
     setRowToEdit({ ...(row ?? {}) });
     setFormOpenToken((prev) => prev + 1);
   };
 
+  // 🔹 Columnas de la tabla
   const columnsTable = useMemo(
     () => [
-      { name: "ID", selector: (row) => row?.Id_Reserva ?? "", sortable: true },
+      { name: "Id_Reserva", selector: (row) => row?.Id_Reserva ?? "", sortable: true },
       { name: "Tipo", selector: (row) => row?.Tip_Reserva ?? "", sortable: true },
-      { name: "Estado", selector: (row) => row?.Des_Estado ?? "", sortable: true },
+      { name: "Estado Reserva", selector: (row) => row?.Des_Estado ?? "", sortable: true },
       { name: "Motivo R/C", selector: (row) => row?.Mot_RecCan ?? "", sortable: true },
       { name: "Solicitante", selector: (row) => row?.Nom_Solicitante ?? "", sortable: true },
       { name: "Documento", selector: (row) => row?.Doc_Solicitante ?? "", sortable: true },
@@ -77,19 +110,29 @@ const CrudReserva = () => {
       { name: "Fecha", selector: (row) => row?.Fec_Reserva ?? "", sortable: true },
       { name: "Hora", selector: (row) => row?.Hor_Reserva ?? "", sortable: true },
       { name: "Ficha", selector: (row) => row?.Num_Ficha ?? "", sortable: true },
-      { name: "Activo/Inactivo", selector: (row) => row?.Booleano ?? "", sortable: true },
+      {
+      name: 'Estado',
+      cell: row => (
+        <button
+          className={`btn btn-sm ${row.Booleano =='Activo' ? 'btn-success' : 'btn-danger'}`}
+          onClick={() => toggleBooleano(row)}
+        >
+          {row.Booleano}
+        </button>
+      )
+    },
       {
         name: "Acciones",
         cell: (row) => (
           <button
             type="button"
-            className="btn btn-sm"
+            className="btn btn-sm btn-info"
             data-bs-toggle="modal"
             data-bs-target="#modalReserva"
             onClick={() => onEdit(row)}
             title="Editar"
           >
-            ✏️
+            <i className="fa-solid fa-pencil"></i>
           </button>
         ),
       },
@@ -97,26 +140,26 @@ const CrudReserva = () => {
     []
   );
 
+  // 🔹 Filtro de búsqueda
   const filteredItems = useMemo(() => {
     const t = filterText.toLowerCase().trim();
     if (!t) return Reserva;
 
     return (Reserva ?? []).filter((row) => {
-      const r = row ?? {};
       const values = [
-        r.Id_Reserva,
-        r.Tip_Reserva,
-        r.Des_Estado,
-        r.Mot_RecCan,
-        r.Nom_Solicitante,
-        r.Doc_Solicitante,
-        r.Cor_Solicitante,
-        r.Tel_Solicitante,
-        r.Can_Aprendices,
-        r.Fec_Reserva,
-        r.Hor_Reserva,
-        r.Num_Ficha,
-        r.Booleano,
+        row.Id_Reserva,
+        row.Tip_Reserva,
+        row.Des_Estado,
+        row.Mot_RecCan,
+        row.Nom_Solicitante,
+        row.Doc_Solicitante,
+        row.Cor_Solicitante,
+        row.Tel_Solicitante,
+        row.Can_Aprendices,
+        row.Fec_Reserva,
+        row.Hor_Reserva,
+        row.Num_Ficha,
+        row.Booleano,
       ]
         .filter((v) => v !== null && v !== undefined)
         .join(" ")
@@ -126,11 +169,14 @@ const CrudReserva = () => {
     });
   }, [Reserva, filterText]);
 
-  const modalTitle = rowToEdit?.Id_Reserva ? "Editar reserva" : "Nueva reserva";
+  const modalTitle = rowToEdit?.Id_Reserva
+    ? "Editar Reserva"
+    : "Nueva Reserva";
 
   return (
     <>
       <div className="container mt-3">
+        {/* Encabezado */}
         <div className="d-flex justify-content-between align-items-center mb-3">
           <h4 className="m-0">Reservas</h4>
 
@@ -141,10 +187,11 @@ const CrudReserva = () => {
             data-bs-target="#modalReserva"
             onClick={onCreate}
           >
-            Nueva reserva
+            Nueva Reserva
           </button>
         </div>
 
+        {/* Buscador */}
         <div className="mb-3">
           <input
             className="form-control"
@@ -154,7 +201,9 @@ const CrudReserva = () => {
           />
         </div>
 
+        {/* Tabla */}
         <DataTable
+          title="Lista de Reservas"
           columns={columnsTable}
           data={filteredItems}
           pagination
@@ -163,15 +212,42 @@ const CrudReserva = () => {
           striped
           persistTableHead
           noDataComponent="No hay registros"
+          conditionalRowStyles={[
+            {
+              when: (row) => row.Booleano === "Activo",
+              style: {
+                backgroundColor: "#ffffff",
+                color: "#000000",
+              },
+            },
+            {
+              when: (row) => row.Booleano === "Inactivo",
+              style: {
+                backgroundColor: "#aeadad",
+                color: "#6c757d",
+              },
+            },
+          ]}
         />
       </div>
 
-      <div className="modal fade" id="modalReserva" tabIndex="-1" aria-hidden="true">
+      {/* Modal */}
+      <div
+        className="modal fade"
+        id="modalReserva"
+        tabIndex="-1"
+        aria-hidden="true"
+      >
         <div className="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
           <div className="modal-content">
             <div className="modal-header">
               <h5 className="modal-title">{modalTitle}</h5>
-              <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close" />
+              <button
+                type="button"
+                className="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              ></button>
             </div>
 
             <div className="modal-body">
@@ -187,7 +263,12 @@ const CrudReserva = () => {
             </div>
 
             <div className="modal-footer">
-              <button id="closeModal" type="button" className="btn btn-secondary" data-bs-dismiss="modal">
+              <button
+                id="closeModal"
+                type="button"
+                className="btn btn-secondary"
+                data-bs-dismiss="modal"
+              >
                 Cerrar
               </button>
             </div>

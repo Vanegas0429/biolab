@@ -15,7 +15,6 @@ const CrudReactivo = () => {
     { name: 'Nomenclatura', selector: row => row.Nomenclatura },
     { name: 'Presentacion', selector: row => row.Presentacion },
     { name: 'Estado Reactivo', selector: row => row.Est_reactivo },
-    { name: 'Lote', selector: row => row.Lote },
     {
   name: "Estado",
   cell: (row) => (

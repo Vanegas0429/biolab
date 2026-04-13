@@ -157,20 +157,6 @@ const ReactivosForm = ({ hideModal, rowToEdit }) => {
                         <option value="2">Dañado</option>
                     </select>    
             </div>
-
-            <div className="mb-3">
-                <label htmlFor="Lote" className="form-label">
-                    Lote:
-                </label>
-                <input
-                    type="number"
-                    id="Lote"
-                    className="form-control"
-                    value={Lote}
-                    onChange={(e) => setLote(e.target.value)}
-                />
-            </div>
-
             <div className="mb-3">
                 <input
                     type="submit"
