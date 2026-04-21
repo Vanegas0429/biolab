@@ -9,63 +9,49 @@ const MySwal = withReactContent(Swal)
 const ReactivosForm = ({ hideModal, rowToEdit }) => {
     const [Estado, setEstado] = useState("Activo");
 
-
-
     //Campos del formulario
-    const [Nom_Reactivo, setNombreReactivo] = useState('')
-    const [Nomenclatura, setNomenclatura] = useState('')
-    const [Presentacion, setPresentacion] = useState('')
-    const [Est_Reactivo, setEst_Reactivo] = useState('')
-    const [Lote, setLote] = useState('')
-
+    const [Nom_reactivo, setNom_Reactivo] = useState("");
+    const [Nomenclatura, setNomenclatura] = useState("");
+    const [Presentacion, setPresentacion] = useState("");
+    const [Est_reactivo, setEst_Reactivo] = useState("");
     const [textFormButton, setTextFormButton] = useState("Enviar");
 
     useEffect(() => {
         if (rowToEdit) {
-            setNombreReactivo(rowToEdit.Nom_reactivo|| "");
-            setNomenclatura(rowToEdit.Nomenclatura|| "");
-            setPresentacion(rowToEdit.Presentacion|| "");
-            setEst_Reactivo(rowToEdit.Est_Reactivo|| "");
-            setLote(rowToEdit.Lote|| "");
+            setNom_Reactivo(rowToEdit.Nom_reactivo || "");
+            setNomenclatura(rowToEdit.Nomenclatura || "");
+            setPresentacion(rowToEdit.Presentacion || "");
+            setEst_Reactivo(rowToEdit.Est_reactivo || "");
             setEstado(rowToEdit.Estado || "Activo"); // cargar estado si es edición
             setTextFormButton("Actualizar");
         } else {
             setEstado("Activo");
-            setNombreReactivo("");
+            setNom_Reactivo("");
             setNomenclatura("");
             setPresentacion("");
             setEst_Reactivo("");
-            setLote("");
             setTextFormButton("Enviar");
         }
     }, [rowToEdit]);
 
     const crearReactivo = async () => {
-    return apiAxios.post("/api/Reactivo", {
-        Nom_reactivo: Nom_Reactivo,
-        Nomenclatura,
-        Presentacion,
-        Est_reactivo: Est_Reactivo,
-        Lote,
-        Estado
-    });
-};
+        return apiAxios.post("/api/Reactivo", { Nom_reactivo, Nomenclatura, Presentacion, Est_reactivo, Estado });
+    };
 
     const actualizarReactivo = async () => {
-    return apiAxios.put(`/api/Reactivo/${rowToEdit.Id_Reactivo}`, {
-        Nom_reactivo: Nom_Reactivo,
-        Nomenclatura,
-        Presentacion,
-        Est_reactivo: Est_Reactivo,
-        Lote,
-        Estado
-    });
-};
+        return apiAxios.put(`/api/Reactivo/${rowToEdit.Is_Reactivo}`, {
+            Nom_reactivo,
+            Nomenclatura,
+            Presentacion,
+            Est_reactivo,
+            Estado
+        });
+    };
 
     const gestionarForm = async (e) => {
         e.preventDefault();
 
-        if (!Nom_Reactivo, !Nomenclatura, !Presentacion, !Est_Reactivo, !Lote ) {
+        if (!Nom_reactivo) {
             MySwal.fire({
                 title: "Error",
                 text: "Por favor completa todos los campos obligatorios",
@@ -109,20 +95,20 @@ const ReactivosForm = ({ hideModal, rowToEdit }) => {
     return (
         <form onSubmit={gestionarForm} className="col-12 col-md-6">
             <div className="mb-3">
-                <label htmlFor="Nom_Reactivo" className="form-label">
-                    Nombre del Reactivo:
+                <label htmlFor="Nom_reactivo" className="form-label">
+                    Nombrel Reactivo:
                 </label>
                 <input
                     type="text"
-                    id="Nom_Reactivo"
+                    id="Nom_reactivo"
                     className="form-control"
-                    value={Nom_Reactivo}
-                    onChange={(e) => setNombreReactivo(e.target.value)}
+                    value={Nom_reactivo}
+                    onChange={(e) => setNom_Reactivo(e.target.value)}
                 />
             </div>
 
             <div className="mb-3">
-                <label htmlFor="Nomenclatura" className="form-label">
+                <label htmlFor="Nom_reactivo" className="form-label">
                     Nomenclatura:
                 </label>
                 <input
@@ -148,15 +134,21 @@ const ReactivosForm = ({ hideModal, rowToEdit }) => {
             </div>
 
             <div className="mb-3">
-                <label htmlFor="Est_Reactivo" className="form-label">
+                <label htmlFor="Est_reactivo" className="form-label">
                     Estado Reactivo:
                 </label>
-                <select type="text" id="Est_Reactivo" className="form-control" value={Est_Reactivo} onChange={(e) => setEst_Reactivo(e.target.value)}>
-                        <option value="">Selecciona uno</option>
-                        <option value="1">Bueno</option>
-                        <option value="2">Dañado</option>
-                    </select>    
+                <select
+                    id="Est_reactivo"
+                    className="form-control"
+                    value={Est_reactivo}
+                    onChange={(e) => setEst_reactivo(e.target.value)}
+                >
+                    <option value="">Selecciona uno</option>
+                    <option value="Bueno">Bueno</option>
+                    <option value="Dañado">Dañado</option>
+                </select>
             </div>
+
             <div className="mb-3">
                 <input
                     type="submit"

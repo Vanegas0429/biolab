@@ -1,15 +1,15 @@
 import { useState, useEffect } from "react"
 import apiAxios from "../api/axiosConfig.js"
 import DataTable from 'react-data-table-component'
-import ReactivosForm from "./ReactivosForm.jsx"
+import ActividadMaterialForm from "./ActividadMaterialForm.jsx"
 
-const CrudReactivos = () => {
+const CrudActividadMaterial = () => {
 
-
-  const [rowToEdit, setRowToEdit] = useState(null);
-  const [Reactivo, setReactivo] = useState([])
+  const [rowToEdit, setRowToEdit] = useState(null)
+  const [ActividadMaterial, setActividadMaterial] = useState([])
   const [filterText, setFilterText] = useState("")
-  // 🔹 Función para alternar Activo/Inactivo
+
+  // 🔹 Alternar Activo/Inactivo
   const toggleEstado = async (row) => {
 
     console.log(row.Estado)
@@ -26,25 +26,23 @@ const CrudReactivos = () => {
 
     console.log(estadoNuevo)
     try {
-      await apiAxios.put(`/api/Reactivo/${row.Id_Reactivo}`, {
+      await apiAxios.put(`/api/ActividadMaterial/${row.Id_ActividadMaterial}`, {
         ...row,
         Estado: estadoNuevo
       });
 
-      getAllReactivos();
+      getAllActividadMaterial();
     } catch (error) {
       console.error("Error actualizando estado:", error);
     }
   };
 
-
+  // 🔹 Columnas
   const columnsTable = [
-    { name: 'Id_Reactivo', selector: row => row.Id_Reactivo },
-    { name: 'Nombre Reactivo', selector: row => row.Nom_reactivo },
-    { name: 'Nomenclatura', selector: row => row.Nomenclatura },
-    { name: 'Presentacion', selector: row => row.Presentacion },
-    { name: 'Estado Reactivo', selector: row => row.Est_reactivo },
- {
+    { name: 'Id_ActvidadMaterial', selector: row => row.Id_ActividadMaterial },
+    { name: 'Actividad', selector: row => row.actividad?.Nom_Actividad },
+    { name: 'Material', selector: row => row.Material?.Nom_Material },
+    {
       name: 'Estado',
       cell: row => (
         <button
@@ -55,8 +53,6 @@ const CrudReactivos = () => {
         </button>
       )
     },
-
-
     {
       name: 'Acciones',
       selector: row => (
@@ -70,46 +66,64 @@ const CrudReactivos = () => {
         </button>
       )
     }
-  ];
+  ]
 
+  // 🔹 Cargar datos
   useEffect(() => {
-    getAllReactivos()
+    getAllActividadMaterial()
   }, [])
 
-  const getAllReactivos = async () => {
-    const response = await apiAxios.get('/api/Reactivo')
-    setReactivo(response.data)
-    console.log(response.data)
+  const getAllActividadMaterial = async () => {
+    const response = await apiAxios.get('/api/ActividadMaterial')
+    setActividadMaterial(response.data)
   }
 
-  const newListReactivo = Reactivo.filter((uso) => {
-    const textToSearch = filterText.toLowerCase()
-    const Nom_Reactivo = uso.Nom_reactivo?.toLowerCase()
-    return Nom_Reactivo.includes(textToSearch)
-  })
+  // 🔹 Buscador
+  const newListActividadMaterial = ActividadMaterial.filter((sup) => {
+    const text = filterText.toLowerCase();
+    return (
+      sup.actividad?.Nom_Actividad.toLowerCase().includes(text) ||
+      sup.Material?.Nom_Material.toLowerCase().includes(text) 
+    );
+  });
 
   const hideModal = () => {
     document.getElementById('closeModal').click()
+    getAllActividadMaterial()
   }
 
   return (
     <>
       <div className="container mt-5">
+
         <div className="row d-flex justify-content-between">
           <div className="col-4">
-            <input className="form-control" placeholder="Buscar por Reactivo" value={filterText} onChange={(e) => setFilterText(e.target.value)} />
+            <input
+              className="form-control"
+              placeholder="Buscar"
+              value={filterText}
+              onChange={(e) => setFilterText(e.target.value)}
+            />
           </div>
+
           <div className="col-2">
-            <button type="button" className="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal" id="closeModal" onClick={() => setRowToEdit(null)}>
-              Agregar Reactivo 
+            <button
+              type="button"
+              className="btn btn-primary"
+              data-bs-toggle="modal"
+              data-bs-target="#exampleModal"
+              onClick={() => setRowToEdit(null)}
+            >
+              Agregar Actividad-Material
             </button>
           </div>
         </div>
-         <DataTable
-          title="Reactivo"
+
+        <DataTable
+          title="Actividad-Material"
           columns={columnsTable}
-          data={newListReactivo}
-          keyField="Id_Reactivo"
+          data={newListActividadMaterial}
+          keyField="Id_ActvidadMaterial"
           pagination
           highlightOnHover
           striped
@@ -117,21 +131,19 @@ const CrudReactivos = () => {
             {
               when: row => row.Estado === "Activo",
               style: {
-                backgroundColor: "#ffffff", // fila blanca
-                color: "#000000"            // texto negro
+                backgroundColor: "#ffffff",
+                color: "#000000"
               }
             },
             {
               when: row => row.Estado === "Inactivo",
               style: {
-                backgroundColor: "#aeadad", // fila gris clarito
-                color: "#6c757d"            // texto gris oscuro
+                backgroundColor: "#aeadad",
+                color: "#6c757d"
               }
             }
           ]}
         />
-
-        
 
         {/* Modal */}
         <div className="modal fade" id="exampleModal" tabIndex="-1">
@@ -140,7 +152,7 @@ const CrudReactivos = () => {
 
               <div className="modal-header">
                 <h1 className="modal-title fs-5">
-                  {rowToEdit ? "Editar Reactivo" : "Agregar Reactivo"}
+                  {rowToEdit ? "Editar Actividad-Material" : "Agregar Actividad-Material"}
                 </h1>
                 <button
                   type="button"
@@ -151,9 +163,9 @@ const CrudReactivos = () => {
               </div>
 
               <div className="modal-body">
-                <ReactivosForm
+                <ActividadMaterialForm
                   hideModal={hideModal}
-                  refreshList={getAllReactivos}
+                  refreshList={getAllActividadMaterial}
                   rowToEdit={rowToEdit}
                 />
               </div>
@@ -166,4 +178,5 @@ const CrudReactivos = () => {
     </>
   )
 }
-export default CrudReactivos
+
+export default CrudActividadMaterial

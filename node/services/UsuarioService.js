@@ -18,7 +18,7 @@ class UsuarioService {
   async register(data) {
 
     // Extraemos los datos enviados desde el frontend
-    const { documento, nombre, correo, contraseña } = data;
+    const { documento, nombre, correo, contraseña, rol, estado} = data;
 
     // Verificamos si ya existe un usuario con el mismo correo
     const UsuarioExist = await UsuarioModel.findOne({
@@ -40,7 +40,9 @@ class UsuarioService {
       nombre,
       correo,
       contraseña: hashedcontraseña, // Guardamos la contraseña encriptada
-      uuid: UsuarioUuid
+      uuid: UsuarioUuid,
+      rol, 
+      estado
     });
 
     // Retornamos el usuario creado
@@ -82,6 +84,7 @@ class UsuarioService {
     }
 
     // Generamos un token JWT con el id y uuid del usuario
+    console.log("JWT_SECRET:", process.env.JWT_SECRET);
     const token = jwt.sign(
       { id: usuario.id, uuid: usuario.uuid }, // payload
       process.env.JWT_SECRET, // clave secreta

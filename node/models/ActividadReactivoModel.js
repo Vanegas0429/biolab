@@ -14,7 +14,8 @@ const ActividadReactivoModel = db.define('ActividadReactivo', {
     Id_Reactivo: {
         type: DataTypes.INTEGER,
         allowNull: false
-    }
+    },
+    Estado: { type: DataTypes.ENUM('Activo','Inactivo')}
 }, {
     tableName: 'actividadreactivo',
     freezeTableName: true,

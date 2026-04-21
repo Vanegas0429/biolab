@@ -23,6 +23,7 @@ import EspeciesRoutes from './routes/EspeciesRoutes.js';
 import PracticaRoutes from './routes/PracticaRoutes.js';
 import EntradaRoutes from './routes/EntradaRoutes.js'
 import UsuarioRouter from './routes/UsuarioRoutes.js';
+import MaterialRoutes from './routes/MaterialRoutes.js'
 
 // Modelos
 import PracticaModel from './models/PracticaModel.js';
@@ -34,6 +35,12 @@ import ReactivosModel from './models/ReactivosModel.js';
 import ProduccionModel from './models/ProduccionModel.js';
 import EspeciesModel from './models/EspeciesModel.js';
 import Sup_plantasModel from './models/sup_plantasModel.js';
+import ActividadEquipoModel from './models/ActividadEquipoModel.js';
+import ActividadModel from './models/ActividadModel.js';
+import EquipoModel from './models/EquipoModel.js';
+import ActividadMaterialModel from './models/ActividadMaterialModel.js';
+import MaterialModel from './models/MaterialModel.js';
+import ActividadReactivoModel from './models/ActividadReactivoModel.js';
 
 // Configuración
 dotenv.config();
@@ -53,10 +60,11 @@ app.use('/api/Especie', EspeciesRoutes);
 app.use('/api/Reserva', ReservaRoutes);
 app.use('/api/Practica', PracticaRoutes)
 app.use('/api/Entrada', EntradaRoutes)
+app.use('/api/Material', MaterialRoutes)
 app.use('/api/Actividad', ActividadRoutes)
 app.use('/api/ActividadEquipo', ActividadEquipoRoutes)
 app.use('/api/ActividadMaterial', ActividadMaterialRoutes)
-app.use('/api/ActvidadReactivo', ActividadReactivoRoutes)
+app.use('/api/ActividadReactivo', ActividadReactivoRoutes)
 app.use('/api/ReservaActividad', ReservaActividadRoutes)
 app.use('/api/ReservaEquipo', ReservaEquipoRoutes)
 app.use('/api/ReservaEstado', ReservaEstadoRoutes)
@@ -80,28 +88,42 @@ app.get('/', (req, res) => {
 });
 
 // Relaciones
-// Relaciones existentes
-ReservaModel.hasMany(PracticaModel, {
-    foreignKey: 'Id_Reserva',
-    as: 'Practicas'
-});
 
-PracticaModel.belongsTo(ReservaModel, {
-    foreignKey: 'Id_Reserva',
-    as: 'Reserva'
-});
-
-//Especie -> ProduccionModel (1 a muchos)
+//Especie -> ProduccionModel 
 ProduccionModel.belongsTo(EspeciesModel, { foreignKey: 'Id_especie', as: 'Especie'});
 EspeciesModel.hasMany(ProduccionModel, { foreignKey: 'Id_especie', as: 'Producciones'});
 
-//Produccion -> Sup_PlantasModel (1 a muchos)
+//Produccion -> Sup_PlantasModel 
 Sup_plantasModel.belongsTo(ProduccionModel, { foreignKey: 'Id_produccion', as: 'Produccion'});
 ProduccionModel.hasMany(Sup_plantasModel, { foreignKey: 'Id_produccion', as: 'SupPlantas'});
 
-//Reactivos -> EntradaModel (1 a muchos)
+//Reactivos -> EntradaModel 
 EntradaModel.belongsTo(ReactivosModel, { foreignKey: 'Id_reactivo', as: 'Reactivo'});
 ReactivosModel.hasMany(EntradaModel, { foreignKey: 'Id_reactivo', as: 'Entrada'});
+
+// Actividad -> ActividadEquipo
+ActividadEquipoModel.belongsTo(ActividadModel, { foreignKey: 'Id_Actividad', as: 'Actividad'});
+ActividadModel.hasMany(ActividadEquipoModel, { foreignKey: 'Id_Actividad', as: 'ActividadEquipos'});
+
+// Equipo -> ActividadEquipo
+ActividadEquipoModel.belongsTo(EquipoModel, { foreignKey: 'id_equipo', as: 'Equipo'});
+EquipoModel.hasMany(ActividadEquipoModel, { foreignKey: 'id_equipo', as: 'ActividadEquipos'});
+
+// Actividad -> ActividadMaterial
+ActividadMaterialModel.belongsTo(ActividadModel, { foreignKey: 'Id_Actividad', as: 'actividad'});
+ActividadModel.hasMany(ActividadMaterialModel, { foreignKey: 'Id_Actividad', as: 'ActividadMateriales'});
+
+// Equipo -> ActividadMaterial
+ActividadMaterialModel.belongsTo(MaterialModel, { foreignKey: 'Id_Material', as: 'Material'});
+MaterialModel.hasMany(ActividadMaterialModel, { foreignKey: 'Id_Material', as: 'ActividadMateriales'});
+
+// Actividad -> ActividadReactivo
+ActividadReactivoModel.belongsTo(ActividadModel, { foreignKey: 'Id_Actividad', as: 'actividades'});
+ActividadModel.hasMany(ActividadReactivoModel, { foreignKey: 'Id_Actividad', as: 'ActividadReactivos'});
+
+// Equipo -> ActividadReactivo
+ActividadReactivoModel.belongsTo(ReactivosModel, { foreignKey: 'Id_Reactivo', as: 'reactivos'});
+ReactivosModel.hasMany(ActividadReactivoModel, { foreignKey: 'Id_Reactivo', as: 'ActividadReactivos'});
 
 // Servidor
 const PORT = process.env.PORT || 8000;

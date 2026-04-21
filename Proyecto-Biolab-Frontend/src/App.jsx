@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import NavBar from './navBar';
 import Home from './home/home';
 import UsuarioLogin from './home/UsuarioLogin';
-import ReservaForm from './Reserva/ReservaForm';
+import UsuarioRegistro from './home/UsuarioRegister';
 
 // CRUDs protegidos
 import CrudPractica from './Practica/CrudPractica';
@@ -15,6 +15,12 @@ import CrudEquipos from './Equipos/CrudEquipos';
 import CrudEntrada from './Entrada/CrudEntrada';
 import CrudReactivos from './Reactivos/CrudReactivos';
 import CrudReserva from './Reserva/CrudReserva';
+import CrudMaterial from './Material/CrudMaterial';
+import CrudActividad from './Actividad/CrudActividad';
+import CrudActividadEquipo from './ActividadEquipo/CrudActvidadEquipo';
+import CrudActividadMaterial from './ActividadMaterial/CrudActividadMaterial';
+import CrudActividadReactivo from './ActividadReactivo/CrudActividadReactivo';
+import UsuarioRegistroAdmin from './home/UsuarioRegisterAdmin';
 
 function App() {
   const [isAuth, setIsAuth] = useState(false);
@@ -51,7 +57,8 @@ function App() {
         {/* Home siempre visible */}
         <Route path='/' element={<Home />} />
         {/* Login */}
-        <Route path='/login' element={<UsuarioLogin setIsAuth={setIsAuth} />} />
+        <Route path="/login" element={<UsuarioLogin setIsAuth={setIsAuth} />} />
+        <Route path="/register" element={<UsuarioRegistro />} />
 
         {/* CRUDs protegidos */}
         {isAuth && (
@@ -63,6 +70,12 @@ function App() {
             <Route path='/Reactivo' element={<CrudReactivos />} />
             <Route path='/Entrada' element={<CrudEntrada />} />
             <Route path='/Equipo' element={<CrudEquipos />} />
+            <Route path='/Material' element={<CrudMaterial />} />
+            <Route path='/Actividad' element={<CrudActividad />} />
+            <Route path='/ActividadEquipo' element={<CrudActividadEquipo />} />
+            <Route path='/ActividadMaterial' element={<CrudActividadMaterial />} />
+            <Route path='/ActividadReactivo' element={<CrudActividadReactivo />} />
+            <Route path='/registroAdmin' element={<UsuarioRegistroAdmin />} />
 
           </>
         )}

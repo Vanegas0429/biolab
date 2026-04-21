@@ -1,9 +1,18 @@
 import axios from "axios";
 
-const API_URL = import.meta.env.VITE_API_URL;
-
-const apiAxios = axios.create({
-  baseURL: API_URL,
+const apiNode = axios.create({
+  baseURL: "http://localhost:8000",
 });
 
-export default apiAxios;
+// 🔥 agregar token automáticamente
+apiNode.interceptors.request.use((config) => {
+  const user = JSON.parse(localStorage.getItem("UsuarioLaboratorio"));
+
+  if (user?.token) {
+    config.headers.Authorization = `Bearer ${user.token}`;
+  }
+
+  return config;
+});
+
+export default apiNode;

@@ -41,8 +41,9 @@ const CrudProduccion = () => {
   const columnsTable = [
     { name: 'Id_Produccion', selector: row => row.Id_produccion },
     { name: 'Especie', selector: row => row.Especie?.Nom_especie },
-    { name: 'Tip_produccion', selector: row => row.Tip_produccion },
-    { name: 'Fec_produccion', selector: row => row.Fec_produccion },
+    { name: 'Lote', selector: row => row.Lote },
+    { name: 'Tipo de Produccion', selector: row => row.Tip_produccion },
+    { name: 'Fecha de Produccion', selector: row => row.Fec_produccion },
     {
       name: 'Estado',
       cell: row => (
@@ -80,11 +81,13 @@ const CrudProduccion = () => {
   }
 
   // 🔹 Buscador
-  const newListProduccion = Produccion.filter((uso) => {
-    const textToSearch = filterText.toLowerCase()
-    const tip = uso.Tip_produccion?.toLowerCase() || ""
-    return tip.includes(textToSearch)
-  })
+  const newListProduccion = Produccion.filter((sup) => {
+    const text = filterText.toLowerCase();
+    return (
+      sup.Lote?.toLowerCase().includes(text) ||
+      sup.Especie?.Nom_especie.toLowerCase().includes(text) 
+    );
+  });
 
   const hideModal = () => {
     document.getElementById('closeModal').click()

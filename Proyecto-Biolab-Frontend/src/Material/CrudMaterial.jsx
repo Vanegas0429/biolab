@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react"
 import apiAxios from "../api/axiosConfig.js"
 import DataTable from 'react-data-table-component'
-import ReactivosForm from "./ReactivosForm.jsx"
+import MaterialForm from "./MaterialForm.jsx"
 
-const CrudReactivos = () => {
+const CrudMaterial = () => {
 
 
   const [rowToEdit, setRowToEdit] = useState(null);
-  const [Reactivo, setReactivo] = useState([])
+  const [Material, setMaterial] = useState([])
   const [filterText, setFilterText] = useState("")
   // 🔹 Función para alternar Activo/Inactivo
   const toggleEstado = async (row) => {
@@ -26,12 +26,12 @@ const CrudReactivos = () => {
 
     console.log(estadoNuevo)
     try {
-      await apiAxios.put(`/api/Reactivo/${row.Id_Reactivo}`, {
+      await apiAxios.put(`/api/Material/${row.Id_Material}`, {
         ...row,
         Estado: estadoNuevo
       });
 
-      getAllReactivos();
+      getAllMaterial();
     } catch (error) {
       console.error("Error actualizando estado:", error);
     }
@@ -39,11 +39,8 @@ const CrudReactivos = () => {
 
 
   const columnsTable = [
-    { name: 'Id_Reactivo', selector: row => row.Id_Reactivo },
-    { name: 'Nombre Reactivo', selector: row => row.Nom_reactivo },
-    { name: 'Nomenclatura', selector: row => row.Nomenclatura },
-    { name: 'Presentacion', selector: row => row.Presentacion },
-    { name: 'Estado Reactivo', selector: row => row.Est_reactivo },
+    { name: 'Id_Material', selector: row => row.Id_Material },
+    { name: 'Nombre de Material', selector: row => row.Nom_Material },
  {
       name: 'Estado',
       cell: row => (
@@ -73,19 +70,19 @@ const CrudReactivos = () => {
   ];
 
   useEffect(() => {
-    getAllReactivos()
+    getAllMaterial()
   }, [])
 
-  const getAllReactivos = async () => {
-    const response = await apiAxios.get('/api/Reactivo')
-    setReactivo(response.data)
+  const getAllMaterial = async () => {
+    const response = await apiAxios.get('/api/Material')
+    setMaterial(response.data)
     console.log(response.data)
   }
 
-  const newListReactivo = Reactivo.filter((uso) => {
+  const newListMaterial = Material.filter((uso) => {
     const textToSearch = filterText.toLowerCase()
-    const Nom_Reactivo = uso.Nom_reactivo?.toLowerCase()
-    return Nom_Reactivo.includes(textToSearch)
+    const Nom_Material = uso.Nom_Material?.toLowerCase()
+    return Nom_Material.includes(textToSearch)
   })
 
   const hideModal = () => {
@@ -97,19 +94,19 @@ const CrudReactivos = () => {
       <div className="container mt-5">
         <div className="row d-flex justify-content-between">
           <div className="col-4">
-            <input className="form-control" placeholder="Buscar por Reactivo" value={filterText} onChange={(e) => setFilterText(e.target.value)} />
+            <input className="form-control" placeholder="Buscar por Material" value={filterText} onChange={(e) => setFilterText(e.target.value)} />
           </div>
           <div className="col-2">
             <button type="button" className="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal" id="closeModal" onClick={() => setRowToEdit(null)}>
-              Agregar Reactivo 
+              Agregar Material 
             </button>
           </div>
         </div>
          <DataTable
-          title="Reactivo"
+          title="Material"
           columns={columnsTable}
-          data={newListReactivo}
-          keyField="Id_Reactivo"
+          data={newListMaterial}
+          keyField="Id_Material"
           pagination
           highlightOnHover
           striped
@@ -140,7 +137,7 @@ const CrudReactivos = () => {
 
               <div className="modal-header">
                 <h1 className="modal-title fs-5">
-                  {rowToEdit ? "Editar Reactivo" : "Agregar Reactivo"}
+                  {rowToEdit ? "Editar Material" : "Agregar Material"}
                 </h1>
                 <button
                   type="button"
@@ -151,9 +148,9 @@ const CrudReactivos = () => {
               </div>
 
               <div className="modal-body">
-                <ReactivosForm
+                <MaterialForm
                   hideModal={hideModal}
-                  refreshList={getAllReactivos}
+                  refreshList={getAllMaterial}
                   rowToEdit={rowToEdit}
                 />
               </div>
@@ -166,4 +163,4 @@ const CrudReactivos = () => {
     </>
   )
 }
-export default CrudReactivos
+export default CrudMaterial

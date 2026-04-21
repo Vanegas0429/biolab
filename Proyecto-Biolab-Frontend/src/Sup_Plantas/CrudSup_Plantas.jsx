@@ -105,8 +105,9 @@ const CrudSup_Plantas = () => {
     const text = filterText.toLowerCase();
     return (
       sup.Num_lote?.toString().includes(text) ||
-      sup.Fc_Bacterias?.toString().includes(text) ||
-      sup.Fc_Hongos?.toString().includes(text)
+      sup.Med_Cultivo?.toLowerCase().includes(text) ||
+      sup.Met_Propagacion?.toLowerCase().includes(text) ||
+      sup.Produccion?.Tip_produccion.toLowerCase().includes(text)
     );
   });
 

@@ -55,11 +55,6 @@ const CrudReserva = () => {
       const list = Array.isArray(data) ? data : data?.data ?? [];
       setReserva((list ?? []).filter(Boolean));
     } catch (error) {
-      console.error(
-        "Error consultando reservas:",
-        error.response ? error.response.data : error.message
-      );
-      Swal.fire("Error", "No se pudieron cargar las reservas", "error");
     } finally {
       setIsLoading(false);
     }
@@ -71,10 +66,6 @@ const CrudReserva = () => {
       const res = await apiAxios.get("/api/Estado");
       setEstados(res.data ?? []);
     } catch (error) {
-      console.error(
-        "Error consultando estados:",
-        error.response ? error.response.data : error.message
-      );
     }
   };
 
