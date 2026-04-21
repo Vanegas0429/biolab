@@ -1,9 +1,22 @@
 import ActividadMaterialModel from "../models/ActividadMaterialModel.js";
+import MaterialModel from "../models/MaterialModel.js";
+import ActividadModel from "../models/ActividadModel.js";
 
 class ActividadMaterialService {
 
     async getAll() {
-        return await ActividadMaterialModel.findAll()
+        return await ActividadMaterialModel.findAll(
+            {
+                include: [{
+                    model: ActividadModel,
+                    as: 'actividad'
+                }, 
+                {
+                    model: MaterialModel,
+                    as: 'Material'
+                }]
+            }
+        )
     }
 
     async getById(id) {

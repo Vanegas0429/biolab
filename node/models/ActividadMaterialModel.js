@@ -14,7 +14,8 @@ const ActividadMaterialModel = db.define('ActividadMaterial', {
     Id_Material: {
         type: DataTypes.INTEGER,
         allowNull: false
-    }
+    },
+    Estado: { type: DataTypes.ENUM('Activo','Inactivo')}
 }, {
     tableName: 'actividadmaterial',
     freezeTableName: true,

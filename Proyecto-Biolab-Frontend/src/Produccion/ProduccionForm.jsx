@@ -7,6 +7,7 @@ const MySwal = withReactContent(Swal)
 
 const ProduccionForm = ({ hideModal, rowToEdit }) => {
 
+    const [Lote, setLote_Produccion] = useState('')
     const [Tip_produccion, setTip_produccion] = useState('')
     const [Fec_produccion, setFec_produccion] = useState('')
     const [Estado, setEstado] = useState("Activo")
@@ -33,12 +34,14 @@ const ProduccionForm = ({ hideModal, rowToEdit }) => {
     useEffect(() => {
         if (rowToEdit) {
             setId_especie(rowToEdit.Id_especie || '')
+            setLote_Produccion(rowToEdit.Lote || '')
             setTip_produccion(rowToEdit.Tip_produccion || '')
             setFec_produccion(rowToEdit.Fec_produccion || '')
             setEstado(rowToEdit.Estado || 'Activo')
             setTextFormButton('Actualizar')
         } else {
             setId_especie('')
+            setLote_Produccion('')
             setTip_produccion('')
             setFec_produccion('')
             setEstado('Activo')
@@ -49,6 +52,7 @@ const ProduccionForm = ({ hideModal, rowToEdit }) => {
     // 🔹 CREAR
     const crearProduccion = async () => {
         return apiAxios.post('/api/Produccion', {
+            Lote,
             Tip_produccion,
             Fec_produccion,
             Id_especie: Number(Id_especie),
@@ -59,6 +63,7 @@ const ProduccionForm = ({ hideModal, rowToEdit }) => {
     // 🔹 ACTUALIZAR
     const actualizarProduccion = async () => {
         return apiAxios.put(`/api/Produccion/${rowToEdit.Id_produccion}`, {
+            Lote,
             Tip_produccion,
             Fec_produccion,
             Id_especie: Number(Id_especie),
@@ -69,7 +74,7 @@ const ProduccionForm = ({ hideModal, rowToEdit }) => {
     const gestionarForm = async (e) => {
         e.preventDefault()
 
-        if (!Tip_produccion || !Fec_produccion || !Id_especie) {
+        if (!Lote, !Tip_produccion || !Fec_produccion || !Id_especie) {
             MySwal.fire({
                 title: "Error",
                 text: "Por favor completa todos los campos obligatorios",
@@ -116,7 +121,22 @@ const ProduccionForm = ({ hideModal, rowToEdit }) => {
 
     return (
         <form onSubmit={gestionarForm} className="col-12 col-md-6">
+            
+            {/* Lote Produccion */}
+            <div className="mb-3">
+                <label htmlFor="Fec_produccion" className="form-label">
+                    Lote:
+                </label>
+                <input
+                    type="text"
+                    id="Fec_produccion"
+                    className="form-control"
+                    value={Fec_produccion}
+                    onChange={(e) => setFec_produccion(e.target.value)}
+                />
+            </div>
 
+            
             {/* Tipo Producción */}
             <div className="mb-3">
                 <label htmlFor="Tip_produccion" className="form-label">
@@ -135,7 +155,7 @@ const ProduccionForm = ({ hideModal, rowToEdit }) => {
                 </select>
             </div>
 
-            {/* Código Producción */}
+            {/* Fecha Produccion */}
             <div className="mb-3">
                 <label htmlFor="Fec_produccion" className="form-label">
                     Fecha Produccion:

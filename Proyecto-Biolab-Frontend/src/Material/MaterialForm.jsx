@@ -6,42 +6,42 @@ import withReactContent from 'sweetalert2-react-content'
 
 const MySwal = withReactContent(Swal)
 
-const ActividadForm = ({ hideModal, rowToEdit }) => {
-    const [Actividad, setActividad] = useState("Activo");
+const MaterialForm = ({ hideModal, rowToEdit }) => {
+    const [Estado, setEstado] = useState("Activo");
 
 
 
     //Campos del formulario
-    const [Nom_Actividad, setNom_Actividad] = useState("");
+    const [Nom_Material, setNom_Material] = useState("");
     const [textFormButton, setTextFormButton] = useState("Enviar");
 
     useEffect(() => {
         if (rowToEdit) {
-            setNom_Actividad(rowToEdit.Nom_Actividad || "");
-            setActividad(rowToEdit.Actividad || "Activo"); // cargar Actividad si es edición
+            setNom_Material(rowToEdit.Nom_Material || "");
+            setEstado(rowToEdit.Estado || "Activo"); // cargar estado si es edición
             setTextFormButton("Actualizar");
         } else {
-            setActividad("Activo");
-            setNom_Actividad("");
+            setEstado("Activo");
+            setNom_Material("");
             setTextFormButton("Enviar");
         }
     }, [rowToEdit]);
 
-    const crearActividad = async () => {
-        return apiAxios.post("/api/Actividad", { Nom_Actividad, Actividad });
+    const crearMaterial = async () => {
+        return apiAxios.post("/api/Material", { Nom_Material, Estado });
     };
 
-    const actualizarActividad = async () => {
-        return apiAxios.put(`/api/Actividad/${rowToEdit.Id_Actividad}`, {
-            Nom_Actividad,
-            Actividad
+    const actualizarMaterial = async () => {
+        return apiAxios.put(`/api/Material/${rowToEdit.Id_Material}`, {
+            Nom_Material,
+            Estado
         });
     };
 
     const gestionarForm = async (e) => {
         e.preventDefault();
 
-        if (!Nom_Actividad) {
+        if (!Nom_Material) {
             MySwal.fire({
                 title: "Error",
                 text: "Por favor completa todos los campos obligatorios",
@@ -53,17 +53,17 @@ const ActividadForm = ({ hideModal, rowToEdit }) => {
 
         try {
             if (rowToEdit) {
-                await actualizarActividad();
+                await actualizarMaterial();
                 MySwal.fire({
                     title: "Actualizado",
-                    text: "Actividad actualizada correctamente",
+                    text: "Material actualizada correctamente",
                     icon: "success"
                 });
             } else {
-                await crearActividad();
+                await crearMaterial();
                 MySwal.fire({
                     title: "Creación",
-                    text: "Actividad creada correctamente",
+                    text: "Material creada correctamente",
                     icon: "success"
                 });
             }
@@ -71,12 +71,12 @@ const ActividadForm = ({ hideModal, rowToEdit }) => {
             hideModal();
         } catch (error) {
             console.error(
-                "Error al guardar Actividad:",
+                "Error al guardar Material:",
                 error.response ? error.response.data : error.message
             );
             MySwal.fire({
                 title: "Error",
-                text: "Error al guardar la Actividad",
+                text: "Error al guardar la Material",
                 icon: "success"
             })
         }
@@ -85,15 +85,15 @@ const ActividadForm = ({ hideModal, rowToEdit }) => {
     return (
         <form onSubmit={gestionarForm} className="col-12 col-md-6">
             <div className="mb-3">
-                <label htmlFor="Nom_Actividad" className="form-label">
-                    Nombre de la Actividad:
+                <label htmlFor="Nom_Material" className="form-label">
+                    Nombre de la Material:
                 </label>
                 <input
                     type="text"
-                    id="Nom_Actividad"
+                    id="Nom_Material"
                     className="form-control"
-                    value={Nom_Actividad}
-                    onChange={(e) => setNom_Actividad(e.target.value)}
+                    value={Nom_Material}
+                    onChange={(e) => setNom_Material(e.target.value)}
                 />
             </div>
 
@@ -108,4 +108,4 @@ const ActividadForm = ({ hideModal, rowToEdit }) => {
     );
 };
 
-export default ActividadForm;
+export default MaterialForm;

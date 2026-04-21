@@ -12,32 +12,35 @@ const UsuarioLogin = ({ setIsAuth }) => {
   const navigate = useNavigate();
 
   const gestionarLogin = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    try {
-      const res = await apiNode.post('/api/auth/login', {
-        correo,
-        contraseña
-      });
+  try {
+    const res = await apiNode.post("/api/auth/login", {
+  correo,
+  contraseña, // 🔥 debe llamarse EXACTAMENTE así
+});
 
-      const { usuario } = res.data;
+    const { usuario } = res.data;
 
-      localStorage.setItem('UsuarioLaboratorio', JSON.stringify(usuario));
+localStorage.setItem("UsuarioLaboratorio", JSON.stringify(usuario));
 
-      setError(null);
-      setIsAuth(true);
-      navigate('/Reserva');
+// 🔥 MUY IMPORTANTE
+apiNode.defaults.headers.common[
+  "Authorization"
+] = `Bearer ${usuario.token}`;
 
-    } catch (err) {
-      console.error(err);
-      setError('Correo o contraseña incorrectos');
-    }
-  };
+    setIsAuth(true);
+    navigate("/Reserva");
+
+  } catch (err) {
+    setError("Correo o contraseña incorrectos");
+  }
+};
 
   return (
     <div 
-      className="d-flex justify-content-center align-items-center vh-100"
-      style={{ background: "linear-gradient(135deg, #ffffff, #ffffff)" }}
+      className="d-flex justify-content-center align-items-start pt-4"
+style={{ minHeight: "calc(100vh - 90px)" }}
     >
 
       <div 

@@ -1,9 +1,22 @@
 import ActividadReactivoModel from "../models/ActividadReactivoModel.js";
+import ReactivosModel from "../models/ReactivosModel.js";
+import ActividadModel from "../models/ActividadModel.js";
 
 class ActividadReactivoService {
 
     async getAll() {
-        return await ActividadReactivoModel.findAll()
+        return await ActividadReactivoModel.findAll(
+            {
+                include: [{
+                    model: ActividadModel,
+                    as: 'actividades'
+                }, 
+                {
+                    model: ReactivosModel,
+                    as: 'reactivos'
+                }]
+            }
+        )
     }
 
     async getById(id) {

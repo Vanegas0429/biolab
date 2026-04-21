@@ -1,9 +1,22 @@
 import ActividadEquipoModel from "../models/ActividadEquipoModel.js";
+import ActividadModel from "../models/ActividadModel.js";
+import EquipoModel from "../models/EquipoModel.js";
 
 class ActividadEquipoService {
 
-    async getAll() {
-        return await ActividadEquipoModel.findAll()
+    async getAll(){
+         return await ActividadEquipoModel.findAll(
+            {
+                include: [{
+                    model: ActividadModel,
+                    as: 'Actividad'
+                }, 
+                {
+                    model: EquipoModel,
+                    as: 'Equipo'
+                }]
+            }
+        )
     }
 
     async getById(id) {
