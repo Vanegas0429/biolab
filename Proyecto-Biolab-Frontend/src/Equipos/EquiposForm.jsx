@@ -3,7 +3,7 @@ import apiAxios from "../api/axiosConfig.js";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 
-const EquiposForm = ({ hideModal, rowToEdit }) => {
+const EquiposForm = ({ hideModal, rowToEdit, refreshList }) => {
 
     const Myswal = withReactContent(Swal);
 
@@ -112,6 +112,7 @@ const EquiposForm = ({ hideModal, rowToEdit }) => {
                 });
             }
 
+            if (refreshList) refreshList();
             hideModal();
 
         } catch (error) {
