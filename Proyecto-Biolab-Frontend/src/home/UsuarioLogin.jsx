@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import apiNode from "../api/axiosConfig.js";
 import logo from "../assets/logo.png"; 
 
-const UsuarioLogin = ({ setIsAuth }) => {
+const UsuarioLogin = ({ setIsAuth, setUserRol }) => {
 
   const [correo, setCorreo] = useState("");
   const [contraseña, setContraseña] = useState("");
@@ -12,113 +12,104 @@ const UsuarioLogin = ({ setIsAuth }) => {
   const navigate = useNavigate();
 
   const gestionarLogin = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
+    try {
+      const res = await apiNode.post("/api/auth/login", { correo, contraseña });
+      const { usuario } = res.data;
 
-  try {
-    const res = await apiNode.post("/api/auth/login", {
-  correo,
-  contraseña, // 🔥 debe llamarse EXACTAMENTE así
-});
+      localStorage.setItem("UsuarioLaboratorio", JSON.stringify(usuario));
+      apiNode.defaults.headers.common["Authorization"] = `Bearer ${usuario.token}`;
 
-    const { usuario } = res.data;
+      setIsAuth(true);
+      if (setUserRol) setUserRol(usuario.rol);
 
-localStorage.setItem("UsuarioLaboratorio", JSON.stringify(usuario));
+      // Redirigir según rol
+      if (usuario.rol === 'solicitante') {
+        navigate("/");
+      } else if (usuario.rol === 'pasante') {
+        navigate("/");
+      } else {
+        navigate("/");
+      }
 
-// 🔥 MUY IMPORTANTE
-apiNode.defaults.headers.common[
-  "Authorization"
-] = `Bearer ${usuario.token}`;
-
-    setIsAuth(true);
-    navigate("/Reserva");
-
-  } catch (err) {
-    setError("Correo o contraseña incorrectos");
-  }
-};
+    } catch (err) {
+      setError("Correo o contraseña incorrectos");
+    }
+  };
 
   return (
     <div 
-      className="d-flex justify-content-center align-items-start pt-4"
-style={{ minHeight: "calc(100vh - 90px)" }}
+      className="container-fluid d-flex justify-content-center align-items-center"
+      style={{ minHeight: "100vh", padding: "2rem" }}
     >
-
       <div 
-        className="card shadow-lg p-4"
-        style={{ width: "400px", borderRadius: "15px" }}
+        className="card shadow-lg p-5 fade-in"
+        style={{ maxWidth: "450px", width: "100%" }}
       >
-
         {/* LOGO */}
-        <div className="text-center mb-3">
-          <h1 className="text-muted" style={{ fontSize: "50px" }}>
-            Iniciar Sesion
-          </h1>
+        <div className="text-center mb-4">
           <img 
             src={logo} 
             alt="BIOLAB Logo"
-            style={{ width: "120px" }}
+            className="mb-3"
+            style={{ width: "90px", height: "90px", objectFit: "cover", borderRadius: "50%", boxShadow: "0 4px 10px rgba(0,0,0,0.1)" }}
           />
-          <h4 className="mt-2 text-success fw-bold"></h4>
-          <p className="text-muted" style={{ fontSize: "14px" }}>
-            Sistema de Gestión de Laboratorio de Biotecnologia Vegetal SENA 
+          <h2 className="fw-bold mb-1" style={{ color: "var(--primary-color)", letterSpacing: "2px" }}>BIOLAB</h2>
+          <p className="text-muted small">
+            Sistema de Gestión de Laboratorio SENA
           </p>
         </div>
 
         {error && (
-          <div className="alert alert-danger text-center">
-            {error}
+          <div className="alert alert-danger text-center shadow-sm py-2">
+            <small>{error}</small>
           </div>
         )}
 
         <form onSubmit={gestionarLogin}>
-
-          <div className="mb-3">
-            <label className="form-label">Correo electrónico</label>
+          <div className="mb-4">
+            <label className="form-label text-secondary fw-semibold small">Correo electrónico</label>
             <input
               type="email"
-              className="form-control"
+              className="form-control shadow-sm"
               value={correo}
               onChange={(e) => setCorreo(e.target.value)}
-              placeholder="Ingrese su correo"
+              placeholder="Ej. usuario@sena.edu.co"
               required
             />
           </div>
 
-          <div className="mb-3">
-            <label className="form-label">Contraseña</label>
+          <div className="mb-4">
+            <label className="form-label text-secondary fw-semibold small">Contraseña</label>
             <input
               type="password"
-              className="form-control"
+              className="form-control shadow-sm"
               value={contraseña}
               onChange={(e) => setContraseña(e.target.value)}
-              placeholder="Ingrese su contraseña"
+              placeholder="••••••••"
               required
             />
           </div>
 
-          <div className="form-check mb-3">
+          <div className="form-check mb-4">
             <input 
               type="checkbox" 
               className="form-check-input" 
               id="rememberMe" 
             />
-            <label className="form-check-label" htmlFor="rememberMe">
-              Recordarme
+            <label className="form-check-label text-muted small" htmlFor="rememberMe">
+              Recordar mis datos
             </label>
           </div>
 
           <button 
             type="submit" 
-            className="btn btn-success w-100 fw-bold"
-            style={{ borderRadius: "8px" }}
+            className="btn btn-primary w-100 py-2 shadow-sm"
           >
-            Iniciar Sesión
+            Ingresar al Sistema
           </button>
-
         </form>
-
       </div>
-
     </div>
   );
 };

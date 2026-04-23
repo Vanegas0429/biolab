@@ -1,8 +1,16 @@
 // src/home/Home.jsx
 import laboratorioImg from "../assets/laboratorio.png";
 import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
 
 const Home = () => {
+  const [isAuth, setIsAuth] = useState(false);
+
+  useEffect(() => {
+    const userObj = localStorage.getItem('UsuarioLaboratorio');
+    if (userObj) setIsAuth(true);
+  }, []);
+
   return (
     <>
       {/* HERO */}
@@ -45,6 +53,13 @@ const Home = () => {
               Diseñado para mejorar la organización, el control y la productividad
               en entornos académicos y científicos.
             </p>
+            {isAuth && (
+              <div className="text-center mt-4">
+                <Link to="/Reserva" className="btn btn-success btn-lg px-5 rounded-pill shadow">
+                  <i className="fa-solid fa-calendar-check me-2"></i>Haz tu reserva
+                </Link>
+              </div>
+            )}
           </div>
         </div>
 

@@ -20,7 +20,11 @@ export const getReactivo = async (req, res) => {
 }
 export const createReactivo = async (req, res) => {
     try{
-        const Reactivo = await ReactivosService.create(req.body)
+        const data = {
+            ...req.body,
+            Ficha_tecnica: req.file ? req.file.filename : null
+        };
+        const Reactivo = await ReactivosService.create(data)
         res.status(201).json({message: "Reactivo creado", Reactivo})
         
     }catch(error){
@@ -30,7 +34,12 @@ export const createReactivo = async (req, res) => {
 
 export const updateReactivo = async (req, res) => {
     try{
-        await ReactivosService.update(req.params.id, req.body)
+        const reactivoExistente = await ReactivosService.getById(req.params.id);
+        const data = {
+            ...req.body,
+            Ficha_tecnica: req.file ? req.file.filename : (req.body.Ficha_tecnica !== undefined ? req.body.Ficha_tecnica : reactivoExistente.Ficha_tecnica)
+        };
+        await ReactivosService.update(req.params.id, data)
         res.status(200).json({message: "Reactivo actualizado con éxito"})
     }catch(error){
         res.status(400).json({message: error.message})

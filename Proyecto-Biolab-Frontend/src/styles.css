@@ -1,0 +1,599 @@
+/* src/styles.css */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
+:root {
+  /* Paleta de Colores BIOLAB */
+  --primary-color: #10b981; /* Verde esmeralda moderno */
+  --primary-hover: #059669;
+  --secondary-color: #0f172a; /* Azul oscuro elegante */
+  --background-gradient: linear-gradient(135deg, #f0fdf4 0%, #e0f2fe 100%);
+  --text-dark: #1e293b;
+  --text-light: #f8fafc;
+  
+  /* Glassmorphism */
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.5);
+  --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+  --glass-blur: blur(10px);
+  
+  /* Radios y Sombras */
+  --radius-lg: 16px;
+  --radius-md: 10px;
+  --shadow-soft: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+}
+
+body {
+  font-family: 'Outfit', sans-serif;
+  background: var(--background-gradient);
+  color: var(--text-dark);
+  min-height: 100vh;
+  margin: 0;
+  overflow-x: hidden;
+}
+
+/* ==========================================
+   SCROLLBAR PERSONALIZADO
+   ========================================== */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-color);
+}
+
+/* ==========================================
+   COMPONENTES BOOTSTRAP OVERRIDES
+   ========================================== */
+.container, .container-fluid {
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Tarjetas con Glassmorphism */
+.card, .modal-content {
+  background: var(--glass-bg) !important;
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--glass-shadow) !important;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Botones Premium */
+.btn {
+  border-radius: var(--radius-md) !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.3px;
+  transition: all 0.3s ease !important;
+  box-shadow: var(--shadow-soft);
+}
+
+.btn:active {
+  transform: scale(0.95);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--secondary-color), #1e293b) !important;
+  border: none !important;
+  color: white !important;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #1e293b, #334155) !important;
+  box-shadow: 0 6px 15px rgba(15, 23, 42, 0.3);
+  transform: translateY(-2px);
+}
+
+.btn-success, .bg-info {
+  background: linear-gradient(135deg, var(--primary-color), #34d399) !important;
+  border: none !important;
+  color: white !important;
+}
+
+.btn-success:hover, .bg-info:hover {
+  background: linear-gradient(135deg, var(--primary-hover), #10b981) !important;
+  box-shadow: 0 6px 15px rgba(16, 185, 129, 0.3);
+  transform: translateY(-2px);
+}
+
+/* Inputs y Formularios */
+.form-control, .form-select {
+  border-radius: var(--radius-md) !important;
+  border: 1px solid #cbd5e1 !important;
+  padding: 0.6rem 1rem !important;
+  background-color: rgba(255, 255, 255, 0.8) !important;
+  transition: all 0.3s ease !important;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: var(--primary-color) !important;
+  box-shadow: 0 0 0 0.25rem rgba(16, 185, 129, 0.25) !important;
+  background-color: #ffffff !important;
+}
+
+/* Modales */
+.modal-header {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
+  background: rgba(255, 255, 255, 0.5);
+  border-top-left-radius: var(--radius-lg) !important;
+  border-top-right-radius: var(--radius-lg) !important;
+}
+
+.modal-title {
+  font-weight: 600;
+  color: var(--secondary-color);
+}
+
+/* Navbar Premium (se ajustarán clases en navBar.jsx también) */
+.navbar-glass {
+  background: rgba(15, 23, 42, 0.85) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ==========================================
+   REACT DATA TABLE COMPONENT OVERRIDES
+   ========================================== */
+.rdt_Table {
+  background: transparent !important;
+  border-radius: var(--radius-lg) !important;
+  overflow: hidden !important;
+}
+
+.rdt_TableHeadRow {
+  background: var(--secondary-color) !important;
+  color: white !important;
+  font-weight: 600 !important;
+  font-size: 0.95rem !important;
+  letter-spacing: 0.5px;
+  border-bottom: none !important;
+}
+
+.rdt_TableRow {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(5px) !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04) !important;
+  transition: all 0.2s ease !important;
+  font-size: 0.9rem;
+}
+
+.rdt_TableRow:hover {
+  background: #ffffff !important;
+  transform: scale(1.01) !important;
+  box-shadow: var(--shadow-soft) !important;
+  z-index: 10 !important;
+}
+
+.rdt_Pagination {
+  background: transparent !important;
+  border-top: 1px solid rgba(0, 0, 0, 0.05) !important;
+  padding: 10px 0 !important;
+}
+
+/* Ajustes condicionales de tablas (Activo/Inactivo) */
+.rdt_TableRow[style*="background-color: rgb(255, 255, 255)"],
+.rdt_TableRow[style*="backgroundColor: #ffffff"] {
+  background: rgba(255, 255, 255, 0.9) !important;
+}
+
+.rdt_TableRow[style*="background-color: rgb(174, 173, 173)"],
+.rdt_TableRow[style*="backgroundColor: #aeadad"] {
+  background: rgba(241, 245, 249, 0.7) !important; /* Gris más estético */
+  color: #64748b !important;
+}
+
+/* ==========================================
+   MENU Y NAVEGACIÓN (SIDEBAR)
+   ========================================== */
+.navbar-nav .nav-link {
+  color: #e2e8f0 !important;
+  font-weight: 500;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.navbar-nav .nav-link:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--primary-color) !important;
+  transform: translateX(5px);
+}
+
+.sidebar-trigger {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, var(--secondary-color), #1e293b);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 1040;
+  transition: all 0.3s ease;
+}
+
+.sidebar-trigger:hover {
+  background: linear-gradient(135deg, var(--primary-color), #10b981);
+  transform: scale(1.1) rotate(90deg);
+}
+
+.sidebar-glass {
+  position: fixed;
+  top: 0;
+  left: -320px;
+  width: 300px;
+  height: 100vh;
+  background: rgba(15, 23, 42, 0.95) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 1050;
+  transition: left 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow-y: auto;
+}
+
+.sidebar-glass.open {
+  left: 0;
+}
+
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(2px);
+  z-index: 1045;
+  transition: opacity 0.3s ease;
+}
+
+.w-20px {
+  width: 20px;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ==========================================
+   EQUIPO: THUMBNAILS EN TABLA
+   ========================================== */
+.equipo-thumb-container {
+  position: relative;
+  cursor: pointer;
+  display: inline-block;
+  transition: transform 0.2s ease;
+}
+
+.equipo-thumb-container:hover {
+  transform: scale(1.08);
+}
+
+.equipo-thumb {
+  width: 70px;
+  height: 70px;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  transition: box-shadow 0.2s ease;
+}
+
+.equipo-thumb-container:hover .equipo-thumb {
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
+  border-color: var(--primary-color);
+}
+
+.equipo-thumb-badge {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  background: var(--primary-color);
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* ==========================================
+   CARRUSEL MODAL (LIGHTBOX)
+   ========================================== */
+.carousel-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: carouselFadeIn 0.3s ease;
+}
+
+@keyframes carouselFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.carousel-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 90vw;
+  max-width: 900px;
+  height: 80vh;
+}
+
+.carousel-image-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 70%;
+  max-height: 75vh;
+  flex-shrink: 0;
+}
+
+.carousel-image {
+  max-width: 100%;
+  max-height: 75vh;
+  object-fit: contain;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+  animation: carouselImgIn 0.3s ease;
+}
+
+@keyframes carouselImgIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Flechas de navegación - FUERA de la imagen */
+.carousel-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.12);
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  color: white;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  font-size: 1.3rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(4px);
+  z-index: 10;
+}
+
+.carousel-arrow:hover {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  transform: translateY(-50%) scale(1.1);
+  box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);
+}
+
+.carousel-arrow-left {
+  left: 0;
+}
+
+.carousel-arrow-right {
+  right: 0;
+}
+
+/* Botón cerrar */
+.carousel-close {
+  position: absolute;
+  top: -30px;
+  right: 0;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+
+.carousel-close:hover {
+  background: #ef4444;
+  border-color: #ef4444;
+  transform: rotate(90deg) scale(1.1);
+}
+
+/* Contador */
+.carousel-counter {
+  position: absolute;
+  top: -30px;
+  left: 0;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 2px;
+}
+
+/* Acciones del carrusel */
+.carousel-actions {
+  position: absolute;
+  bottom: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 15px;
+  z-index: 10;
+}
+
+.carousel-action-btn {
+  padding: 8px 24px;
+  border-radius: 30px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  border: none;
+  display: flex;
+  align-items: center;
+}
+
+.carousel-action-btn.add-btn {
+  background: rgba(16, 185, 129, 0.2);
+  border: 1px solid rgba(16, 185, 129, 0.5);
+  color: #6ee7b7;
+}
+
+.carousel-action-btn.add-btn:hover {
+  background: #10b981;
+  border-color: #10b981;
+  color: white;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+  transform: translateY(-2px);
+}
+
+.carousel-action-btn.delete-btn {
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.5);
+  color: #fca5a5;
+}
+
+.carousel-action-btn.delete-btn:hover {
+  background: #ef4444;
+  border-color: #ef4444;
+  color: white;
+  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+  transform: translateY(-2px);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .carousel-image-wrapper {
+    max-width: 80%;
+  }
+
+  .carousel-arrow {
+    width: 42px;
+    height: 42px;
+    font-size: 1rem;
+  }
+
+  .carousel-actions {
+    bottom: -50px;
+  }
+  
+  .carousel-action-btn {
+    padding: 6px 16px;
+    font-size: 0.8rem;
+  }
+}
+
+/* ==========================================
+   MODAL VISOR DE PDF
+   ========================================== */
+.pdf-modal-container {
+  width: 90vw;
+  max-width: 900px;
+  height: 85vh;
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  animation: carouselImgIn 0.3s ease;
+}
+
+.pdf-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 24px;
+  background: rgba(15, 23, 42, 0.95);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+}
+
+.pdf-modal-title {
+  color: white;
+  font-weight: 600;
+  font-size: 1rem;
+  letter-spacing: 0.5px;
+}
+
+.pdf-modal-close {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.pdf-modal-close:hover {
+  background: #ef4444;
+  border-color: #ef4444;
+  transform: rotate(90deg) scale(1.1);
+}
+
+.pdf-modal-iframe {
+  flex: 1;
+  width: 100%;
+  border: none;
+  background: white;
+}
+
+@media (max-width: 768px) {
+  .pdf-modal-container {
+    width: 95vw;
+    height: 80vh;
+  }
+
+  .pdf-modal-header {
+    padding: 10px 16px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+}

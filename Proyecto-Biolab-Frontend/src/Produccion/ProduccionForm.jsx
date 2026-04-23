@@ -121,22 +121,22 @@ const ProduccionForm = ({ hideModal, rowToEdit }) => {
 
     return (
         <form onSubmit={gestionarForm} className="col-12 col-md-6">
-            
+
             {/* Lote Produccion */}
             <div className="mb-3">
-                <label htmlFor="Fec_produccion" className="form-label">
+                <label htmlFor="Lote" className="form-label">
                     Lote:
                 </label>
                 <input
                     type="text"
-                    id="Fec_produccion"
+                    id="Lote"
                     className="form-control"
-                    value={Fec_produccion}
-                    onChange={(e) => setFec_produccion(e.target.value)}
+                    value={Lote}
+                    onChange={(e) => setLote_Produccion(e.target.value)}
                 />
             </div>
 
-            
+
             {/* Tipo Producción */}
             <div className="mb-3">
                 <label htmlFor="Tip_produccion" className="form-label">

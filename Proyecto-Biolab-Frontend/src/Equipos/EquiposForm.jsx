@@ -14,7 +14,8 @@ const EquiposForm = ({ hideModal, rowToEdit }) => {
     const [centro_costos, setCentroCostos] = useState("");
     const [subcentro_costos, setSubcentroCostos] = useState("");
     const [observaciones, setObservaciones] = useState("");
-    const [imagen, setImagen] = useState(null);
+    const [imagenes, setImagenes] = useState([]);        // Archivos nuevos seleccionados
+    const [fichaTecnica, setFichaTecnica] = useState(null); // PDF seleccionado
 
     const [textFormButton, setTextFormButton] = useState("Enviar");
 
@@ -47,7 +48,8 @@ const EquiposForm = ({ hideModal, rowToEdit }) => {
         setCentroCostos("");
         setSubcentroCostos("");
         setObservaciones("");
-        setImagen(null);
+        setImagenes([]);
+        setFichaTecnica(null);
 
         setTextFormButton("Enviar");
     };
@@ -64,8 +66,16 @@ const EquiposForm = ({ hideModal, rowToEdit }) => {
         formData.append("subcentro_costos", subcentro_costos);
         formData.append("observaciones", observaciones);
 
-        if (imagen) {
-            formData.append("img_equipo", imagen);
+        // Agregar múltiples imágenes
+        if (imagenes.length > 0) {
+            for (let i = 0; i < imagenes.length; i++) {
+                formData.append("img_equipo", imagenes[i]);
+            }
+        }
+
+        // Agregar ficha técnica PDF
+        if (fichaTecnica) {
+            formData.append("ficha_tecnica", fichaTecnica);
         }
 
         try {
@@ -113,6 +123,12 @@ const EquiposForm = ({ hideModal, rowToEdit }) => {
                 icon: "error"
             });
         }
+    };
+
+    // Manejar selección de múltiples imágenes
+    const handleImageChange = (e) => {
+        const files = Array.from(e.target.files);
+        setImagenes(files);
     };
 
     return (
@@ -189,26 +205,64 @@ const EquiposForm = ({ hideModal, rowToEdit }) => {
                 />
             </div>
 
+            {/* Campo de imágenes múltiples */}
             <div className="mb-3">
-                <label className="form-label">Imagen del equipo</label>
+                <label className="form-label">
+                    <i className="fa-solid fa-images me-2 text-primary"></i>
+                    Imágenes del equipo
+                </label>
                 <input
                     type="file"
                     className="form-control"
                     accept="image/*"
-                    onChange={(e) => setImagen(e.target.files[0])}
+                    multiple
+                    onChange={handleImageChange}
                 />
+                <small className="text-muted">Puedes seleccionar varias imágenes a la vez</small>
             </div>
 
-            {imagen && (
-                <div className="mb-3 text-center">
-                    <img
-                        src={URL.createObjectURL(imagen)}
-                        alt="Vista previa"
-                        className="img-thumbnail"
-                        width="200"
-                    />
+            {/* Vista previa de imágenes seleccionadas */}
+            {imagenes.length > 0 && (
+                <div className="mb-3">
+                    <div className="d-flex flex-wrap gap-2 justify-content-center">
+                        {imagenes.map((file, i) => (
+                            <img
+                                key={i}
+                                src={URL.createObjectURL(file)}
+                                alt={`Preview ${i + 1}`}
+                                className="img-thumbnail"
+                                style={{ width: "80px", height: "80px", objectFit: "cover" }}
+                            />
+                        ))}
+                    </div>
                 </div>
             )}
+
+            {/* Campo de ficha técnica PDF */}
+            <div className="mb-3">
+                <label className="form-label">
+                    <i className="fa-solid fa-file-pdf me-2 text-danger"></i>
+                    Ficha Técnica (PDF)
+                </label>
+                <input
+                    type="file"
+                    className="form-control"
+                    accept=".pdf"
+                    onChange={(e) => setFichaTecnica(e.target.files[0])}
+                />
+                {fichaTecnica && (
+                    <small className="text-success mt-1 d-block">
+                        <i className="fa-solid fa-check-circle me-1"></i>
+                        {fichaTecnica.name}
+                    </small>
+                )}
+                {!fichaTecnica && rowToEdit?.ficha_tecnica && (
+                    <small className="text-muted mt-1 d-block">
+                        <i className="fa-solid fa-file-pdf me-1"></i>
+                        Ya tiene ficha técnica cargada
+                    </small>
+                )}
+            </div>
 
             <div className="mb-3 text-center">
                 <button type="submit" className="btn btn-primary w-50">

@@ -97,13 +97,13 @@ const CrudEntrada = () => {
 
   return (
     <>
-      <div className="container mt-5">
-        <div className="row d-flex justify-content-between">
-          <div className="col-4">
-            <input className="form-control" placeholder="Buscar por Entrada" value={filterText} onChange={(e) => setFilterText(e.target.value)} />
+      <div className="container-fluid px-4 px-md-5 mt-5" style={{ paddingTop: '2rem' }}>
+        <div className="row d-flex justify-content-between align-items-center mb-4 gap-3 gap-md-0">
+          <div className="col-12 col-md-6 col-lg-4">
+            <input className="form-control shadow-sm" placeholder="Buscar por Entrada" value={filterText} onChange={(e) => setFilterText(e.target.value)} />
           </div>
-          <div className="col-2">
-            <button type="button" className="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal" id="closeModal" onClick={() => setRowToEdit(null)}>
+          <div className="col-12 col-md-auto text-md-end text-center">
+            <button type="button" className="btn btn-primary px-4 shadow-sm" data-bs-toggle="modal" data-bs-target="#exampleModal" id="closeModal" onClick={() => setRowToEdit(null)}>
               Agregar Entrada 
             </button>
           </div>

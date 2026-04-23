@@ -10,7 +10,8 @@ const EquipoModel = db.define("equipo", {
     centro_costos: { type: DataTypes.STRING },
     subcentro_costos: { type: DataTypes.STRING },
     observaciones: { type: DataTypes.STRING },
-    img_equipo: { type: DataTypes.STRING },
+    img_equipo: { type: DataTypes.TEXT },
+    // ficha_tecnica: { type: DataTypes.STRING },
     estado: { type: DataTypes.ENUM("Activo", "Inactivo") }
 }, {
     // evitar pluralización en la gestión de la tabla

@@ -118,22 +118,22 @@ const CrudSup_Plantas = () => {
 
   return (
     <>
-      <div className="container mt-5">
+      <div className="container-fluid px-4 px-md-5 mt-5" style={{ paddingTop: '2rem' }}>
 
-        <div className="row d-flex justify-content-between mb-3">
-          <div className="col-4">
+        <div className="row d-flex justify-content-between align-items-center mb-4 gap-3 gap-md-0">
+          <div className="col-12 col-md-6 col-lg-4">
             <input
-              className="form-control"
+              className="form-control shadow-sm"
               placeholder="Buscar"
               value={filterText}
               onChange={(e) => setFilterText(e.target.value)}
             />
           </div>
 
-          <div className="col-2">
+          <div className="col-12 col-md-auto text-md-end text-center">
             <button
               type="button"
-              className="btn btn-primary"
+              className="btn btn-primary px-4 shadow-sm"
               data-bs-toggle="modal"
               data-bs-target="#exampleModal"
               onClick={() => setRowToEdit(null)}
