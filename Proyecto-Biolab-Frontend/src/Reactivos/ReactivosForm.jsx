@@ -5,7 +5,7 @@ import withReactContent from 'sweetalert2-react-content'
 
 const MySwal = withReactContent(Swal)
 
-const ReactivosForm = ({ hideModal, rowToEdit }) => {
+const ReactivosForm = ({ hideModal, rowToEdit, refreshList }) => {
     const [Estado, setEstado] = useState("Activo");
     const [Nom_reactivo, setNom_Reactivo] = useState("");
     const [Nomenclatura, setNomenclatura] = useState("");
@@ -64,6 +64,7 @@ const ReactivosForm = ({ hideModal, rowToEdit }) => {
                 });
                 MySwal.fire({ title: "Creación", text: "Reactivo creado correctamente", icon: "success" });
             }
+            if (refreshList) refreshList();
             hideModal();
         } catch (error) {
             console.error("Error al guardar Reactivo:", error.response ? error.response.data : error.message);

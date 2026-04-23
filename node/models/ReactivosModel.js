@@ -8,7 +8,7 @@ const ReactivosModel = db.define('reactivos', {
     Presentacion: { type: DataTypes.STRING},
     Est_reactivo: { type: DataTypes.ENUM ("Bueno","Dañado")},
     Estado: { type: DataTypes.ENUM("Activo","Inactivo")},
-    // Ficha_tecnica: { type: DataTypes.STRING }
+    Ficha_tecnica: { type: DataTypes.STRING }
 
 }, {
     freezeTableName: true
