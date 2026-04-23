@@ -25,11 +25,24 @@ export const getEquipo = async (req, res) => {
 export const createEquipo = async (req, res) => {
   try {
     console.log("BODY:", req.body);
-    console.log("FILE:", req.file);
+    console.log("FILES:", req.files);
+
+    // Procesar múltiples imágenes
+    let imagenes = [];
+    if (req.files && req.files['img_equipo']) {
+      imagenes = req.files['img_equipo'].map(f => f.filename);
+    }
+
+    // Procesar ficha técnica PDF
+    let fichaTecnica = null;
+    if (req.files && req.files['ficha_tecnica']) {
+      fichaTecnica = req.files['ficha_tecnica'][0].filename;
+    }
 
     const data = {
       ...req.body,
-      img_equipo: req.file ? req.file.filename : null
+      img_equipo: imagenes.length > 0 ? JSON.stringify(imagenes) : null,
+      ficha_tecnica: fichaTecnica
     };
 
     const Equipo = await EquipoService.create(data);
@@ -46,20 +59,58 @@ export const createEquipo = async (req, res) => {
 //Actualizar un equipo
 export const updateEquipo = async (req, res) => {
     try {
+        // Obtener imágenes existentes del equipo
+        const equipoExistente = await EquipoService.getById(req.params.id);
+        let imagenesExistentes = [];
+        try {
+            imagenesExistentes = JSON.parse(equipoExistente.img_equipo || '[]');
+        } catch {
+            // Si es un string simple (imagen antigua), convertirlo a array
+            if (equipoExistente.img_equipo) {
+                imagenesExistentes = [equipoExistente.img_equipo];
+            }
+        }
 
+        // Agregar nuevas imágenes al array existente
+        if (req.files && req.files['img_equipo']) {
+            const nuevasImagenes = req.files['img_equipo'].map(f => f.filename);
+            imagenesExistentes = [...imagenesExistentes, ...nuevasImagenes];
+        }
+
+        // Preparar datos
         const data = {
             ...req.body,
-            img_equipo: req.file ? req.file.filename : req.body.img_equipo
+            img_equipo: imagenesExistentes.length > 0 ? JSON.stringify(imagenesExistentes) : equipoExistente.img_equipo
         };
+
+        // Procesar ficha técnica si se envió una nueva
+        if (req.files && req.files['ficha_tecnica']) {
+            data.ficha_tecnica = req.files['ficha_tecnica'][0].filename;
+        } else if (req.body.ficha_tecnica !== undefined) {
+            data.ficha_tecnica = req.body.ficha_tecnica;
+        }
 
         await EquipoService.update(req.params.id, data)
 
         res.status(200).json({ message: "Equipo actualizado correctamente" })
 
     } catch (error) {
+        console.error("ERROR updateEquipo:", error);
         res.status(400).json({ message: error.message })
     }
 }
+
+// Eliminar una imagen específica de un equipo
+export const deleteEquipoImage = async (req, res) => {
+    try {
+        await EquipoService.removeImage(req.params.id, req.params.filename);
+        res.status(200).json({ message: "Imagen eliminada correctamente" });
+    } catch (error) {
+        console.error("ERROR deleteEquipoImage:", error);
+        res.status(400).json({ message: error.message });
+    }
+}
+
 export const deleteEquipo = async (req, res) => {
     try {
         await EquipoService.delete(req.params.id)

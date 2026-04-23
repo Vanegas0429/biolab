@@ -1,5 +1,5 @@
 import express from 'express'
-import { getAllEquipos, getEquipo, createEquipo, updateEquipo, deleteEquipo } from '../controllers/EquipoController.js'
+import { getAllEquipos, getEquipo, createEquipo, updateEquipo, deleteEquipo, deleteEquipoImage } from '../controllers/EquipoController.js'
 import multer from 'multer';
 import path from 'path';
 
@@ -10,15 +10,23 @@ const almacenamiento = multer.diskStorage({
         cb(null,'public/uploads/')
     },
     filename: (req, file, cb) => {
-        cb(null, Date.now() + path.extname(file.originalname))  // SOLO CAMBIO: Date.now() en lugar de Date,now()
+        cb(null, Date.now() + '-' + Math.round(Math.random() * 1E4) + path.extname(file.originalname))
     }
 })
 
-const upload = multer({ storage: almacenamiento })  // SOLO CAMBIO: "storage" en lugar de "almacenamiento"
+const upload = multer({ storage: almacenamiento })
+
+// Configuración de campos múltiples: hasta 10 imágenes + 1 PDF
+const uploadFields = upload.fields([
+    { name: 'img_equipo', maxCount: 10 },
+    { name: 'ficha_tecnica', maxCount: 1 }
+]);
+
 router.get('/', getAllEquipos);
 router.get('/:id', getEquipo);
-router.post('/', upload.single('img_equipo'), createEquipo);
-router.put('/:id', upload.single('img_equipo'), updateEquipo);
+router.post('/', uploadFields, createEquipo);
+router.put('/:id', uploadFields, updateEquipo);
 router.delete('/:id', deleteEquipo);
+router.delete('/:id/imagen/:filename', deleteEquipoImage);
 
 export default router;

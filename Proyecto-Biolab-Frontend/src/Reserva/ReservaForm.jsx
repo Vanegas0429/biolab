@@ -2,6 +2,16 @@ import { useEffect, useMemo, useState } from "react";
 import apiAxios from "../api/axiosConfig.js";
 import Swal from "sweetalert2";
 
+// Función auxiliar para obtener usuario
+const getLoggedUser = () => {
+  try {
+    const user = localStorage.getItem("UsuarioLaboratorio");
+    return user ? JSON.parse(user) : null;
+  } catch {
+    return null;
+  }
+};
+
 const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [] }) => {
   const reservaId = rowToEdit?.Id_Reserva;
   const isEditing = Boolean(reservaId);
@@ -45,12 +55,13 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [] }) => {
   const [loadingRecursos, setLoadingRecursos] = useState(false);
 
   const resetForm = () => {
+    const user = getLoggedUser();
     setTip_Reserva("Practica");
     setMot_RecCan("");
-    setNom_Solicitante("");
-    setDoc_Solicitante("");
-    setCor_Solicitante("");
-    setTel_Solicitante("");
+    setNom_Solicitante(user?.nombre || "");
+    setDoc_Solicitante(user?.documento || "");
+    setCor_Solicitante(user?.correo || "");
+    setTel_Solicitante(user?.telefono || "");
     setCan_Aprendices("");
     setFec_Reserva("");
     setHor_Reserva("");
@@ -401,9 +412,9 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [] }) => {
     return ["Rechazado", "Cancelado", "Finalizado"].includes(nombreEstadoActual);
   }, [nombreEstadoActual]);
 
-  const equiposDisponibles = useMemo(() => recursosActividad?.resumen?.equipos ?? [], [recursosActividad]);
-  const materialesDisponibles = useMemo(() => recursosActividad?.resumen?.materiales ?? [], [recursosActividad]);
-  const reactivosDisponibles = useMemo(() => recursosActividad?.resumen?.reactivos ?? [], [recursosActividad]);
+  const equiposDisponibles = useMemo(() => recursosActividad?.resumen?.equiposDetalle ?? [], [recursosActividad]);
+  const materialesDisponibles = useMemo(() => recursosActividad?.resumen?.materialesDetalle ?? [], [recursosActividad]);
+  const reactivosDisponibles = useMemo(() => recursosActividad?.resumen?.reactivosDetalle ?? [], [recursosActividad]);
 
   useEffect(() => {
     if (!Id_Estado && nombreEstadoActual) {
@@ -650,9 +661,9 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [] }) => {
                 disabled={loadingRecursos || equiposDisponibles.length === 0}
               >
                 <option value="">Selecciona un equipo</option>
-                {equiposDisponibles.map((id) => (
-                  <option key={id} value={id}>
-                    Equipo {id}
+                {equiposDisponibles.map((eq) => (
+                  <option key={eq.id_equipo} value={eq.id_equipo}>
+                    {eq.nombre}
                   </option>
                 ))}
               </select>
@@ -669,9 +680,9 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [] }) => {
                 disabled={loadingRecursos || materialesDisponibles.length === 0}
               >
                 <option value="">Selecciona un material</option>
-                {materialesDisponibles.map((id) => (
-                  <option key={id} value={id}>
-                    Material {id}
+                {materialesDisponibles.map((mat) => (
+                  <option key={mat.Id_Material} value={mat.Id_Material}>
+                    {mat.Nom_Material}
                   </option>
                 ))}
               </select>
@@ -688,9 +699,9 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [] }) => {
                 disabled={loadingRecursos || reactivosDisponibles.length === 0}
               >
                 <option value="">Selecciona un reactivo</option>
-                {reactivosDisponibles.map((id) => (
-                  <option key={id} value={id}>
-                    Reactivo {id}
+                {reactivosDisponibles.map((reac) => (
+                  <option key={reac.Id_Reactivo} value={reac.Id_Reactivo}>
+                    {reac.Nom_reactivo} {reac.Presentacion ? `(${reac.Presentacion})` : ''}
                   </option>
                 ))}
               </select>
@@ -704,7 +715,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [] }) => {
                   {equipos.map((item) => (
                     <div key={item.Id_Equipo} className="border rounded p-2 mb-2">
                       <div className="d-flex justify-content-between align-items-center mb-2">
-                        <strong>Equipo {item.Id_Equipo}</strong>
+                        <strong>{equiposDisponibles.find(e => Number(e.id_equipo) === Number(item.Id_Equipo))?.nombre || `Equipo ${item.Id_Equipo}`}</strong>
                         <button
                           type="button"
                           className="btn btn-sm btn-danger"
@@ -730,7 +741,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [] }) => {
                   {materiales.map((item) => (
                     <div key={item.Id_Material} className="border rounded p-2 mb-2">
                       <div className="d-flex justify-content-between align-items-center mb-2">
-                        <strong>Material {item.Id_Material}</strong>
+                        <strong>{materialesDisponibles.find(m => Number(m.Id_Material) === Number(item.Id_Material))?.Nom_Material || `Material ${item.Id_Material}`}</strong>
                         <button
                           type="button"
                           className="btn btn-sm btn-danger"
@@ -756,7 +767,13 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [] }) => {
                   {reactivos.map((item) => (
                     <div key={item.Id_Reactivo} className="border rounded p-2 mb-2">
                       <div className="d-flex justify-content-between align-items-center mb-2">
-                        <strong>Reactivo {item.Id_Reactivo}</strong>
+                        <strong>
+                          {reactivosDisponibles.find(r => Number(r.Id_Reactivo) === Number(item.Id_Reactivo))?.Nom_reactivo || `Reactivo ${item.Id_Reactivo}`} 
+                          {' '}
+                          {reactivosDisponibles.find(r => Number(r.Id_Reactivo) === Number(item.Id_Reactivo))?.Presentacion 
+                            ? `(${reactivosDisponibles.find(r => Number(r.Id_Reactivo) === Number(item.Id_Reactivo)).Presentacion})` 
+                            : ''}
+                        </strong>
                         <button
                           type="button"
                           className="btn btn-sm btn-danger"
@@ -787,6 +804,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [] }) => {
             className="form-control"
             value={Nom_Solicitante}
             onChange={(e) => setNom_Solicitante(e.target.value)}
+            readOnly={getLoggedUser()?.rol === 'solicitante'}
             required
           />
         </div>
@@ -798,6 +816,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [] }) => {
             className="form-control"
             value={Doc_Solicitante}
             onChange={(e) => setDoc_Solicitante(e.target.value)}
+            readOnly={getLoggedUser()?.rol === 'solicitante'}
             required
           />
         </div>
@@ -809,6 +828,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [] }) => {
             className="form-control"
             value={Cor_Solicitante}
             onChange={(e) => setCor_Solicitante(e.target.value)}
+            readOnly={getLoggedUser()?.rol === 'solicitante'}
             required
           />
         </div>
@@ -820,6 +840,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [] }) => {
             className="form-control"
             value={Tel_Solicitante}
             onChange={(e) => setTel_Solicitante(e.target.value)}
+            readOnly={getLoggedUser()?.rol === 'solicitante'}
           />
         </div>
 

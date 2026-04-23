@@ -413,6 +413,14 @@ class ReservaService {
         { transaction }
       );
 
+      const estadosFinales = ["Rechazado", "Cancelado", "Finalizado"];
+      if (estadosFinales.includes(nuevoEstado.Tip_Estado)) {
+        await ReservaModel.update(
+          { Booleano: "Inactivo" },
+          { where: { Id_Reserva: idReserva }, transaction }
+        );
+      }
+
       await transaction.commit();
 
       return true;

@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import db from './database/db.js';
+import { startCronJobs } from './cronJobs.js';
 
 // Rutas
 import ActividadRoutes from './routes/ActividadRoutes.js'
@@ -77,6 +78,7 @@ app.use('/uploads', express.static('public/uploads'));
 try {
     await db.authenticate();
     console.log('Conexión a la base de datos');
+    startCronJobs(); // Iniciar tareas programadas
 } catch (error) {
     console.error('Error al conectar la base de datos: ', error);
     process.exit(1);
