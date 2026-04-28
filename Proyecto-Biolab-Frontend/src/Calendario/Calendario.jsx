@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
+import Swal from 'sweetalert2';
 import 'moment/locale/es';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import apiAxios from '../api/axiosConfig.js';
@@ -12,6 +13,8 @@ const localizer = momentLocalizer(moment);
 const Calendario = () => {
   const [events, setEvents] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [view, setView] = useState('month');
+  const [date, setDate] = useState(new Date());
 
   useEffect(() => {
     fetchReservas();
@@ -88,6 +91,10 @@ const Calendario = () => {
             events={events}
             startAccessor="start"
             endAccessor="end"
+            date={date}
+            view={view}
+            onNavigate={(d) => setDate(d)}
+            onView={(v) => setView(v)}
             style={{ height: '100%' }}
             messages={{
               next: "Sig",
@@ -103,7 +110,87 @@ const Calendario = () => {
               noEventsInRange: "No hay eventos en este rango."
             }}
             eventPropGetter={eventStyleGetter}
-            onSelectEvent={e => alert(`Reserva: ${e.title}\nEstado: ${e.estado}\nContacto: ${e.resource.Tel_Solicitante} / ${e.resource.Cor_Solicitante}`)}
+            onSelectEvent={async (e) => {
+              try {
+                const resId = e.resource.Id_Reserva;
+                Swal.fire({
+                  title: 'Cargando detalles...',
+                  allowOutsideClick: false,
+                  didOpen: () => Swal.showLoading()
+                });
+
+                const response = await apiAxios.get(`/api/Reserva/${resId}`);
+                const data = response.data;
+                const r = data.reserva;
+
+                Swal.fire({
+                  title: `<span class="fw-bold text-primary">${r.Tip_Reserva}</span>`,
+                  width: '600px',
+                  html: `
+                    <div class="text-start p-2" style="font-size: 0.9rem;">
+                      <div class="row mb-3 bg-light p-3 rounded-3 shadow-sm mx-0">
+                        <div class="col-6">
+                          <p class="mb-1 text-muted small">SOLICITANTE</p>
+                          <h6 class="fw-bold mb-0">${r.Nom_Solicitante}</h6>
+                          <p class="small text-secondary mb-0">CC: ${r.Doc_Solicitante}</p>
+                        </div>
+                        <div class="col-6 text-end">
+                          <p class="mb-1 text-muted small">ESTADO ACTUAL</p>
+                          <span class="badge ${e.estado === 'Finalizado' ? 'bg-success' : 'bg-primary'} px-3 py-2 rounded-pill">${e.estado}</span>
+                        </div>
+                      </div>
+
+                      <div class="row mb-3">
+                        <div class="col-6">
+                          <p class="mb-1 text-muted small"><i class="fa-solid fa-calendar-day me-2"></i>FECHA</p>
+                          <p class="fw-semibold">${r.Fec_Reserva}</p>
+                        </div>
+                        <div class="col-6">
+                          <p class="mb-1 text-muted small"><i class="fa-solid fa-clock me-2"></i>HORA</p>
+                          <p class="fw-semibold">${r.Hor_Reserva}</p>
+                        </div>
+                        <div class="col-6">
+                          <p class="mb-1 text-muted small"><i class="fa-solid fa-users me-2"></i>APRENDICES</p>
+                          <p class="fw-semibold">${r.Can_Aprendices || 0}</p>
+                        </div>
+                        <div class="col-6">
+                          <p class="mb-1 text-muted small"><i class="fa-solid fa-hashtag me-2"></i>FICHA</p>
+                          <p class="fw-semibold">${r.Num_Ficha || 'N/A'}</p>
+                        </div>
+                      </div>
+
+                      <hr>
+
+                      <div class="mb-3">
+                        <h6 class="fw-bold text-secondary mb-2"><i class="fa-solid fa-toolbox me-2"></i>RECURSOS ASIGNADOS</h6>
+                        <div class="d-flex flex-wrap gap-2">
+                          ${data.equipos.length > 0 ? `<span class="badge bg-outline-primary border border-primary text-primary px-3 py-2"><i class="fa-solid fa-microscope me-2"></i>${data.equipos.length} Equipos</span>` : ''}
+                          ${data.materiales.length > 0 ? `<span class="badge bg-outline-info border border-info text-info px-3 py-2"><i class="fa-solid fa-box me-2"></i>${data.materiales.length} Materiales</span>` : ''}
+                          ${data.reactivos.length > 0 ? `<span class="badge bg-outline-warning border border-warning text-warning px-3 py-2"><i class="fa-solid fa-flask me-2"></i>${data.reactivos.length} Reactivos</span>` : ''}
+                          ${data.equipos.length === 0 && data.materiales.length === 0 && data.reactivos.length === 0 ? '<p class="text-muted small italic">No hay recursos vinculados.</p>' : ''}
+                        </div>
+                      </div>
+
+                      <div class="bg-dark text-white p-3 rounded-3 mt-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                          <span><i class="fa-solid fa-phone me-2"></i>${r.Tel_Solicitante || 'N/A'}</span>
+                          <span><i class="fa-solid fa-envelope me-2"></i>${r.Cor_Solicitante || 'N/A'}</span>
+                        </div>
+                      </div>
+                    </div>
+                  `,
+                  showCloseButton: true,
+                  confirmButtonText: 'Cerrar',
+                  confirmButtonColor: '#6c757d',
+                  customClass: {
+                    popup: 'rounded-4 border-0 shadow-lg'
+                  }
+                });
+              } catch (error) {
+                console.error("Error cargando detalles:", error);
+                Swal.fire('Error', 'No se pudieron cargar los detalles de la reserva', 'error');
+              }
+            }}
           />
         </div>
       )}

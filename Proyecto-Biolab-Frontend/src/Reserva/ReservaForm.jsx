@@ -12,7 +12,7 @@ const getLoggedUser = () => {
   }
 };
 
-const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [] }) => {
+const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = false }) => {
   const reservaId = rowToEdit?.Id_Reserva;
   const isEditing = Boolean(reservaId);
 
@@ -425,6 +425,30 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [] }) => {
     }
   }, [Id_Estado, nombreEstadoActual, catalogoEstados]);
 
+  const seleccionarTodosEquipos = () => {
+    const nuevosEquipos = equiposDisponibles.map(eq => ({
+      Id_Equipo: Number(eq.id_equipo),
+      Can_Equipos: 1
+    }));
+    setEquipos(nuevosEquipos);
+  };
+
+  const seleccionarTodosMateriales = () => {
+    const nuevosMateriales = materialesDisponibles.map(mat => ({
+      Id_Material: Number(mat.Id_Material),
+      Can_Materiales: 1
+    }));
+    setMateriales(nuevosMateriales);
+  };
+
+  const seleccionarTodosReactivos = () => {
+    const nuevosReactivos = reactivosDisponibles.map(reac => ({
+      Id_Reactivo: Number(reac.Id_Reactivo),
+      Can_Reactivo: 1
+    }));
+    setReactivos(nuevosReactivos);
+  };
+
   const gestionarForm = async (e) => {
     e.preventDefault();
 
@@ -601,12 +625,12 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [] }) => {
             </div>
           )}
 
-        {Tip_Reserva === "Practica" && !isEditing && (
+        {Tip_Reserva === "Practica" && (
           <div className="col-md-12 mb-3">
             <label className="form-label d-block">Actividades (mínimo 1, máximo 3):</label>
 
             <div className="border rounded p-3" style={{ maxHeight: "220px", overflowY: "auto" }}>
-              {actividadesDisponibles.map((actividad) => {
+              {actividadesDisponibles.filter(a => a.Estado === 'Activo').map((actividad) => {
                 const id = Number(actividad.Id_Actividad);
                 const checked = actividadesSeleccionadas.includes(id);
                 const deshabilitada = !checked && actividadesSeleccionadas.length >= 3;
@@ -618,7 +642,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [] }) => {
                       type="checkbox"
                       id={`actividad-${id}`}
                       checked={checked}
-                      disabled={deshabilitada}
+                      disabled={deshabilitada || isViewOnly}
                       onChange={() => toggleActividad(id)}
                     />
                     <label
@@ -648,64 +672,97 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [] }) => {
           </div>
         )}
 
-        {Tip_Reserva === "Practica" && !isEditing && (
+        {Tip_Reserva === "Practica" && (
           <>
-            <div className="col-md-4 mb-3">
-              <label className="form-label">Equipos requeridos por actividades:</label>
-              <select
-                className="form-control"
-                onChange={(e) => {
-                  agregarEquipo(e.target.value);
-                  e.target.value = "";
-                }}
-                disabled={loadingRecursos || equiposDisponibles.length === 0}
-              >
-                <option value="">Selecciona un equipo</option>
-                {equiposDisponibles.map((eq) => (
-                  <option key={eq.id_equipo} value={eq.id_equipo}>
-                    {eq.nombre}
-                  </option>
-                ))}
-              </select>
-            </div>
+            {!isViewOnly && (
+              <div className="col-md-4 mb-3">
+                <label className="form-label">Equipos requeridos por actividades:</label>
+                <select
+                  className="form-control"
+                  onChange={(e) => {
+                    agregarEquipo(e.target.value);
+                    e.target.value = "";
+                  }}
+                  disabled={loadingRecursos || equiposDisponibles.length === 0}
+                >
+                  <option value="">Selecciona un equipo</option>
+                  {equiposDisponibles.map((eq) => (
+                    <option key={eq.id_equipo} value={eq.id_equipo}>
+                      {eq.nombre}
+                    </option>
+                  ))}
+                </select>
+                {equiposDisponibles.length > 0 && (
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-outline-primary mt-2 w-100"
+                    onClick={seleccionarTodosEquipos}
+                  >
+                    <i className="fa-solid fa-check-double me-1"></i> Seleccionar todos los equipos
+                  </button>
+                )}
+              </div>
+            )}
 
-            <div className="col-md-4 mb-3">
-              <label className="form-label">Materiales requeridos por actividades:</label>
-              <select
-                className="form-control"
-                onChange={(e) => {
-                  agregarMaterial(e.target.value);
-                  e.target.value = "";
-                }}
-                disabled={loadingRecursos || materialesDisponibles.length === 0}
-              >
-                <option value="">Selecciona un material</option>
-                {materialesDisponibles.map((mat) => (
-                  <option key={mat.Id_Material} value={mat.Id_Material}>
-                    {mat.Nom_Material}
-                  </option>
-                ))}
-              </select>
-            </div>
+            {!isViewOnly && (
+              <div className="col-md-4 mb-3">
+                <label className="form-label">Materiales requeridos por actividades:</label>
+                <select
+                  className="form-control"
+                  onChange={(e) => {
+                    agregarMaterial(e.target.value);
+                    e.target.value = "";
+                  }}
+                  disabled={loadingRecursos || materialesDisponibles.length === 0}
+                >
+                  <option value="">Selecciona un material</option>
+                  {materialesDisponibles.map((mat) => (
+                    <option key={mat.Id_Material} value={mat.Id_Material}>
+                      {mat.Nom_Material}
+                    </option>
+                  ))}
+                </select>
+                {materialesDisponibles.length > 0 && (
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-outline-primary mt-2 w-100"
+                    onClick={seleccionarTodosMateriales}
+                  >
+                    <i className="fa-solid fa-check-double me-1"></i> Seleccionar todos los materiales
+                  </button>
+                )}
+              </div>
+            )}
 
-            <div className="col-md-4 mb-3">
-              <label className="form-label">Reactivos requeridos por actividades:</label>
-              <select
-                className="form-control"
-                onChange={(e) => {
-                  agregarReactivo(e.target.value);
-                  e.target.value = "";
-                }}
-                disabled={loadingRecursos || reactivosDisponibles.length === 0}
-              >
-                <option value="">Selecciona un reactivo</option>
-                {reactivosDisponibles.map((reac) => (
-                  <option key={reac.Id_Reactivo} value={reac.Id_Reactivo}>
-                    {reac.Nom_reactivo} {reac.Presentacion ? `(${reac.Presentacion})` : ''}
-                  </option>
-                ))}
-              </select>
-            </div>
+            {!isViewOnly && (
+              <div className="col-md-4 mb-3">
+                <label className="form-label">Reactivos requeridos por actividades:</label>
+                <select
+                  className="form-control"
+                  onChange={(e) => {
+                    agregarReactivo(e.target.value);
+                    e.target.value = "";
+                  }}
+                  disabled={loadingRecursos || reactivosDisponibles.length === 0}
+                >
+                  <option value="">Selecciona un reactivo</option>
+                  {reactivosDisponibles.map((reac) => (
+                    <option key={reac.Id_Reactivo} value={reac.Id_Reactivo}>
+                      {reac.Nom_reactivo} {reac.Presentacion ? `(${reac.Presentacion})` : ''}
+                    </option>
+                  ))}
+                </select>
+                {reactivosDisponibles.length > 0 && (
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-outline-primary mt-2 w-100"
+                    onClick={seleccionarTodosReactivos}
+                  >
+                    <i className="fa-solid fa-check-double me-1"></i> Seleccionar todos los reactivos
+                  </button>
+                )}
+              </div>
+            )}
 
             <div className="col-md-12 mb-3">
               <div className="row">
@@ -716,13 +773,15 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [] }) => {
                     <div key={item.Id_Equipo} className="border rounded p-2 mb-2">
                       <div className="d-flex justify-content-between align-items-center mb-2">
                         <strong>{equiposDisponibles.find(e => Number(e.id_equipo) === Number(item.Id_Equipo))?.nombre || `Equipo ${item.Id_Equipo}`}</strong>
-                        <button
-                          type="button"
-                          className="btn btn-sm btn-danger"
-                          onClick={() => eliminarEquipo(item.Id_Equipo)}
-                        >
-                          Quitar
-                        </button>
+                        {!isViewOnly && (
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-danger"
+                            onClick={() => eliminarEquipo(item.Id_Equipo)}
+                          >
+                            Quitar
+                          </button>
+                        )}
                       </div>
                       <input
                         type="number"
@@ -730,6 +789,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [] }) => {
                         className="form-control"
                         value={item.Can_Equipos}
                         onChange={(e) => actualizarCantidadEquipo(item.Id_Equipo, e.target.value)}
+                        readOnly={isViewOnly}
                       />
                     </div>
                   ))}
@@ -742,13 +802,15 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [] }) => {
                     <div key={item.Id_Material} className="border rounded p-2 mb-2">
                       <div className="d-flex justify-content-between align-items-center mb-2">
                         <strong>{materialesDisponibles.find(m => Number(m.Id_Material) === Number(item.Id_Material))?.Nom_Material || `Material ${item.Id_Material}`}</strong>
-                        <button
-                          type="button"
-                          className="btn btn-sm btn-danger"
-                          onClick={() => eliminarMaterial(item.Id_Material)}
-                        >
-                          Quitar
-                        </button>
+                        {!isViewOnly && (
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-danger"
+                            onClick={() => eliminarMaterial(item.Id_Material)}
+                          >
+                            Quitar
+                          </button>
+                        )}
                       </div>
                       <input
                         type="number"
@@ -756,6 +818,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [] }) => {
                         className="form-control"
                         value={item.Can_Materiales}
                         onChange={(e) => actualizarCantidadMaterial(item.Id_Material, e.target.value)}
+                        readOnly={isViewOnly}
                       />
                     </div>
                   ))}
@@ -774,13 +837,15 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [] }) => {
                             ? `(${reactivosDisponibles.find(r => Number(r.Id_Reactivo) === Number(item.Id_Reactivo)).Presentacion})` 
                             : ''}
                         </strong>
-                        <button
-                          type="button"
-                          className="btn btn-sm btn-danger"
-                          onClick={() => eliminarReactivo(item.Id_Reactivo)}
-                        >
-                          Quitar
-                        </button>
+                        {!isViewOnly && (
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-danger"
+                            onClick={() => eliminarReactivo(item.Id_Reactivo)}
+                          >
+                            Quitar
+                          </button>
+                        )}
                       </div>
                       <input
                         type="number"
@@ -788,6 +853,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [] }) => {
                         className="form-control"
                         value={item.Can_Reactivo}
                         onChange={(e) => actualizarCantidadReactivo(item.Id_Reactivo, e.target.value)}
+                        readOnly={isViewOnly}
                       />
                     </div>
                   ))}
@@ -840,7 +906,6 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [] }) => {
             className="form-control"
             value={Tel_Solicitante}
             onChange={(e) => setTel_Solicitante(e.target.value)}
-            readOnly={getLoggedUser()?.rol === 'solicitante'}
           />
         </div>
 
@@ -888,9 +953,11 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [] }) => {
         </div>
 
         
-        <div className="col-md-12 mt-2">
-          <input type="submit" className="btn btn-primary w-25" value={textFormButton} />
-        </div>
+        {!isViewOnly && (
+          <div className="col-md-12 mt-2">
+            <input type="submit" className="btn btn-primary w-25" value={textFormButton} />
+          </div>
+        )}
       </div>
     </form>
   );

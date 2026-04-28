@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import apiNode from "../api/axiosConfig.js";
 import logo from "../assets/logo.png"; 
 
-const UsuarioLogin = ({ setIsAuth, setUserRol }) => {
+const UsuarioLogin = ({ setIsAuth, setUserRol, setUserProfile }) => {
 
   const [correo, setCorreo] = useState("");
   const [contraseña, setContraseña] = useState("");
@@ -22,14 +22,13 @@ const UsuarioLogin = ({ setIsAuth, setUserRol }) => {
 
       setIsAuth(true);
       if (setUserRol) setUserRol(usuario.rol);
+      if (setUserProfile) setUserProfile(usuario);
 
       // Redirigir según rol
       if (usuario.rol === 'solicitante') {
         navigate("/");
-      } else if (usuario.rol === 'pasante') {
-        navigate("/");
       } else {
-        navigate("/");
+        navigate("/Reserva");
       }
 
     } catch (err) {

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useLocation } from "react-router-dom";
 import apiAxios from "../api/axiosConfig.js";
 import DataTable from "react-data-table-component";
 import Swal from "sweetalert2";
@@ -87,10 +88,25 @@ const CrudReserva = () => {
     }
   };
 
+  const location = useLocation();
+
   useEffect(() => {
     fetchReservas();
     fetchEstados();
   }, []);
+
+  // Efecto para detectar navegación desde notificaciones
+  useEffect(() => {
+    if (location.state?.highlightId && Reserva.length > 0) {
+      const idToFind = Number(location.state.highlightId);
+      const found = Reserva.find(r => Number(r.Id_Reserva) === idToFind);
+      if (found) {
+        onView(found);
+        // Limpiar el estado para que no se reabra al recargar o navegar de nuevo
+        window.history.replaceState({}, document.title);
+      }
+    }
+  }, [location.state, Reserva]);
 
   // 🔹 Crear nueva reserva
   const onCreate = () => {
@@ -301,6 +317,7 @@ const CrudReserva = () => {
                 }}
                 rowToEdit={rowToEdit}
                 estados={Estados}
+                isViewOnly={isViewOnly}
               />
             </div>
 

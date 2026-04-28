@@ -2,7 +2,6 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import db from './database/db.js';
-import { startCronJobs } from './cronJobs.js';
 
 // Rutas
 import ActividadRoutes from './routes/ActividadRoutes.js'
@@ -29,7 +28,7 @@ import MaterialRoutes from './routes/MaterialRoutes.js'
 // Modelos
 import PracticaModel from './models/PracticaModel.js';
 import ReservaModel from './models/ReservaModel.js';
-import ReservaEstadoModel from './models/ReservaModel.js';
+import ReservaEstadoModel from './models/ReservaEstadoModel.js';
 import EstadoModel from './models/EstadoModel.js';
 import EntradaModel from './models/EntradaModel.js';
 import ReactivosModel from './models/ReactivosModel.js';
@@ -42,6 +41,10 @@ import EquipoModel from './models/EquipoModel.js';
 import ActividadMaterialModel from './models/ActividadMaterialModel.js';
 import MaterialModel from './models/MaterialModel.js';
 import ActividadReactivoModel from './models/ActividadReactivoModel.js';
+import ReservaActividadModel from './models/ReservaActividadModel.js';
+import ReservaEquipoModel from './models/ReservaEquipoModel.js';
+import ReservaMaterialModel from './models/ReservaMaterialModel.js';
+import ReservaReactivoModel from './models/ReservaReactivoModel.js';
 
 // Configuración
 dotenv.config();
@@ -74,11 +77,11 @@ app.use('/api/ReservaReactivo', ReservaReactivoRoutes)
 app.use('/api/Estado', EstadoRoutes);
 app.use('/api/auth', UsuarioRouter);
 app.use('/uploads', express.static('public/uploads'));
+
 // Conexión a BD
 try {
     await db.authenticate();
-    console.log('Conexión a la base de datos');
-    startCronJobs(); // Iniciar tareas programadas
+    console.log('Conexión a la base de datos establecida correctamente.');
 } catch (error) {
     console.error('Error al conectar la base de datos: ', error);
     process.exit(1);
@@ -89,19 +92,21 @@ app.get('/', (req, res) => {
     res.send('API de gestion de BD');
 });
 
-// Relaciones
+// ==========================================
+// DEFINICIÓN DE RELACIONES (FOREIGN KEYS)
+// ==========================================
 
-//Especie -> ProduccionModel 
+// Especie -> Produccion
 ProduccionModel.belongsTo(EspeciesModel, { foreignKey: 'Id_especie', as: 'Especie'});
 EspeciesModel.hasMany(ProduccionModel, { foreignKey: 'Id_especie', as: 'Producciones'});
 
-//Produccion -> Sup_PlantasModel 
+// Produccion -> Sup_Plantas
 Sup_plantasModel.belongsTo(ProduccionModel, { foreignKey: 'Id_produccion', as: 'Produccion'});
 ProduccionModel.hasMany(Sup_plantasModel, { foreignKey: 'Id_produccion', as: 'SupPlantas'});
 
-//Reactivos -> EntradaModel 
+// Reactivos -> Entrada
 EntradaModel.belongsTo(ReactivosModel, { foreignKey: 'Id_reactivo', as: 'Reactivo'});
-ReactivosModel.hasMany(EntradaModel, { foreignKey: 'Id_reactivo', as: 'Entrada'});
+ReactivosModel.hasMany(EntradaModel, { foreignKey: 'Id_reactivo', as: 'Entradas'});
 
 // Actividad -> ActividadEquipo
 ActividadEquipoModel.belongsTo(ActividadModel, { foreignKey: 'Id_Actividad', as: 'Actividad'});
@@ -112,26 +117,66 @@ ActividadEquipoModel.belongsTo(EquipoModel, { foreignKey: 'id_equipo', as: 'Equi
 EquipoModel.hasMany(ActividadEquipoModel, { foreignKey: 'id_equipo', as: 'ActividadEquipos'});
 
 // Actividad -> ActividadMaterial
-ActividadMaterialModel.belongsTo(ActividadModel, { foreignKey: 'Id_Actividad', as: 'actividad'});
+ActividadMaterialModel.belongsTo(ActividadModel, { foreignKey: 'Id_Actividad', as: 'Actividad'});
 ActividadModel.hasMany(ActividadMaterialModel, { foreignKey: 'Id_Actividad', as: 'ActividadMateriales'});
 
-// Equipo -> ActividadMaterial
+// Material -> ActividadMaterial
 ActividadMaterialModel.belongsTo(MaterialModel, { foreignKey: 'Id_Material', as: 'Material'});
 MaterialModel.hasMany(ActividadMaterialModel, { foreignKey: 'Id_Material', as: 'ActividadMateriales'});
 
 // Actividad -> ActividadReactivo
-ActividadReactivoModel.belongsTo(ActividadModel, { foreignKey: 'Id_Actividad', as: 'actividades'});
+ActividadReactivoModel.belongsTo(ActividadModel, { foreignKey: 'Id_Actividad', as: 'Actividad'});
 ActividadModel.hasMany(ActividadReactivoModel, { foreignKey: 'Id_Actividad', as: 'ActividadReactivos'});
 
-// Equipo -> ActividadReactivo
-ActividadReactivoModel.belongsTo(ReactivosModel, { foreignKey: 'Id_Reactivo', as: 'reactivos'});
+// Reactivos -> ActividadReactivo
+ActividadReactivoModel.belongsTo(ReactivosModel, { foreignKey: 'Id_Reactivo', as: 'Reactivo'});
 ReactivosModel.hasMany(ActividadReactivoModel, { foreignKey: 'Id_Reactivo', as: 'ActividadReactivos'});
+
+// Reserva -> Recursos (Relaciones Muchos a Muchos con tablas intermedias)
+ReservaEquipoModel.belongsTo(ReservaModel, { foreignKey: 'Id_Reserva', as: 'Reserva' });
+ReservaModel.hasMany(ReservaEquipoModel, { foreignKey: 'Id_Reserva', as: 'ReservaEquipos' });
+ReservaEquipoModel.belongsTo(EquipoModel, { foreignKey: 'Id_Equipo', as: 'Equipo' });
+EquipoModel.hasMany(ReservaEquipoModel, { foreignKey: 'Id_Equipo', as: 'ReservaEquipos' });
+
+ReservaMaterialModel.belongsTo(ReservaModel, { foreignKey: 'Id_Reserva', as: 'Reserva' });
+ReservaModel.hasMany(ReservaMaterialModel, { foreignKey: 'Id_Reserva', as: 'ReservaMateriales' });
+ReservaMaterialModel.belongsTo(MaterialModel, { foreignKey: 'Id_Material', as: 'Material' });
+MaterialModel.hasMany(ReservaMaterialModel, { foreignKey: 'Id_Material', as: 'ReservaMateriales' });
+
+ReservaReactivoModel.belongsTo(ReservaModel, { foreignKey: 'Id_Reserva', as: 'Reserva' });
+ReservaModel.hasMany(ReservaReactivoModel, { foreignKey: 'Id_Reserva', as: 'ReservaReactivos' });
+ReservaReactivoModel.belongsTo(ReactivosModel, { foreignKey: 'Id_Reactivo', as: 'Reactivo' });
+ReactivosModel.hasMany(ReservaReactivoModel, { foreignKey: 'Id_Reactivo', as: 'ReservaReactivos' });
+
+// Reserva -> Actividades
+ReservaActividadModel.belongsTo(ReservaModel, { foreignKey: 'Id_Reserva', as: 'Reserva' });
+ReservaModel.hasMany(ReservaActividadModel, { foreignKey: 'Id_Reserva', as: 'ReservaActividades' });
+ReservaActividadModel.belongsTo(ActividadModel, { foreignKey: 'Id_Actividad', as: 'Actividad' });
+ActividadModel.hasMany(ReservaActividadModel, { foreignKey: 'Id_Actividad', as: 'ReservaActividades' });
+
+// Reserva -> Estados
+ReservaEstadoModel.belongsTo(ReservaModel, { foreignKey: 'Id_Reserva', as: 'Reserva' });
+ReservaModel.hasMany(ReservaEstadoModel, { foreignKey: 'Id_Reserva', as: 'ReservaEstados' });
+ReservaEstadoModel.belongsTo(EstadoModel, { foreignKey: 'Id_Estado', as: 'Estado' });
+EstadoModel.hasMany(ReservaEstadoModel, { foreignKey: 'Id_Estado', as: 'ReservaEstados' });
+
+// Practica -> Reserva
+PracticaModel.belongsTo(ReservaModel, { foreignKey: 'Id_Reserva', as: 'Reserva' });
+ReservaModel.hasMany(PracticaModel, { foreignKey: 'Id_Reserva', as: 'Practicas' });
+
+// Sincronización de la base de datos (aplica las relaciones físicamente)
+try {
+    await db.sync({ alter: true });
+    console.log('Base de datos sincronizada con todas las relaciones.');
+} catch (error) {
+    console.error('Error al sincronizar la base de datos:', error);
+}
 
 // Servidor
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => {
     console.log(`Server up running in http://localhost:${PORT}`);
-
 });
+
 
 export default app;

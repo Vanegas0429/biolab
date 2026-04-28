@@ -55,6 +55,9 @@ function App() {
     localStorage.removeItem('UsuarioLaboratorio');
     setIsAuth(false);
     setUserRol(null);
+    setUserProfile(null);
+    setNotificaciones([]);
+    setUnreadCount(0);
     navigate('/');
   };
 
@@ -84,7 +87,7 @@ function App() {
           const list = Array.isArray(data) ? data : data?.data ?? [];
           const recents = list
             .filter(r => r.Des_Estado === 'Solicitado' || r.Des_Estado === 'En proceso')
-            .slice(0, 5);
+            .slice(0, 20);
           setNotificaciones(recents);
           setUnreadCount(recents.length);
         } catch (error) {
@@ -106,22 +109,22 @@ function App() {
       
       {/* HEADER INTEGRADO */}
       {location.pathname !== "/" && (
-        <div className="container-fluid pt-3 pb-2 position-relative" style={{ animation: "fadeIn 0.5s ease-in-out" }}>
+        <div className="container-fluid pt-3 pb-2 position-relative main-header" style={{ animation: "fadeIn 0.5s ease-in-out", zIndex: 3000000 }}>
           {/* Centro: Logo y Título */}
-          <div className="d-flex justify-content-center align-items-center">
+          <div className="d-flex justify-content-center align-items-center header-content">
             <img 
               src="/logo.png" 
               alt="Logo BIOLAB" 
-              style={{ width: 90, height: 90, borderRadius: "50%", boxShadow: '0 8px 20px rgba(0,0,0,0.2)', marginRight: '25px', objectFit: 'cover' }} 
+              className="main-logo me-3 me-md-4"
             />
             <div className="d-flex flex-column justify-content-center">
-              <span className="m-0 fw-bold lh-1" style={{ fontSize: '3rem', letterSpacing: '6px', color: 'var(--primary-color)' }}>BIOLAB</span>
+              <span className="m-0 fw-bold lh-1 main-title" style={{ color: 'var(--primary-color)' }}>BIOLAB</span>
             </div>
           </div>
 
           {/* Derecha: Perfil y Notificaciones */}
-          {userProfile && (
-            <div className="position-absolute end-0 top-50 translate-middle-y pe-4 d-flex align-items-center gap-4 mt-2">
+          {isAuth && userProfile && (
+            <div className="header-user-actions pe-2 pe-md-4 d-flex align-items-center gap-3 gap-md-4">
               {/* Campana Notificaciones */}
               {userRol !== 'solicitante' && (
                 <div className="dropdown">
@@ -133,20 +136,23 @@ function App() {
                       </span>
                     )}
                   </div>
-                  <ul className="dropdown-menu dropdown-menu-end shadow border-0 mt-2 p-2" style={{ minWidth: '300px' }}>
-                    <li><h6 className="dropdown-header">Notificaciones</h6></li>
-                    {notificaciones.length === 0 ? (
-                      <li><span className="dropdown-item-text text-muted small">No tienes notificaciones nuevas.</span></li>
-                    ) : (
-                      notificaciones.map((notif, idx) => (
-                        <li key={idx}>
-                          <div className="dropdown-item d-flex flex-column" onClick={() => navigate('/Reserva')} style={{ cursor: 'pointer' }}>
-                            <span className="fw-bold" style={{ fontSize: '0.85rem' }}>Nueva Reserva: {notif.Tip_Reserva}</span>
-                            <span className="text-muted" style={{ fontSize: '0.75rem' }}>{notif.Nom_Solicitante} - {notif.Fec_Reserva}</span>
-                          </div>
-                        </li>
-                      ))
-                    )}
+                  <ul className="dropdown-menu dropdown-menu-end shadow border-0 mt-2 p-0" style={{ minWidth: '320px', overflow: 'hidden', zIndex: 100000 }}>
+                    <li><h6 className="dropdown-header border-bottom p-3">Notificaciones</h6></li>
+                    <div className="custom-scroll" style={{ maxHeight: '350px', overflowY: 'auto', overflowX: 'hidden' }}>
+                      {notificaciones.length === 0 ? (
+                        <li><span className="dropdown-item-text text-muted small p-3">No tienes notificaciones nuevas.</span></li>
+                      ) : (
+                        notificaciones.map((notif, idx) => (
+                          <li key={idx} className="border-bottom last-child-border-0">
+                            <div className="dropdown-item d-flex flex-column p-3" onClick={() => navigate('/Reserva', { state: { highlightId: notif.Id_Reserva } })} style={{ cursor: 'pointer', whiteSpace: 'normal' }}>
+                              <span className="fw-bold text-primary" style={{ fontSize: '0.85rem' }}>Nueva Reserva: {notif.Tip_Reserva}</span>
+                              <span className="text-dark mt-1" style={{ fontSize: '0.8rem' }}>{notif.Nom_Solicitante}</span>
+                              <span className="text-muted mt-1" style={{ fontSize: '0.75rem' }}><i className="fa-regular fa-calendar me-1"></i>{notif.Fec_Reserva}</span>
+                            </div>
+                          </li>
+                        ))
+                      )}
+                    </div>
                   </ul>
                 </div>
               )}
@@ -176,7 +182,7 @@ function App() {
       <Routes>
         {/* Rutas públicas */}
         <Route path='/' element={<Home />} />
-        <Route path='/login' element={isAuth ? <Navigate to='/Reserva' replace /> : <UsuarioLogin setIsAuth={setIsAuth} setUserRol={setUserRol} />} />
+        <Route path='/login' element={isAuth ? <Navigate to='/' replace /> : <UsuarioLogin setIsAuth={setIsAuth} setUserRol={setUserRol} setUserProfile={setUserProfile} />} />
         <Route path='/register' element={<UsuarioRegistro />} />
         <Route path='/sin-acceso' element={<SinAcceso />} />
 

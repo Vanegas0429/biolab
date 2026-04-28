@@ -1,9 +1,16 @@
 import ReservaEquipoModel from "../models/ReservaEquipoModel.js";
+import ReservaModel from "../models/ReservaModel.js";
+import EquipoModel from "../models/EquipoModel.js";
 
 class ReservaEquipoService {
 
     async getAll() {
-        return await ReservaEquipoModel.findAll()
+        return await ReservaEquipoModel.findAll({
+            include: [
+                { model: ReservaModel, as: 'Reserva' },
+                { model: EquipoModel, as: 'Equipo' }
+            ]
+        })
     }
 
     async getById(id) {

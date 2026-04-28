@@ -1,9 +1,16 @@
 import ReservaMaterialModel from "../models/ReservaMaterialModel.js";
+import ReservaModel from "../models/ReservaModel.js";
+import MaterialModel from "../models/MaterialModel.js";
 
 class ReservaMaterialService {
 
     async getAll() {
-        return await ReservaMaterialModel.findAll()
+        return await ReservaMaterialModel.findAll({
+            include: [
+                { model: ReservaModel, as: 'Reserva' },
+                { model: MaterialModel, as: 'Material' }
+            ]
+        })
     }
 
     async getById(id) {

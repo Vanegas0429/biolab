@@ -131,7 +131,7 @@ const ActividadMaterialForm = ({ hideModal, rowToEdit }) => {
                     onChange={(e) => setId_Actividad(Number(e.target.value))}
                 >
                     <option value="">Selecciona</option>
-                    {Actividades.map(e => (
+                    {Actividades.filter(a => a.Estado === 'Activo').map(e => (
                         <option key={e.Id_Actividad} value={e.Id_Actividad}>
                             {e.Nom_Actividad}
                         </option>
@@ -147,7 +147,7 @@ const ActividadMaterialForm = ({ hideModal, rowToEdit }) => {
                     onChange={(e) => setId_Material(Number(e.target.value))}
                 >
                     <option value="">Selecciona</option>
-                    {Materiales.map(e => (
+                    {Materiales.filter(m => m.Estado === 'Activo').map(e => (
                         <option key={e.Id_Material} value={e.Id_Material}>
                             {e.Nom_Material}
                         </option>

@@ -11,7 +11,11 @@ const NavBar = ({ isAuth, logOut, userRol }) => {
     if (userObj) {
       try {
         setUser(JSON.parse(userObj));
-      } catch (e) {}
+      } catch (e) {
+        setUser(null);
+      }
+    } else {
+      setUser(null);
     }
   }, [isAuth]);
 

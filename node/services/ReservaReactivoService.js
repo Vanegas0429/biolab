@@ -1,4 +1,6 @@
 import ReservaReactivoModel from "../models/ReservaReactivoModel.js";
+import ReservaModel from "../models/ReservaModel.js";
+import ReactivosModel from "../models/ReactivosModel.js";
 
 class ReservaReactivoService {
 
@@ -47,7 +49,12 @@ class ReservaReactivoService {
 // }
 
     async getAll() {
-        return await ReservaReactivoModel.findAll()
+        return await ReservaReactivoModel.findAll({
+            include: [
+                { model: ReservaModel, as: 'Reserva' },
+                { model: ReactivosModel, as: 'Reactivo' }
+            ]
+        })
     }
 
     async getById(id) {

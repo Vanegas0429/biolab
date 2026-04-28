@@ -129,7 +129,12 @@ const EquiposForm = ({ hideModal, rowToEdit, refreshList }) => {
     // Manejar selección de múltiples imágenes
     const handleImageChange = (e) => {
         const files = Array.from(e.target.files);
-        setImagenes(files);
+        setImagenes((prev) => [...prev, ...files]);
+    };
+
+    // Eliminar una imagen seleccionada antes de enviar
+    const removeImage = (index) => {
+        setImagenes((prev) => prev.filter((_, i) => i !== index));
     };
 
     return (
@@ -227,13 +232,21 @@ const EquiposForm = ({ hideModal, rowToEdit, refreshList }) => {
                 <div className="mb-3">
                     <div className="d-flex flex-wrap gap-2 justify-content-center">
                         {imagenes.map((file, i) => (
-                            <img
-                                key={i}
-                                src={URL.createObjectURL(file)}
-                                alt={`Preview ${i + 1}`}
-                                className="img-thumbnail"
-                                style={{ width: "80px", height: "80px", objectFit: "cover" }}
-                            />
+                            <div key={i} className="image-preview-container">
+                                <img
+                                    src={URL.createObjectURL(file)}
+                                    alt={`Preview ${i + 1}`}
+                                    className="img-thumbnail"
+                                    style={{ width: "80px", height: "80px", objectFit: "cover" }}
+                                />
+                                <div 
+                                    className="image-preview-remove" 
+                                    onClick={() => removeImage(i)}
+                                    title="Quitar imagen"
+                                >
+                                    <i className="fa-solid fa-xmark"></i>
+                                </div>
+                            </div>
                         ))}
                     </div>
                 </div>

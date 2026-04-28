@@ -131,7 +131,7 @@ const ActividadEquipoForm = ({ hideModal, rowToEdit }) => {
                     onChange={(e) => setId_Actividad(Number(e.target.value))}
                 >
                     <option value="">Selecciona</option>
-                    {Actividades.map(e => (
+                    {Actividades.filter(a => a.Estado === 'Activo').map(e => (
                         <option key={e.Id_Actividad} value={e.Id_Actividad}>
                             {e.Nom_Actividad}
                         </option>
@@ -147,7 +147,7 @@ const ActividadEquipoForm = ({ hideModal, rowToEdit }) => {
                     onChange={(e) => setId_Equipo(Number(e.target.value))}
                 >
                     <option value="">Selecciona</option>
-                    {Equipos.map(e => (
+                    {Equipos.filter(e => e.estado === 'Activo').map(e => (
                         <option key={e.id_equipo} value={e.id_equipo}>
                             {e.nombre}
                         </option>

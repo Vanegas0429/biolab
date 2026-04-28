@@ -247,7 +247,8 @@ const CrudEquipos = ({ userRol }) => {
       cell: row => (
         <button
           className={`btn btn-sm ${row.estado =='Activo' ? 'btn-success' : 'btn-danger'}`}
-          onClick={() => toggleEstado(row)}
+          onClick={() => userRol !== 'solicitante' && toggleEstado(row)}
+          style={{ cursor: userRol === 'solicitante' ? 'default' : 'pointer' }}
         >
           {row.estado}
         </button>
@@ -271,7 +272,7 @@ const CrudEquipos = ({ userRol }) => {
 
   // Filtrar columnas si es solicitante
   const finalColumnsTable = userRol === 'solicitante' 
-    ? columnsTable.slice(0, 7) // Id, Imagen, Nombre, Marca, Grupo, Linea, Centro Costos, Ficha
+    ? columnsTable.slice(0, 9) // Id hasta Estado
     : columnsTable;
 
   return (
