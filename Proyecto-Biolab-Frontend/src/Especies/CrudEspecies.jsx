@@ -39,29 +39,31 @@ const CrudEspecie = () => {
 
 
   const columnsTable = [
-    { name: 'Id_Especie', selector: row => row.Id_especie },
-    { name: 'Nombre de especie', selector: row => row.Nom_especie },
- {
+    { name: 'Id_Especie', selector: row => row.Id_especie, sortable: true },
+    { name: 'Nombre de especie', selector: row => row.Nom_especie, sortable: true },
+    {
       name: 'Estado',
+      sortable: true,
       cell: row => (
-        <button
-          className={`btn btn-sm ${row.Estado =='Activo' ? 'btn-success' : 'btn-danger'}`}
+        <span
+          className={`status-badge ${row.Estado === 'Activo' ? 'status-badge-activo' : 'status-badge-inactivo'}`}
           onClick={() => toggleEstado(row)}
+          style={{ cursor: 'pointer' }}
         >
           {row.Estado}
-        </button>
+        </span>
       )
     },
-
-
     {
       name: 'Acciones',
-      selector: row => (
+      right: true,
+      cell: row => (
         <button
-          className="btn btn-sm bg-info"
+          className="btn-action btn-action-edit"
           onClick={() => setRowToEdit(row)}
           data-bs-toggle="modal"
           data-bs-target="#exampleModal"
+          title="Editar Especie"
         >
           <i className="fa-solid fa-pencil"></i>
         </button>

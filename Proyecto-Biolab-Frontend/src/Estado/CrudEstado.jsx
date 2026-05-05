@@ -9,6 +9,7 @@ const CrudEstado = () => {
   const [filterText, setFilterText] = useState("")
 
   const columnsTable = [ //crear un arreglo con las columnas que contendra la tabla
+    {name: 'ID', selector: row => row.Id_Estado},
     {name: 'Tip_Estado', selector: row => row.Tip_Estado}
 ]
 

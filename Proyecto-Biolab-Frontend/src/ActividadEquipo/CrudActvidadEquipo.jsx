@@ -66,44 +66,58 @@ const CrudActividadEquipo = () => {
   // 🔹 Columnas
   const columnsTable = [
     { 
-        name: 'Actividad', 
+        name: 'ID', 
+        selector: row => row.Id_Actividad,
+        sortable: true,
+        width: '70px'
+    },
+    { 
+        name: 'ACTIVIDAD', 
         selector: row => row.Actividad?.Nom_Actividad,
         sortable: true,
         grow: 2
     },
     { 
-      name: 'Equipos', 
+      name: 'EQUIPOS', 
+      center: true,
+      width: '150px',
       cell: row => (
         <button 
-          className="btn btn-sm btn-outline-primary fw-bold"
+          className="btn btn-sm btn-outline-primary fw-bold rounded-pill px-3 shadow-none"
           data-bs-toggle="modal" 
           data-bs-target="#equiposListModal"
           onClick={() => setSelectedActivity(row)}
         >
           <i className="fa-solid fa-microscope me-2"></i>
-          {row.equiposList.length} {row.equiposList.length === 1 ? 'Equipo' : 'Equipos'}
+          {row.equiposList.length}
         </button>
       )
     },
     {
-      name: 'Estado',
+      name: 'ESTADO',
+      center: true,
+      width: '120px',
       cell: row => (
-        <button
-          className={`btn btn-sm ${row.Estado =='Activo' ? 'btn-success' : 'btn-danger'}`}
+        <span
+          className={`status-badge ${row.Estado === 'Activo' ? 'status-badge-activo' : 'status-badge-inactivo'}`}
           onClick={() => toggleEstado(row)}
+          style={{ cursor: 'pointer' }}
         >
           {row.Estado}
-        </button>
+        </span>
       )
     },
     {
-      name: 'Acciones',
+      name: 'ACCIONES',
+      center: true,
+      width: '100px',
       cell: row => (
         <button
-          className="btn btn-sm bg-info"
+          className="btn-action btn-action-edit mx-auto"
           onClick={() => setRowToEdit(row)}
           data-bs-toggle="modal"
           data-bs-target="#exampleModal"
+          title="Editar"
         >
           <i className="fa-solid fa-pencil"></i>
         </button>
@@ -164,7 +178,7 @@ const CrudActividadEquipo = () => {
           </div>
         </div>
 
-        <div className="card shadow-sm border-0 rounded-3 overflow-hidden">
+        <div className="card border-0 shadow-lg overflow-hidden" style={{ borderRadius: '20px' }}>
             <DataTable
                 columns={columnsTable}
                 data={filteredData}
@@ -172,31 +186,12 @@ const CrudActividadEquipo = () => {
                 pagination
                 highlightOnHover
                 responsive
-                noDataComponent={<div className="p-4">No se encontraron registros</div>}
-                customStyles={{
-                    header: { style: { minHeight: '56px' } },
-                    headRow: {
-                        style: {
-                            backgroundColor: '#f8f9fa',
-                            borderTopStyle: 'solid',
-                            borderTopWidth: '1px',
-                            borderTopColor: '#dee2e6',
-                        },
-                    },
-                    headCells: {
-                        style: {
-                            fontWeight: 'bold',
-                            fontSize: '0.85rem',
-                            color: '#495057',
-                            textTransform: 'uppercase'
-                        },
-                    },
-                    cells: {
-                        style: {
-                            fontSize: '0.9rem',
-                        },
-                    },
-                }}
+                noDataComponent={
+                  <div className="text-center py-5 text-muted">
+                    <i className="fa-solid fa-list-check fs-1 mb-3 d-block opacity-25"></i>
+                    No se encontraron registros.
+                  </div>
+                }
             />
         </div>
 

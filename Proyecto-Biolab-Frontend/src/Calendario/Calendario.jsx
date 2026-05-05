@@ -10,9 +10,71 @@ import './Calendario.css';
 moment.locale('es');
 const localizer = momentLocalizer(moment);
 
+const CustomToolbar = ({ label, view, onView, onNavigate }) => {
+  const goToBack = () => onNavigate('PREV');
+  const goToNext = () => onNavigate('NEXT');
+  const goToToday = () => onNavigate('TODAY');
+
+  return (
+    <div className="rbc-toolbar d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 p-4 bg-white rounded-4 shadow-sm border border-light">
+      <div className="d-flex gap-2 mb-3 mb-md-0">
+        <button 
+          className="btn btn-outline-primary rounded-circle d-flex align-items-center justify-content-center shadow-sm nav-btn-calendar" 
+          onClick={goToBack} 
+          type="button"
+          title="Anterior"
+        >
+          <i className="fa-solid fa-chevron-left"></i>
+        </button>
+        <button 
+          className="btn btn-primary px-4 rounded-pill shadow-sm fw-bold" 
+          onClick={goToToday} 
+          type="button"
+        >
+          Hoy
+        </button>
+        <button 
+          className="btn btn-outline-primary rounded-circle d-flex align-items-center justify-content-center shadow-sm nav-btn-calendar" 
+          onClick={goToNext} 
+          type="button"
+          title="Siguiente"
+        >
+          <i className="fa-solid fa-chevron-right"></i>
+        </button>
+      </div>
+      
+      <div className="mb-3 mb-md-0">
+        <h3 className="fw-bold text-dark text-capitalize mb-0" style={{ letterSpacing: '-1px' }}>
+          {label}
+        </h3>
+      </div>
+
+      <div className="btn-group p-1 bg-light rounded-pill shadow-inner">
+        {[
+          { id: 'month', label: 'Mes' },
+          { id: 'week', label: 'Semana' },
+          { id: 'day', label: 'Día' },
+          { id: 'agenda', label: 'Agenda' }
+        ].map(v => (
+          <button
+            key={v.id}
+            type="button"
+            className={`btn btn-sm px-3 rounded-pill border-0 fw-semibold transition-all ${view === v.id ? 'btn-primary shadow-sm' : 'text-muted'}`}
+            onClick={() => onView(v.id)}
+          >
+            {v.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 const Calendario = () => {
   const [events, setEvents] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [view, setView] = useState('month');
+  const [date, setDate] = useState(new Date());
 
   useEffect(() => {
     fetchReservas();
@@ -26,11 +88,8 @@ const Calendario = () => {
       const mappedEvents = reservas
         .filter(r => r.Booleano === 'Activo' && r.Des_Estado !== 'Rechazado' && r.Des_Estado !== 'Cancelado')
         .map(reserva => {
-          // Asumimos formato YYYY-MM-DD y HH:mm
           const dateStr = `${reserva.Fec_Reserva}T${reserva.Hor_Reserva}`;
           const startDate = new Date(dateStr);
-          
-          // Por defecto las reservas duran 2 horas
           const endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000);
 
           return {
@@ -52,62 +111,64 @@ const Calendario = () => {
   };
 
   const eventStyleGetter = (event) => {
-    let backgroundColor = '#3174ad';
-    if (event.estado === 'Solicitado') backgroundColor = '#f0ad4e';
-    if (event.estado === 'Aprobado') backgroundColor = '#0275d8';
-    if (event.estado === 'En proceso') backgroundColor = '#5bc0de';
-    if (event.estado === 'Finalizado') backgroundColor = '#5cb85c';
+    let backgroundColor = 'linear-gradient(135deg, #3b82f6, #2563eb)';
+    if (event.estado === 'Solicitado') backgroundColor = 'linear-gradient(135deg, #f59e0b, #d97706)';
+    if (event.estado === 'Aprobado') backgroundColor = 'linear-gradient(135deg, #3b82f6, #2563eb)';
+    if (event.estado === 'En proceso') backgroundColor = 'linear-gradient(135deg, #06b6d4, #0891b2)';
+    if (event.estado === 'Finalizado') backgroundColor = 'linear-gradient(135deg, #10b981, #059669)';
 
     return {
       style: {
-        backgroundColor,
-        borderRadius: '5px',
-        opacity: 0.8,
+        background: backgroundColor,
+        borderRadius: '8px',
+        opacity: 0.9,
         color: 'white',
-        border: '0px',
-        display: 'block'
+        border: 'none',
+        display: 'block',
+        padding: '2px 8px',
+        fontWeight: '500',
+        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+        fontSize: '0.8rem'
       }
     };
   };
 
   return (
-    <div className="container-fluid mt-4 fade-in" style={{ height: '80vh' }}>
-      <h2 className="mb-4 text-center fw-bold" style={{ color: 'var(--primary-color)' }}>
-        <i className="fa-regular fa-calendar-days me-2"></i>Calendario de Reservas
-      </h2>
+    <div className="container-fluid py-4 fade-in" style={{ minHeight: '90vh' }}>
+      <div className="d-flex align-items-center justify-content-center gap-3 mb-5 text-center flex-column flex-md-row">
+        <div className="bg-primary text-white rounded-circle d-flex justify-content-center align-items-center shadow-lg" style={{ width: '60px', height: '60px' }}>
+          <i className="fa-regular fa-calendar-check fs-3"></i>
+        </div>
+        <div>
+          <h1 className="display-6 fw-bold mb-0" style={{ color: 'var(--secondary-color)', letterSpacing: '-1px' }}>Agenda BIOLAB</h1>
+          <p className="text-muted mb-0">Gestión visual de reservas y recursos.</p>
+        </div>
+      </div>
       
       {isLoading ? (
-        <div className="d-flex justify-content-center">
-          <div className="spinner-border text-primary" role="status">
-            <span className="visually-hidden">Cargando...</span>
-          </div>
+        <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '50vh' }}>
+          <div className="spinner-grow text-primary" role="status"></div>
         </div>
       ) : (
-        <div className="card shadow-sm p-3 h-100 border-0 rounded-4">
+        <div className="calendar-container bg-white p-2 rounded-4 shadow-lg border-0">
           <Calendar
             localizer={localizer}
             events={events}
             startAccessor="start"
             endAccessor="end"
-            defaultView="month"
-            defaultDate={new Date()}
-            views={['month', 'week', 'day', 'agenda']}
-            style={{ height: '100%' }}
+            view={view}
+            onView={(v) => setView(v)}
+            date={date}
+            onNavigate={(d) => setDate(d)}
+            style={{ height: '75vh' }}
             messages={{
-              next: "Sig",
-              previous: "Ant",
-              today: "Hoy",
-              month: "Mes",
-              week: "Semana",
-              day: "Día",
-              agenda: "Agenda",
-              date: "Fecha",
-              time: "Hora",
-              event: "Evento",
-              noEventsInRange: "No hay eventos en este rango.",
-              showMore: total => `+ ${total} más`
+              noEventsInRange: "No hay reservas en este periodo.",
+              showMore: total => `+ ${total} adicionales`
             }}
             eventPropGetter={eventStyleGetter}
+            components={{
+              toolbar: CustomToolbar
+            }}
             onSelectEvent={async (e) => {
               try {
                 const resId = e.resource.Id_Reserva;

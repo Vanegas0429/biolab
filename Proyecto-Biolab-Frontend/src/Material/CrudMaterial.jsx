@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import apiAxios from "../api/axiosConfig.js";
 import MaterialForm from "./MaterialForm.jsx";
 import Swal from 'sweetalert2';
+import DataTable from 'react-data-table-component';
 
 const CrudMaterial = () => {
   const [rowToEdit, setRowToEdit] = useState(null);
@@ -101,64 +102,78 @@ const CrudMaterial = () => {
         </div>
       </div>
 
-      {/* TABLA ESTILO PREMIUM CON CABECERA OSCURA */}
+      {/* TABLA ESTILO PREMIUM CON DATATABLE */}
       <div className="card border-0 shadow-lg overflow-hidden" style={{ borderRadius: '20px' }}>
-        <div className="table-responsive">
-          <table className="table table-hover align-middle mb-0">
-            <thead>
-              <tr style={{ background: 'var(--secondary-color)', color: 'white' }}>
-                <th className="px-4 py-3 border-0 fw-semibold" style={{ fontSize: '0.9rem', letterSpacing: '0.5px' }}>MATERIAL</th>
-                <th className="py-3 border-0 fw-semibold" style={{ fontSize: '0.9rem', letterSpacing: '0.5px' }}>ESTADO</th>
-                <th className="px-4 py-3 border-0 text-end fw-semibold" style={{ fontSize: '0.9rem', letterSpacing: '0.5px' }}>ACCIONES</th>
-              </tr>
-            </thead>
-            <tbody>
-              {newListMaterial.map((m) => (
-                <tr key={m.Id_Material} className="last-child-border-0">
-                  <td className="px-4 py-3">
-                    <div className="d-flex align-items-center">
-                      <div className="bg-info-subtle text-info rounded-circle d-flex justify-content-center align-items-center me-3 border border-info-subtle" style={{ width: '40px', height: '40px', fontWeight: 'bold', fontSize: '1rem' }}>
-                        {m.Nom_Material.charAt(0).toUpperCase()}
-                      </div>
-                      <div>
-                        <div className="fw-bold text-dark" style={{ fontSize: '0.95rem' }}>{m.Nom_Material}</div>
-                        <small className="text-muted text-uppercase fw-semibold" style={{ fontSize: '0.65rem' }}>ID: {m.Id_Material}</small>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="py-3">
-                    <span 
-                      className={`badge rounded-pill px-3 py-2 ${m.Estado === 'Activo' ? 'bg-success-subtle text-success border border-success-subtle' : 'bg-danger-subtle text-danger border border-danger-subtle'}`}
-                      style={{ cursor: 'pointer', fontWeight: '600', fontSize: '0.75rem' }}
-                      onClick={() => toggleEstado(m)}
-                    >
-                      {m.Estado}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-end">
-                    <button 
-                      className="btn btn-sm btn-light rounded-circle shadow-sm border me-2"
-                      onClick={() => setRowToEdit(m)}
-                      data-bs-toggle="modal" 
-                      data-bs-target="#exampleModal"
-                      title="Editar"
-                    >
-                      <i className="fa-solid fa-pencil text-primary"></i>
-                    </button>
-                  </td>
-                </tr>
-              ))}
-              {newListMaterial.length === 0 && (
-                <tr>
-                  <td colSpan="3" className="text-center py-5 text-muted">
-                    <i className="fa-solid fa-box-open fs-1 mb-3 d-block opacity-25"></i>
-                    No se encontraron materiales.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+        <DataTable
+          columns={[
+            {
+              name: 'ID',
+              selector: row => row.Id_Material,
+              sortable: true,
+              width: '80px'
+            },
+            {
+              name: 'MATERIAL',
+              sortable: true,
+              grow: 2,
+              cell: (row) => (
+                <div className="fw-bold text-dark py-2">
+                  {row.Nom_Material}
+                </div>
+              )
+            },
+            {
+              name: 'ESTADO',
+              sortable: true,
+              center: true,
+              width: '150px',
+              cell: (row) => (
+                <span 
+                  className={`status-badge ${row.Estado === 'Activo' ? 'status-badge-activo' : 'status-badge-inactivo'}`}
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => toggleEstado(row)}
+                >
+                  {row.Estado}
+                </span>
+              )
+            },
+            {
+              name: 'ACCIONES',
+              center: true,
+              width: '100px',
+              cell: (row) => (
+                <button 
+                  className="btn-action btn-action-edit"
+                  onClick={() => setRowToEdit(row)}
+                  data-bs-toggle="modal" 
+                  data-bs-target="#exampleModal"
+                  title="Editar"
+                >
+                  <i className="fa-solid fa-pencil"></i>
+                </button>
+              )
+            }
+          ]}
+          data={newListMaterial}
+          pagination
+          highlightOnHover
+          noDataComponent={
+            <div className="text-center py-5 text-muted">
+              <i className="fa-solid fa-box-open fs-1 mb-3 d-block opacity-25"></i>
+              No se encontraron materiales.
+            </div>
+          }
+          conditionalRowStyles={[
+            {
+              when: row => row.Estado === "Inactivo",
+              style: {
+                backgroundColor: "#f8fafc",
+                color: "#94a3b8",
+                opacity: 0.8
+              }
+            }
+          ]}
+        />
       </div>
 
       {/* Modal formulario */}

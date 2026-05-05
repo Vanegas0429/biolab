@@ -9,6 +9,7 @@ const CrudFuncionarios = () => {
   const [filterText, setFilterText] = useState("")
 
   const columnsTable = [ //crear un arregli con las columnas que contendra la tabla
+    {name: 'ID', selector: row => row.id},
     {name: 'Nombre', selector: row => row.Nombre},
     {name: 'Apellido', selector: row => row.Apellido},
     {name: 'Telefono', selector: row => row.Telefono},

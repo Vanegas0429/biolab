@@ -75,13 +75,15 @@ const Home = () => {
             { icon: "clipboard-check", title: "Eficiencia", desc: "Procesos de reserva optimizados.", color: "#8b5cf6" }
           ].map((stat, i) => (
             <div className="col-md-4 col-lg-3" key={i}>
-              <div className="card border-0 shadow-lg p-4 text-center hover-up h-100" style={{ borderTop: `4px solid ${stat.color}` }}>
-                <div className="icon-circle mb-3 mx-auto" style={{ backgroundColor: `${stat.color}15`, color: stat.color }}>
-                  <i className={`fas fa-${stat.icon} fs-3`}></i>
+              <Link to={stat.title === "Equipos" ? "/Equipo" : "#"} className="text-decoration-none">
+                <div className="card border-0 shadow-lg p-4 text-center hover-up h-100" style={{ borderTop: `4px solid ${stat.color}` }}>
+                  <div className="icon-circle mb-3 mx-auto" style={{ backgroundColor: `${stat.color}15`, color: stat.color }}>
+                    <i className={`fas fa-${stat.icon} fs-3`}></i>
+                  </div>
+                  <h5 className="fw-bold text-dark">{stat.title}</h5>
+                  <p className="text-muted small mb-0">{stat.desc}</p>
                 </div>
-                <h5 className="fw-bold">{stat.title}</h5>
-                <p className="text-muted small mb-0">{stat.desc}</p>
-              </div>
+              </Link>
             </div>
           ))}
         </div>

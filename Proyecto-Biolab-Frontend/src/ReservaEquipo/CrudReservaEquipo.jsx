@@ -41,28 +41,30 @@ const CrudReservaEquipo = () => {
 
   const columnsTable = [
     { 
-        name: 'ID Reserva', 
+        name: 'ID RESERVA', 
         selector: row => row.Id_Reserva,
         sortable: true,
         width: '120px'
     },
     { 
-        name: 'Solicitante', 
+        name: 'SOLICITANTE', 
         selector: row => row.Reserva?.Nom_Solicitante || 'N/A',
         sortable: true,
         grow: 2
     },
     { 
-      name: 'Equipos', 
+      name: 'EQUIPOS', 
+      center: true,
+      width: '150px',
       cell: row => (
         <button 
-          className="btn btn-sm btn-outline-primary fw-bold"
+          className="btn btn-sm btn-outline-primary fw-bold rounded-pill px-3 shadow-none"
           data-bs-toggle="modal" 
           data-bs-target="#equiposListModal"
           onClick={() => setSelectedReserva(row)}
         >
           <i className="fa-solid fa-microscope me-2"></i>
-          {row.equiposList.length} {row.equiposList.length === 1 ? 'Equipo' : 'Equipos'}
+          {row.equiposList.length}
         </button>
       )
     }
@@ -97,7 +99,7 @@ const CrudReservaEquipo = () => {
           </div>
         </div>
 
-        <div className="card shadow-sm border-0 rounded-3 overflow-hidden">
+        <div className="card border-0 shadow-lg overflow-hidden" style={{ borderRadius: '20px' }}>
             <DataTable
                 columns={columnsTable}
                 data={filteredData}
@@ -105,26 +107,12 @@ const CrudReservaEquipo = () => {
                 pagination
                 highlightOnHover
                 responsive
-                noDataComponent={<div className="p-4">No se encontraron registros</div>}
-                customStyles={{
-                    header: { style: { minHeight: '56px' } },
-                    headRow: {
-                        style: {
-                            backgroundColor: '#f8f9fa',
-                            borderTopStyle: 'solid',
-                            borderTopWidth: '1px',
-                            borderTopColor: '#dee2e6',
-                        },
-                    },
-                    headCells: {
-                        style: {
-                            fontWeight: 'bold',
-                            fontSize: '0.85rem',
-                            color: '#495057',
-                            textTransform: 'uppercase'
-                        },
-                    },
-                }}
+                noDataComponent={
+                  <div className="text-center py-5 text-muted">
+                    <i className="fa-solid fa-microscope fs-1 mb-3 d-block opacity-25"></i>
+                    No se encontraron registros.
+                  </div>
+                }
             />
         </div>
 

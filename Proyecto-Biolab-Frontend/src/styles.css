@@ -146,6 +146,53 @@ body {
   color: var(--secondary-color);
 }
 
+/* Badges de Estado Premium */
+.status-badge {
+  padding: 6px 14px !important;
+  border-radius: 30px !important;
+  font-weight: 600 !important;
+  font-size: 0.75rem !important;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: none !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.status-badge-activo {
+  background: #10b981 !important;
+  color: white !important;
+}
+
+.status-badge-inactivo {
+  background: #ef4444 !important;
+  color: white !important;
+}
+
+/* Botones de Acción Circulares */
+.btn-action {
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+  border: none !important;
+  transition: all 0.3s ease !important;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+}
+
+.btn-action-edit {
+  background: #10b981 !important;
+  color: white !important;
+}
+
+.btn-action-edit:hover {
+  background: #059669 !important;
+  transform: scale(1.1) rotate(5deg);
+  box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+}
+
 /* Navbar Premium (se ajustarán clases en navBar.jsx también) */
 .navbar-glass {
   background: rgba(15, 23, 42, 0.85) !important;
@@ -164,14 +211,26 @@ body {
   z-index: 1 !important;
 }
 
-.rdt_TableHeadRow {
+.rdt_TableHeadRow,
+.table thead th {
   background: var(--secondary-color) !important;
   color: white !important;
   font-weight: 600 !important;
   font-size: 0.95rem !important;
   letter-spacing: 0.5px;
+  text-transform: uppercase !important;
   border-bottom: none !important;
   z-index: 1 !important;
+}
+
+.rdt_TableHeadRow .rdt_TableCol,
+.table thead th {
+  padding: 0.95rem 0.6rem !important;
+}
+
+.rdt_TableCell {
+  padding-left: 0.6rem !important;
+  padding-right: 0.6rem !important;
 }
 
 .rdt_TableRow {
@@ -205,6 +264,21 @@ body {
 .rdt_TableRow[style*="backgroundColor: #aeadad"] {
   background: rgba(241, 245, 249, 0.7) !important; /* Gris más estético */
   color: #64748b !important;
+}
+
+/* Pagination Overrides */
+.rdt_Pagination {
+  font-family: 'Outfit', sans-serif !important;
+  color: var(--text-dark) !important;
+}
+
+.rdt_Pagination svg {
+  fill: var(--primary-color) !important;
+}
+
+.rdt_Pagination button {
+  border-radius: 50% !important;
+  margin: 0 2px !important;
 }
 
 /* ==========================================
@@ -344,7 +418,7 @@ body {
   background: rgba(0, 0, 0, 0.85);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  z-index: 9999;
+  z-index: 5000005;
   display: flex;
   align-items: center;
   justify-content: center;

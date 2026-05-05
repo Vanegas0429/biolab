@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import apiAxios from "../api/axiosConfig.js";
 import EquiposForm from "./EquiposForm";
 import Swal from 'sweetalert2';
+import DataTable from 'react-data-table-component';
 
 const CrudEquipos = ({ userRol }) => {
   const [equipos, setEquipos] = useState([]);
@@ -217,119 +218,155 @@ const CrudEquipos = ({ userRol }) => {
         </div>
       </div>
 
-      {/* TABLA ESTILO PREMIUM CON CABECERA OSCURA */}
+      {/* TABLA ESTILO PREMIUM CON DATATABLE */}
       <div className="card border-0 shadow-lg overflow-hidden" style={{ borderRadius: '20px' }}>
-        <div className="table-responsive">
-          <table className="table table-hover align-middle mb-0">
-            <thead>
-              <tr style={{ background: 'var(--secondary-color)', color: 'white' }}>
-                <th className="px-4 py-3 border-0 fw-semibold" style={{ fontSize: '0.9rem', letterSpacing: '0.5px' }}>EQUIPO</th>
-                <th className="py-3 border-0 fw-semibold" style={{ fontSize: '0.9rem', letterSpacing: '0.5px' }}>MARCA / GRUPO</th>
-                <th className="py-3 border-0 fw-semibold" style={{ fontSize: '0.9rem', letterSpacing: '0.5px' }}>LÍNEA</th>
-                <th className="py-3 border-0 fw-semibold" style={{ fontSize: '0.9rem', letterSpacing: '0.5px' }}>C. COSTOS</th>
-                <th className="py-3 border-0 text-center fw-semibold" style={{ fontSize: '0.9rem', letterSpacing: '0.5px' }}>FICHA</th>
-                <th className="py-3 border-0 fw-semibold" style={{ fontSize: '0.9rem', letterSpacing: '0.5px' }}>ESTADO</th>
-                {userRol !== 'solicitante' && <th className="px-4 py-3 border-0 text-end fw-semibold" style={{ fontSize: '0.9rem', letterSpacing: '0.5px' }}>ACCIONES</th>}
-              </tr>
-            </thead>
-            <tbody>
-              {equiposFiltrados.map((e) => {
-                const imgs = parseImages(e.img_equipo);
+        <DataTable
+          columns={[
+            {
+              name: 'ID',
+              selector: row => row.id_equipo,
+              sortable: true,
+              width: '70px'
+            },
+            {
+              name: 'EQUIPO',
+              sortable: true,
+              grow: 2,
+              minWidth: '180px',
+              cell: (row) => {
+                const imgs = parseImages(row.img_equipo);
                 return (
-                  <tr key={e.id_equipo} style={{ opacity: e.estado === 'Inactivo' ? 0.7 : 1 }}>
-                    <td className="px-4 py-3">
-                      <div className="d-flex align-items-center">
-                        <div className="me-3 position-relative">
-                          {imgs.length > 0 ? (
-                            <img 
-                              src={`http://localhost:8000/uploads/${imgs[0]}`} 
-                              alt={e.nombre}
-                              className="rounded shadow-sm border"
-                              style={{ width: '55px', height: '55px', objectFit: 'cover', cursor: 'pointer' }}
-                              onClick={() => openCarousel(e)}
-                            />
-                          ) : (
-                            <div 
-                              className="bg-light text-muted d-flex align-items-center justify-content-center rounded border"
-                              style={{ width: '55px', height: '55px', borderStyle: 'dashed !important', cursor: userRol !== 'solicitante' ? 'pointer' : 'default' }}
-                              onClick={() => userRol !== 'solicitante' && triggerImageUpload(e)}
-                            >
-                              <i className="fa-solid fa-camera opacity-50"></i>
-                            </div>
-                          )}
-                          {imgs.length > 1 && (
-                            <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary border border-white" style={{ fontSize: '0.6rem' }}>
-                              +{imgs.length - 1}
-                            </span>
-                          )}
-                        </div>
-                        <div>
-                          <div className="fw-bold text-dark" style={{ fontSize: '0.95rem' }}>{e.nombre}</div>
-                          <small className="text-muted text-uppercase fw-semibold" style={{ fontSize: '0.65rem' }}>ID: {e.id_equipo}</small>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="py-3">
-                      <div className="text-dark fw-medium">{e.marca || 'N/A'}</div>
-                      <small className="text-muted">{e.grupo || 'N/A'}</small>
-                    </td>
-                    <td className="py-3 text-secondary">{e.linea || 'N/A'}</td>
-                    <td className="py-3 text-secondary" style={{ fontSize: '0.85rem' }}>{e.centro_costos || 'N/A'}</td>
-                    <td className="py-3 text-center">
-                      {e.ficha_tecnica ? (
-                        <button 
-                          className="btn btn-sm btn-outline-primary rounded-pill px-3 shadow-none"
-                          onClick={() => {
-                            setPdfUrl(`http://localhost:8000/uploads/${e.ficha_tecnica}`);
-                            setShowPdf(true);
-                          }}
-                        >
-                          <i className="fa-solid fa-file-pdf"></i>
-                        </button>
+                  <div className="d-flex align-items-center py-2">
+                    <div className="me-3 position-relative">
+                      {imgs.length > 0 ? (
+                        <img 
+                          src={`http://localhost:8000/uploads/${imgs[0]}`} 
+                          alt={row.nombre}
+                          className="rounded shadow-sm border"
+                          style={{ width: '45px', height: '45px', objectFit: 'cover', cursor: 'pointer' }}
+                          onClick={() => openCarousel(row)}
+                        />
                       ) : (
-                        userRol !== 'solicitante' && (
-                          <button className="btn btn-sm text-muted opacity-50" onClick={() => uploadFicha(e)}>
-                            <i className="fa-solid fa-upload"></i>
-                          </button>
-                        )
-                      )}
-                    </td>
-                    <td className="py-3">
-                      <span 
-                        className={`badge rounded-pill px-3 py-2 ${e.estado === 'Activo' ? 'bg-success-subtle text-success border border-success-subtle' : 'bg-danger-subtle text-danger border border-danger-subtle'}`}
-                        style={{ cursor: userRol !== 'solicitante' ? 'pointer' : 'default', fontWeight: '600', fontSize: '0.75rem' }}
-                        onClick={() => userRol !== 'solicitante' && toggleEstado(e)}
-                      >
-                        {e.estado}
-                      </span>
-                    </td>
-                    {userRol !== 'solicitante' && (
-                      <td className="px-4 py-3 text-end">
-                        <button 
-                          className="btn btn-sm btn-light rounded-circle shadow-sm border me-2"
-                          onClick={() => setRowToEdit(e)}
-                          data-bs-toggle="modal" 
-                          data-bs-target="#exampleModal"
-                          title="Editar"
+                        <div 
+                          className="bg-light text-muted d-flex align-items-center justify-content-center rounded border"
+                          style={{ width: '45px', height: '45px', borderStyle: 'dashed !important', cursor: userRol !== 'solicitante' ? 'pointer' : 'default' }}
+                          onClick={() => userRol !== 'solicitante' && triggerImageUpload(row)}
                         >
-                          <i className="fa-solid fa-pencil text-primary"></i>
-                        </button>
-                      </td>
-                    )}
-                  </tr>
+                          <i className="fa-solid fa-camera opacity-50"></i>
+                        </div>
+                      )}
+                      {imgs.length > 1 && (
+                        <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary border border-white" style={{ fontSize: '0.6rem' }}>
+                          +{imgs.length - 1}
+                        </span>
+                      )}
+                    </div>
+                    <div>
+                      <div className="fw-bold text-dark" style={{ fontSize: '0.9rem' }}>{row.nombre}</div>
+                    </div>
+                  </div>
                 );
-              })}
-              {equiposFiltrados.length === 0 && (
-                <tr>
-                  <td colSpan="7" className="text-center py-5 text-muted">
-                    <i className="fa-solid fa-folder-open fs-1 mb-3 d-block opacity-25"></i>
-                    No se encontraron equipos.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+              }
+            },
+            {
+              name: 'MARCA / GRUPO',
+              sortable: true,
+              width: '180px',
+              cell: (row) => (
+                <div>
+                  <div className="text-dark fw-medium">{row.marca || 'N/A'}</div>
+                  <small className="text-muted">{row.grupo || 'N/A'}</small>
+                </div>
+              )
+            },
+            {
+              name: 'LÍNEA',
+              selector: row => row.linea || 'N/A',
+              sortable: true,
+              width: '120px'
+            },
+            {
+              name: 'C. COSTOS',
+              selector: row => row.centro_costos || 'N/A',
+              sortable: true,
+              width: '120px'
+            },
+            {
+              name: 'FICHA',
+              center: true,
+              width: '80px',
+              cell: (row) => (
+                row.ficha_tecnica ? (
+                  <button 
+                    className="btn btn-sm btn-outline-primary rounded-pill px-3 shadow-none"
+                    onClick={() => {
+                      setPdfUrl(`http://localhost:8000/uploads/${row.ficha_tecnica}`);
+                      setShowPdf(true);
+                    }}
+                  >
+                    <i className="fa-solid fa-file-pdf"></i>
+                  </button>
+                ) : (
+                  userRol !== 'solicitante' && (
+                    <button className="btn btn-sm text-muted opacity-50" onClick={() => uploadFicha(row)}>
+                      <i className="fa-solid fa-upload"></i>
+                    </button>
+                  )
+                )
+              )
+            },
+            {
+              name: 'ESTADO',
+              sortable: true,
+              center: true,
+              width: '120px',
+              cell: (row) => (
+                <span 
+                  className={`status-badge ${row.estado === 'Activo' ? 'status-badge-activo' : 'status-badge-inactivo'}`}
+                  style={{ cursor: userRol !== 'solicitante' ? 'pointer' : 'default' }}
+                  onClick={() => userRol !== 'solicitante' && toggleEstado(row)}
+                >
+                  {row.estado}
+                </span>
+              )
+            },
+            ...(userRol !== 'solicitante' ? [{
+              name: 'ACCIONES',
+              center: true,
+              width: '100px',
+              cell: (row) => (
+                <button 
+                  className="btn-action btn-action-edit"
+                  onClick={() => setRowToEdit(row)}
+                  data-bs-toggle="modal" 
+                  data-bs-target="#exampleModal"
+                  title="Editar"
+                >
+                  <i className="fa-solid fa-pencil"></i>
+                </button>
+              )
+            }] : [])
+          ]}
+          data={equiposFiltrados}
+          pagination
+          highlightOnHover
+          noDataComponent={
+            <div className="text-center py-5 text-muted">
+              <i className="fa-solid fa-folder-open fs-1 mb-3 d-block opacity-25"></i>
+              No se encontraron equipos.
+            </div>
+          }
+          conditionalRowStyles={[
+            {
+              when: row => row.estado === "Inactivo",
+              style: {
+                backgroundColor: "#f8fafc",
+                color: "#94a3b8",
+                opacity: 0.8
+              }
+            }
+          ]}
+        />
       </div>
 
       {/* Modal Formulario */}

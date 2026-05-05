@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import apiAxios from "../api/axiosConfig.js";
 import ReactivosForm from "./ReactivosForm.jsx";
 import Swal from 'sweetalert2';
+import DataTable from 'react-data-table-component';
 
 const CrudReactivos = () => {
   const [rowToEdit, setRowToEdit] = useState(null);
@@ -129,86 +130,111 @@ const CrudReactivos = () => {
         </div>
       </div>
 
-      {/* TABLA ESTILO PREMIUM CON CABECERA OSCURA */}
+      {/* TABLA ESTILO PREMIUM CON DATATABLE */}
       <div className="card border-0 shadow-lg overflow-hidden" style={{ borderRadius: '20px' }}>
-        <div className="table-responsive">
-          <table className="table table-hover align-middle mb-0">
-            <thead>
-              <tr style={{ background: 'var(--secondary-color)', color: 'white' }}>
-                <th className="px-4 py-3 border-0 fw-semibold" style={{ fontSize: '0.9rem', letterSpacing: '0.5px' }}>REACTIVO</th>
-                <th className="py-3 border-0 fw-semibold" style={{ fontSize: '0.9rem', letterSpacing: '0.5px' }}>NOMENCLATURA</th>
-                <th className="py-3 border-0 fw-semibold" style={{ fontSize: '0.9rem', letterSpacing: '0.5px' }}>PRESENTACIÓN</th>
-                <th className="py-3 border-0 text-center fw-semibold" style={{ fontSize: '0.9rem', letterSpacing: '0.5px' }}>FICHA</th>
-                <th className="py-3 border-0 fw-semibold" style={{ fontSize: '0.9rem', letterSpacing: '0.5px' }}>ESTADO</th>
-                <th className="px-4 py-3 border-0 text-end fw-semibold" style={{ fontSize: '0.9rem', letterSpacing: '0.5px' }}>ACCIONES</th>
-              </tr>
-            </thead>
-            <tbody>
-              {newListReactivo.map((r) => (
-                <tr key={r.Id_Reactivo} style={{ opacity: r.Estado === 'Inactivo' ? 0.7 : 1 }}>
-                  <td className="px-4 py-3">
-                    <div className="d-flex align-items-center">
-                      <div className="bg-primary-subtle text-primary rounded-circle d-flex justify-content-center align-items-center me-3 border border-primary-subtle" style={{ width: '40px', height: '40px', fontWeight: 'bold', fontSize: '1rem' }}>
-                        {r.Nom_reactivo.charAt(0).toUpperCase()}
-                      </div>
-                      <div>
-                        <div className="fw-bold text-dark" style={{ fontSize: '0.95rem' }}>{r.Nom_reactivo}</div>
-                        <small className="text-muted text-uppercase fw-semibold" style={{ fontSize: '0.65rem' }}>ID: {r.Id_Reactivo}</small>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="py-3 text-dark fw-medium">{r.Nomenclatura || 'N/A'}</td>
-                  <td className="py-3 text-secondary">{r.Presentacion || 'N/A'}</td>
-                  <td className="py-3 text-center">
-                    {r.Ficha_tecnica ? (
-                      <button 
-                        className="btn btn-sm btn-outline-primary rounded-pill px-3 shadow-none"
-                        onClick={() => {
-                          setPdfUrl(`http://localhost:8000/uploads/${r.Ficha_tecnica}`);
-                          setShowPdf(true);
-                        }}
-                      >
-                        <i className="fa-solid fa-file-pdf"></i>
-                      </button>
-                    ) : (
-                      <button className="btn btn-sm text-muted opacity-50" onClick={() => uploadFicha(r)}>
-                        <i className="fa-solid fa-upload"></i>
-                      </button>
-                    )}
-                  </td>
-                  <td className="py-3">
-                    <span 
-                      className={`badge rounded-pill px-3 py-2 ${r.Estado === 'Activo' ? 'bg-success-subtle text-success border border-success-subtle' : 'bg-danger-subtle text-danger border border-danger-subtle'}`}
-                      style={{ cursor: 'pointer', fontWeight: '600', fontSize: '0.75rem' }}
-                      onClick={() => toggleEstado(r)}
-                    >
-                      {r.Estado}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-end">
-                    <button 
-                      className="btn btn-sm btn-light rounded-circle shadow-sm border me-2"
-                      onClick={() => setRowToEdit(r)}
-                      data-bs-toggle="modal" 
-                      data-bs-target="#exampleModal"
-                      title="Editar"
-                    >
-                      <i className="fa-solid fa-pencil text-primary"></i>
-                    </button>
-                  </td>
-                </tr>
-              ))}
-              {newListReactivo.length === 0 && (
-                <tr>
-                  <td colSpan="6" className="text-center py-5 text-muted">
-                    <i className="fa-solid fa-flask-vial fs-1 mb-3 d-block opacity-25"></i>
-                    No se encontraron reactivos.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+        <DataTable
+          columns={[
+            {
+              name: 'ID',
+              selector: row => row.Id_Reactivo,
+              sortable: true,
+              width: '70px'
+            },
+            {
+              name: 'REACTIVO',
+              sortable: true,
+              grow: 2,
+              cell: (row) => (
+                <div className="fw-bold text-dark py-2">
+                  {row.Nom_reactivo}
+                </div>
+              )
+            },
+            {
+              name: 'NOMENCLATURA',
+              selector: row => row.Nomenclatura || 'N/A',
+              sortable: true,
+              width: '150px'
+            },
+            {
+              name: 'PRESENTACIÓN',
+              selector: row => row.Presentacion || 'N/A',
+              sortable: true,
+              width: '180px'
+            },
+            {
+              name: 'FICHA',
+              center: true,
+              cell: (row) => (
+                row.Ficha_tecnica ? (
+                  <button 
+                    className="btn btn-sm btn-outline-primary rounded-pill px-3 shadow-none"
+                    onClick={() => {
+                      setPdfUrl(`http://localhost:8000/uploads/${row.Ficha_tecnica}`);
+                      setShowPdf(true);
+                    }}
+                  >
+                    <i className="fa-solid fa-file-pdf"></i>
+                  </button>
+                ) : (
+                  <button className="btn btn-sm text-muted opacity-50" onClick={() => uploadFicha(row)}>
+                    <i className="fa-solid fa-upload"></i>
+                  </button>
+                )
+              )
+            },
+            {
+              name: 'ESTADO',
+              sortable: true,
+              center: true,
+              width: '120px',
+              cell: (row) => (
+                <span 
+                  className={`status-badge ${row.Estado === 'Activo' ? 'status-badge-activo' : 'status-badge-inactivo'}`}
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => toggleEstado(row)}
+                >
+                  {row.Estado}
+                </span>
+              )
+            },
+            {
+              name: 'ACCIONES',
+              center: true,
+              width: '100px',
+              cell: (row) => (
+                <button 
+                  className="btn-action btn-action-edit"
+                  onClick={() => setRowToEdit(row)}
+                  data-bs-toggle="modal" 
+                  data-bs-target="#exampleModal"
+                  title="Editar"
+                >
+                  <i className="fa-solid fa-pencil"></i>
+                </button>
+              )
+            }
+          ]}
+          data={newListReactivo}
+          pagination
+          highlightOnHover
+          noDataComponent={
+            <div className="text-center py-5 text-muted">
+              <i className="fa-solid fa-flask-vial fs-1 mb-3 d-block opacity-25"></i>
+              No se encontraron reactivos.
+            </div>
+          }
+          conditionalRowStyles={[
+            {
+              when: row => row.Estado === "Inactivo",
+              style: {
+                backgroundColor: "#f8fafc",
+                color: "#94a3b8",
+                opacity: 0.8
+              }
+            }
+          ]}
+        />
       </div>
 
       {/* Modal formulario */}
