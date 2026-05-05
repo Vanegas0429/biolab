@@ -20,3 +20,25 @@ export const loginUsuario = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 };
+
+// OBTENER TODOS LOS USUARIOS (ADMIN)
+export const getAllUsuarios = async (req, res) => {
+  try {
+    const usuarios = await UsuarioService.getAll();
+    res.status(200).json(usuarios);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// ACTUALIZAR ROL DE USUARIO (ADMIN)
+export const updateUsuarioRol = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { rol } = req.body;
+    const usuario = await UsuarioService.updateRol(id, rol);
+    res.status(200).json(usuario);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};

@@ -45,6 +45,7 @@ const CrudActividadEquipo = () => {
       }
       groups[actId].equiposList.push({
         Id_ActividadEquipo: item.Id_ActividadEquipo,
+        id_equipo: item.id_equipo,
         nombre: item.Equipo?.nombre,
         Estado: item.Estado
       });

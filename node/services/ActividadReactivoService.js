@@ -9,11 +9,11 @@ class ActividadReactivoService {
             {
                 include: [{
                     model: ActividadModel,
-                    as: 'actividades'
+                    as: 'Actividad'
                 }, 
                 {
                     model: ReactivosModel,
-                    as: 'reactivos'
+                    as: 'Reactivo'
                 }]
             }
         )

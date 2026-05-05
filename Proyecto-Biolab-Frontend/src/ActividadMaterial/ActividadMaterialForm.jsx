@@ -13,7 +13,7 @@ const ActividadMaterialForm = ({ hideModal, rowToEdit }) => {
     const [Actividades, setActividades] = useState([])
     const [Id_Actividad, setId_Actividad] = useState('')
     const [Materiales, setMateriales] = useState([])
-    const [Id_Material, setId_Material] = useState('')
+    const [materialesSeleccionados, setMaterialesSeleccionados] = useState([])
 
     // 🔹 Cargar Actividades
     useEffect(() => {
@@ -43,42 +43,68 @@ const ActividadMaterialForm = ({ hideModal, rowToEdit }) => {
     useEffect(() => {
         if (rowToEdit) {
             setId_Actividad(rowToEdit.Id_Actividad || '')
-            setId_Material(rowToEdit.Id_Material || '')
+            const selectedMat = rowToEdit.materialesList ? rowToEdit.materialesList.map(m => m.Id_Material) : [];
+            setMaterialesSeleccionados(selectedMat)
             setEstado(rowToEdit.Estado || 'Activo')
             setTextFormButton('Actualizar')
         } else {
             setId_Actividad('')
-            setId_Material('')
+            setMaterialesSeleccionados([])
             setEstado('Activo')
             setTextFormButton('Enviar')
         }
     }, [rowToEdit])
 
+    const handleCheckboxChange = (id) => {
+        setMaterialesSeleccionados(prev => 
+            prev.includes(id) ? prev.filter(m => m !== id) : [...prev, id]
+        );
+    }
+
     // 🔹 CREAR
     const crearActividadMaterial = async () => {
-        return apiAxios.post('/api/ActividadMaterial', {
-            Id_Actividad: Number(Id_Actividad),
-            Id_Material: Number(Id_Material),
-            Estado
-        })
+        const promises = materialesSeleccionados.map(id_mat => {
+            return apiAxios.post('/api/ActividadMaterial', {
+                Id_Actividad: Number(Id_Actividad),
+                Id_Material: Number(id_mat),
+                Estado
+            });
+        });
+        return Promise.all(promises);
     }
 
     // 🔹 ACTUALIZAR
     const actualizarActividadMaterial = async () => {
-        return apiAxios.put(`/api/Produccion/${rowToEdit.Id_produccion}`, {
-            Id_Actividad: Number(Id_Actividad),
-            Id_Material: Number(Id_Material),
-            Estado
-        })
+        const initialMat = rowToEdit.materialesList || [];
+        const initialIds = initialMat.map(m => m.Id_Material);
+        
+        const toCreate = materialesSeleccionados.filter(id => !initialIds.includes(id));
+        const toDelete = initialMat.filter(m => !materialesSeleccionados.includes(m.Id_Material));
+
+        const promises = [];
+
+        for (const id_mat of toCreate) {
+            promises.push(apiAxios.post('/api/ActividadMaterial', {
+                Id_Actividad: Number(Id_Actividad),
+                Id_Material: Number(id_mat),
+                Estado
+            }));
+        }
+
+        for (const mat of toDelete) {
+            promises.push(apiAxios.delete(`/api/ActividadMaterial/${mat.Id_ActividadMaterial}`));
+        }
+
+        return Promise.all(promises);
     }
 
     const gestionarForm = async (e) => {
         e.preventDefault()
 
-        if (!Id_Actividad, !Id_Material) {
+        if (!Id_Actividad || materialesSeleccionados.length === 0) {
             MySwal.fire({
                 title: "Error",
-                text: "Por favor completa todos los campos obligatorios",
+                text: "Por favor completa todos los campos obligatorios y selecciona al menos un material",
                 icon: "error"
             })
             return
@@ -101,7 +127,7 @@ const ActividadMaterialForm = ({ hideModal, rowToEdit }) => {
 
                 MySwal.fire({
                     title: "Creación",
-                    text: "Actividad Material creada correctamente",
+                    text: "Actividad Materiales creados correctamente",
                     icon: "success"
                 })
             }
@@ -121,49 +147,63 @@ const ActividadMaterialForm = ({ hideModal, rowToEdit }) => {
     }
 
     return (
-        <form onSubmit={gestionarForm} className="col-12 col-md-6">
-            {/* Actividad */}
-            <div className="mb-3">
-                <label>Actividad:</label>
-                <select
-                    className="form-control"
-                    value={Id_Actividad}
-                    onChange={(e) => setId_Actividad(Number(e.target.value))}
-                >
-                    <option value="">Selecciona</option>
-                    {Actividades.filter(a => a.Estado === 'Activo').map(e => (
-                        <option key={e.Id_Actividad} value={e.Id_Actividad}>
-                            {e.Nom_Actividad}
-                        </option>
-                    ))}
-                </select>
-            </div>
+        <form onSubmit={gestionarForm} className="col-12 col-md-12">
+            <div className="row">
+                {/* Actividad */}
+                <div className="col-md-6 mb-3">
+                    <label className="fw-bold mb-1">Actividad:</label>
+                    <select
+                        className="form-control"
+                        value={Id_Actividad}
+                        onChange={(e) => setId_Actividad(Number(e.target.value))}
+                        disabled={!!rowToEdit}
+                    >
+                        <option value="">Selecciona</option>
+                        {Actividades.filter(a => a.Estado === 'Activo').map(e => (
+                            <option key={e.Id_Actividad} value={e.Id_Actividad}>
+                                {e.Nom_Actividad}
+                            </option>
+                        ))}
+                    </select>
+                </div>
 
-            <div className="mb-3">
-                <label>Material:</label>
-                <select
-                    className="form-control"
-                    value={Id_Material}
-                    onChange={(e) => setId_Material(Number(e.target.value))}
-                >
-                    <option value="">Selecciona</option>
-                    {Materiales.filter(m => m.Estado === 'Activo').map(e => (
-                        <option key={e.Id_Material} value={e.Id_Material}>
-                            {e.Nom_Material}
-                        </option>
-                    ))}
-                </select>
+                {/* Materiales con Checkboxes */}
+                <div className="col-md-6 mb-3">
+                    <label className="fw-bold mb-1">Materiales (Múltiple):</label>
+                    <div className="border rounded p-2" style={{ maxHeight: '200px', overflowY: 'auto', backgroundColor: '#f8f9fa' }}>
+                        {Materiales.filter(m => m.Estado === 'Activo').map(m => (
+                            <div className="form-check" key={m.Id_Material}>
+                                <input 
+                                    className="form-check-input" 
+                                    type="checkbox" 
+                                    value={m.Id_Material} 
+                                    id={`mat-${m.Id_Material}`}
+                                    checked={materialesSeleccionados.includes(m.Id_Material)}
+                                    onChange={() => handleCheckboxChange(m.Id_Material)}
+                                />
+                                <label className="form-check-label" htmlFor={`mat-${m.Id_Material}`}>
+                                    {m.Nom_Material}
+                                </label>
+                            </div>
+                        ))}
+                        {Materiales.filter(m => m.Estado === 'Activo').length === 0 && (
+                            <small className="text-muted">No hay materiales activos disponibles.</small>
+                        )}
+                    </div>
+                    <small className="text-muted">{materialesSeleccionados.length} seleccionado(s)</small>
+                </div>
             </div>
 
             {/* Botón */}
-            <div className="mb-3">
-                <input
+            <div className="mb-3 text-end">
+                <button
                     type="submit"
-                    className="btn btn-primary w-50"
-                    value={textFormButton}
-                />
+                    className="btn btn-primary px-4 fw-bold shadow-sm"
+                >
+                    <i className="fa-solid fa-floppy-disk me-2"></i>
+                    {textFormButton}
+                </button>
             </div>
-
         </form>
     )
 }

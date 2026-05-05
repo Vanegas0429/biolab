@@ -7,16 +7,17 @@ import {
   deleteReserva,
   cambiarEstadoReserva
 } from "../controllers/ReservaController.js";
+import { verifyToken } from "../middlewares/authMiddlewares.js";
 
 
 const router = express.Router();
 
 // 🔐 PROTEGIDO
-router.get("/", getAllReserva);
-router.get("/:id", getReserva);
-router.post("/", createReserva);
-router.put("/:id", updateReserva);
-router.put("/:id/estado", cambiarEstadoReserva);
-router.delete("/:id", deleteReserva);
+router.get("/", verifyToken, getAllReserva);
+router.get("/:id", verifyToken, getReserva);
+router.post("/", verifyToken, createReserva);
+router.put("/:id", verifyToken, updateReserva);
+router.put("/:id/estado", verifyToken, cambiarEstadoReserva);
+router.delete("/:id", verifyToken, deleteReserva);
 
 export default router;

@@ -13,7 +13,7 @@ const ActividadEquipoForm = ({ hideModal, rowToEdit }) => {
     const [Actividades, setActividades] = useState([])
     const [Id_Actividad, setId_Actividad] = useState('')
     const [Equipos, setEquipos] = useState([])
-    const [id_equipo, setId_Equipo] = useState('')
+    const [equiposSeleccionados, setEquiposSeleccionados] = useState([])
 
     // 🔹 Cargar Actividades
     useEffect(() => {
@@ -43,42 +43,68 @@ const ActividadEquipoForm = ({ hideModal, rowToEdit }) => {
     useEffect(() => {
         if (rowToEdit) {
             setId_Actividad(rowToEdit.Id_Actividad || '')
-            setId_Equipo(rowToEdit.id_equipo || '')
+            const selectedEq = rowToEdit.equiposList ? rowToEdit.equiposList.map(e => e.id_equipo) : [];
+            setEquiposSeleccionados(selectedEq)
             setEstado(rowToEdit.Estado || 'Activo')
             setTextFormButton('Actualizar')
         } else {
             setId_Actividad('')
-            setId_Equipo('')
+            setEquiposSeleccionados([])
             setEstado('Activo')
             setTextFormButton('Enviar')
         }
     }, [rowToEdit])
 
+    const handleCheckboxChange = (id) => {
+        setEquiposSeleccionados(prev => 
+            prev.includes(id) ? prev.filter(e => e !== id) : [...prev, id]
+        );
+    }
+
     // 🔹 CREAR
     const crearActividadEquipo = async () => {
-        return apiAxios.post('/api/ActividadEquipo', {
-            Id_Actividad: Number(Id_Actividad),
-            id_equipo: Number(id_equipo),
-            Estado
-        })
+        const promises = equiposSeleccionados.map(id_eq => {
+            return apiAxios.post('/api/ActividadEquipo', {
+                Id_Actividad: Number(Id_Actividad),
+                Id_Equipo: Number(id_eq),
+                Estado
+            });
+        });
+        return Promise.all(promises);
     }
 
     // 🔹 ACTUALIZAR
     const actualizarActividadEquipo = async () => {
-        return apiAxios.put(`/api/Produccion/${rowToEdit.Id_ActividadEquipo}`, {
-            Id_Actividad: Number(Id_Actividad),
-            id_equipo: Number(id_equipo),
-            Estado
-        })
+        const initialEq = rowToEdit.equiposList || [];
+        const initialIds = initialEq.map(e => e.id_equipo);
+        
+        const toCreate = equiposSeleccionados.filter(id => !initialIds.includes(id));
+        const toDelete = initialEq.filter(e => !equiposSeleccionados.includes(e.id_equipo));
+
+        const promises = [];
+
+        for (const id_eq of toCreate) {
+            promises.push(apiAxios.post('/api/ActividadEquipo', {
+                Id_Actividad: Number(Id_Actividad),
+                Id_Equipo: Number(id_eq),
+                Estado
+            }));
+        }
+
+        for (const eq of toDelete) {
+            promises.push(apiAxios.delete(`/api/ActividadEquipo/${eq.Id_ActividadEquipo}`));
+        }
+
+        return Promise.all(promises);
     }
 
     const gestionarForm = async (e) => {
         e.preventDefault()
 
-        if (!Id_Actividad, !id_equipo) {
+        if (!Id_Actividad || equiposSeleccionados.length === 0) {
             MySwal.fire({
                 title: "Error",
-                text: "Por favor completa todos los campos obligatorios",
+                text: "Por favor completa todos los campos obligatorios y selecciona al menos un equipo",
                 icon: "error"
             })
             return
@@ -101,7 +127,7 @@ const ActividadEquipoForm = ({ hideModal, rowToEdit }) => {
 
                 MySwal.fire({
                     title: "Creación",
-                    text: "Actividad Equipo creada correctamente",
+                    text: "Actividad Equipos creados correctamente",
                     icon: "success"
                 })
             }
@@ -121,49 +147,63 @@ const ActividadEquipoForm = ({ hideModal, rowToEdit }) => {
     }
 
     return (
-        <form onSubmit={gestionarForm} className="col-12 col-md-6">
-            {/* Actividad */}
-            <div className="mb-3">
-                <label>Actividad:</label>
-                <select
-                    className="form-control"
-                    value={Id_Actividad}
-                    onChange={(e) => setId_Actividad(Number(e.target.value))}
-                >
-                    <option value="">Selecciona</option>
-                    {Actividades.filter(a => a.Estado === 'Activo').map(e => (
-                        <option key={e.Id_Actividad} value={e.Id_Actividad}>
-                            {e.Nom_Actividad}
-                        </option>
-                    ))}
-                </select>
-            </div>
+        <form onSubmit={gestionarForm} className="col-12 col-md-12">
+            <div className="row">
+                {/* Actividad */}
+                <div className="col-md-6 mb-3">
+                    <label className="fw-bold mb-1">Actividad:</label>
+                    <select
+                        className="form-control"
+                        value={Id_Actividad}
+                        onChange={(e) => setId_Actividad(Number(e.target.value))}
+                        disabled={!!rowToEdit} // Bloquear cambio de actividad si es edición
+                    >
+                        <option value="">Selecciona</option>
+                        {Actividades.filter(a => a.Estado === 'Activo').map(e => (
+                            <option key={e.Id_Actividad} value={e.Id_Actividad}>
+                                {e.Nom_Actividad}
+                            </option>
+                        ))}
+                    </select>
+                </div>
 
-            <div className="mb-3">
-                <label>Equipo:</label>
-                <select
-                    className="form-control"
-                    value={id_equipo}
-                    onChange={(e) => setId_Equipo(Number(e.target.value))}
-                >
-                    <option value="">Selecciona</option>
-                    {Equipos.filter(e => e.estado === 'Activo').map(e => (
-                        <option key={e.id_equipo} value={e.id_equipo}>
-                            {e.nombre}
-                        </option>
-                    ))}
-                </select>
+                {/* Equipos con Checkboxes */}
+                <div className="col-md-6 mb-3">
+                    <label className="fw-bold mb-1">Equipos (Múltiple):</label>
+                    <div className="border rounded p-2" style={{ maxHeight: '200px', overflowY: 'auto', backgroundColor: '#f8f9fa' }}>
+                        {Equipos.filter(e => e.estado === 'Activo').map(e => (
+                            <div className="form-check" key={e.id_equipo}>
+                                <input 
+                                    className="form-check-input" 
+                                    type="checkbox" 
+                                    value={e.id_equipo} 
+                                    id={`equipo-${e.id_equipo}`}
+                                    checked={equiposSeleccionados.includes(e.id_equipo)}
+                                    onChange={() => handleCheckboxChange(e.id_equipo)}
+                                />
+                                <label className="form-check-label" htmlFor={`equipo-${e.id_equipo}`}>
+                                    {e.nombre}
+                                </label>
+                            </div>
+                        ))}
+                        {Equipos.filter(e => e.estado === 'Activo').length === 0 && (
+                            <small className="text-muted">No hay equipos activos disponibles.</small>
+                        )}
+                    </div>
+                    <small className="text-muted">{equiposSeleccionados.length} seleccionado(s)</small>
+                </div>
             </div>
 
             {/* Botón */}
-            <div className="mb-3">
-                <input
+            <div className="mb-3 text-end">
+                <button
                     type="submit"
-                    className="btn btn-primary w-50"
-                    value={textFormButton}
-                />
+                    className="btn btn-primary px-4 fw-bold shadow-sm"
+                >
+                    <i className="fa-solid fa-floppy-disk me-2"></i>
+                    {textFormButton}
+                </button>
             </div>
-
         </form>
     )
 }

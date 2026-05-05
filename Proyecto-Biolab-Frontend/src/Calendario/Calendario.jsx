@@ -13,8 +13,6 @@ const localizer = momentLocalizer(moment);
 const Calendario = () => {
   const [events, setEvents] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [view, setView] = useState('month');
-  const [date, setDate] = useState(new Date());
 
   useEffect(() => {
     fetchReservas();
@@ -53,7 +51,7 @@ const Calendario = () => {
     }
   };
 
-  const eventStyleGetter = (event, start, end, isSelected) => {
+  const eventStyleGetter = (event) => {
     let backgroundColor = '#3174ad';
     if (event.estado === 'Solicitado') backgroundColor = '#f0ad4e';
     if (event.estado === 'Aprobado') backgroundColor = '#0275d8';
@@ -91,10 +89,9 @@ const Calendario = () => {
             events={events}
             startAccessor="start"
             endAccessor="end"
-            date={date}
-            view={view}
-            onNavigate={(d) => setDate(d)}
-            onView={(v) => setView(v)}
+            defaultView="month"
+            defaultDate={new Date()}
+            views={['month', 'week', 'day', 'agenda']}
             style={{ height: '100%' }}
             messages={{
               next: "Sig",
@@ -107,7 +104,8 @@ const Calendario = () => {
               date: "Fecha",
               time: "Hora",
               event: "Evento",
-              noEventsInRange: "No hay eventos en este rango."
+              noEventsInRange: "No hay eventos en este rango.",
+              showMore: total => `+ ${total} más`
             }}
             eventPropGetter={eventStyleGetter}
             onSelectEvent={async (e) => {
@@ -120,34 +118,38 @@ const Calendario = () => {
                 });
 
                 const response = await apiAxios.get(`/api/Reserva/${resId}`);
-                const data = response.data;
-                const r = data.reserva;
+                const data = response.data || {};
+                const r = data.reserva || {};
+                
+                const equipos = data.equipos || [];
+                const materiales = data.materiales || [];
+                const reactivos = data.reactivos || [];
 
                 Swal.fire({
-                  title: `<span class="fw-bold text-primary">${r.Tip_Reserva}</span>`,
+                  title: `<span class="fw-bold text-primary">${r.Tip_Reserva || 'Reserva'}</span>`,
                   width: '600px',
                   html: `
                     <div class="text-start p-2" style="font-size: 0.9rem;">
                       <div class="row mb-3 bg-light p-3 rounded-3 shadow-sm mx-0">
                         <div class="col-6">
                           <p class="mb-1 text-muted small">SOLICITANTE</p>
-                          <h6 class="fw-bold mb-0">${r.Nom_Solicitante}</h6>
-                          <p class="small text-secondary mb-0">CC: ${r.Doc_Solicitante}</p>
+                          <h6 class="fw-bold mb-0">${r.Nom_Solicitante || 'N/A'}</h6>
+                          <p class="small text-secondary mb-0">CC: ${r.Doc_Solicitante || 'N/A'}</p>
                         </div>
                         <div class="col-6 text-end">
                           <p class="mb-1 text-muted small">ESTADO ACTUAL</p>
-                          <span class="badge ${e.estado === 'Finalizado' ? 'bg-success' : 'bg-primary'} px-3 py-2 rounded-pill">${e.estado}</span>
+                          <span class="badge ${e.estado === 'Finalizado' ? 'bg-success' : 'bg-primary'} px-3 py-2 rounded-pill">${e.estado || 'N/A'}</span>
                         </div>
                       </div>
 
                       <div class="row mb-3">
                         <div class="col-6">
                           <p class="mb-1 text-muted small"><i class="fa-solid fa-calendar-day me-2"></i>FECHA</p>
-                          <p class="fw-semibold">${r.Fec_Reserva}</p>
+                          <p class="fw-semibold">${r.Fec_Reserva || 'N/A'}</p>
                         </div>
                         <div class="col-6">
                           <p class="mb-1 text-muted small"><i class="fa-solid fa-clock me-2"></i>HORA</p>
-                          <p class="fw-semibold">${r.Hor_Reserva}</p>
+                          <p class="fw-semibold">${r.Hor_Reserva || 'N/A'}</p>
                         </div>
                         <div class="col-6">
                           <p class="mb-1 text-muted small"><i class="fa-solid fa-users me-2"></i>APRENDICES</p>
@@ -164,10 +166,10 @@ const Calendario = () => {
                       <div class="mb-3">
                         <h6 class="fw-bold text-secondary mb-2"><i class="fa-solid fa-toolbox me-2"></i>RECURSOS ASIGNADOS</h6>
                         <div class="d-flex flex-wrap gap-2">
-                          ${data.equipos.length > 0 ? `<span class="badge bg-outline-primary border border-primary text-primary px-3 py-2"><i class="fa-solid fa-microscope me-2"></i>${data.equipos.length} Equipos</span>` : ''}
-                          ${data.materiales.length > 0 ? `<span class="badge bg-outline-info border border-info text-info px-3 py-2"><i class="fa-solid fa-box me-2"></i>${data.materiales.length} Materiales</span>` : ''}
-                          ${data.reactivos.length > 0 ? `<span class="badge bg-outline-warning border border-warning text-warning px-3 py-2"><i class="fa-solid fa-flask me-2"></i>${data.reactivos.length} Reactivos</span>` : ''}
-                          ${data.equipos.length === 0 && data.materiales.length === 0 && data.reactivos.length === 0 ? '<p class="text-muted small italic">No hay recursos vinculados.</p>' : ''}
+                          ${equipos.length > 0 ? `<span class="badge bg-outline-primary border border-primary text-primary px-3 py-2"><i class="fa-solid fa-microscope me-2"></i>${equipos.length} Equipos</span>` : ''}
+                          ${materiales.length > 0 ? `<span class="badge bg-outline-info border border-info text-info px-3 py-2"><i class="fa-solid fa-box me-2"></i>${materiales.length} Materiales</span>` : ''}
+                          ${reactivos.length > 0 ? `<span class="badge bg-outline-warning border border-warning text-warning px-3 py-2"><i class="fa-solid fa-flask me-2"></i>${reactivos.length} Reactivos</span>` : ''}
+                          ${equipos.length === 0 && materiales.length === 0 && reactivos.length === 0 ? '<p class="text-muted small italic">No hay recursos vinculados.</p>' : ''}
                         </div>
                       </div>
 

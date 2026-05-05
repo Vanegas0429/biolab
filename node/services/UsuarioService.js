@@ -18,7 +18,7 @@ class UsuarioService {
   async register(data) {
 
     // Extraemos los datos enviados desde el frontend
-    const { documento, nombre, correo, contraseña, rol, estado} = data;
+    const { documento, nombre, correo, contraseña, rol, estado, telefono} = data;
 
     // Verificamos si ya existe un usuario con el mismo correo
     const UsuarioExist = await UsuarioModel.findOne({
@@ -42,7 +42,8 @@ class UsuarioService {
       contraseña: hashedcontraseña, // Guardamos la contraseña encriptada
       uuid: UsuarioUuid,
       rol, 
-      estado
+      estado,
+      telefono
     });
 
     // Retornamos el usuario creado
@@ -84,9 +85,8 @@ class UsuarioService {
     }
 
     // Generamos un token JWT con el id y uuid del usuario
-    console.log("JWT_SECRET:", process.env.JWT_SECRET);
     const token = jwt.sign(
-      { id: usuario.id, uuid: usuario.uuid }, // payload
+      { id: usuario.id, uuid: usuario.uuid, rol: usuario.rol }, // payload
       process.env.JWT_SECRET, // clave secreta
       { expiresIn: "2h" } // tiempo de expiración
     );
@@ -101,6 +101,30 @@ class UsuarioService {
       // token,
       usuario: usuarioSinPassword
     };
+  }
+
+  // =========================
+  // GESTIÓN DE USUARIOS (ADMIN)
+  // =========================
+  
+  // Obtener todos los usuarios registrados
+  async getAll() {
+    return await UsuarioModel.findAll({
+      attributes: { exclude: ['contraseña'] } // Nunca enviar la contraseña por seguridad
+    });
+  }
+
+  // Actualizar el rol de un usuario específico
+  async updateRol(id, rol) {
+    const usuario = await UsuarioModel.findByPk(id);
+    if (!usuario) throw new Error("Usuario no encontrado");
+
+    usuario.rol = rol;
+    await usuario.save();
+
+    // Devolver el usuario actualizado sin contraseña
+    const { contraseña: _, ...usuarioSinPassword } = usuario.toJSON();
+    return usuarioSinPassword;
   }
 }
 

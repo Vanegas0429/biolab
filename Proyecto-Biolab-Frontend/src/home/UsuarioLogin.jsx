@@ -32,7 +32,7 @@ const UsuarioLogin = ({ setIsAuth, setUserRol, setUserProfile }) => {
       }
 
     } catch (err) {
-      setError("Correo o contraseña incorrectos");
+      setError(err.response?.data?.message || "Correo o contraseña incorrectos");
     }
   };
 

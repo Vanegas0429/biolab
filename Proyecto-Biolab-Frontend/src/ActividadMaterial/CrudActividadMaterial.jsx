@@ -42,7 +42,8 @@ const CrudActividadMaterial = () => {
       }
       groups[actId].materialesList.push({
         Id_ActividadMaterial: item.Id_ActividadMaterial,
-        nombre: item.Material?.Nom_Material,
+        Id_Material: item.Id_Material,
+        nombre: item.Material?.Nom_Material || 'Material Desconocido',
         Estado: item.Estado
       });
     });
@@ -53,8 +54,9 @@ const CrudActividadMaterial = () => {
   // 🔹 Buscador sobre datos agrupados
   const filteredData = groupedData.filter((item) => {
     const text = filterText.toLowerCase();
+    const activityName = (item.actividad?.Nom_Actividad || item.Actividad?.Nom_Actividad || "").toLowerCase();
     return (
-      (item.actividad?.Nom_Actividad || item.Actividad?.Nom_Actividad || "").toLowerCase().includes(text) ||
+      activityName.includes(text) ||
       item.materialesList.some(m => m.nombre?.toLowerCase().includes(text))
     );
   });
@@ -63,7 +65,7 @@ const CrudActividadMaterial = () => {
   const columnsTable = [
     { 
         name: 'Actividad', 
-        selector: row => row.actividad?.Nom_Actividad || row.Actividad?.Nom_Actividad,
+        selector: row => row.actividad?.Nom_Actividad || row.Actividad?.Nom_Actividad || 'Actividad no asignada',
         sortable: true,
         grow: 2
     },
@@ -77,7 +79,7 @@ const CrudActividadMaterial = () => {
           onClick={() => setSelectedActivity(row)}
         >
           <i className="fa-solid fa-box-archive me-2"></i>
-          {row.materialesList.length} {row.materialesList.length === 1 ? 'Material' : 'Materiales'}
+          {row.materialesList?.length || 0} {row.materialesList?.length === 1 ? 'Material' : 'Materiales'}
         </button>
       )
     },
@@ -85,7 +87,7 @@ const CrudActividadMaterial = () => {
       name: 'Estado',
       cell: row => (
         <button
-          className={`btn btn-sm ${row.Estado =='Activo' ? 'btn-success' : 'btn-danger'}`}
+          className={`btn btn-sm ${row.Estado === 'Activo' ? 'btn-success' : 'btn-danger'}`}
           onClick={() => toggleEstado(row)}
         >
           {row.Estado}
@@ -115,7 +117,7 @@ const CrudActividadMaterial = () => {
   const getAllActividadMaterial = async () => {
     try {
         const response = await apiAxios.get('/api/ActividadMaterial')
-        setActividadMaterial(response.data)
+        setActividadMaterial(response.data || [])
     } catch (error) {
         console.error("Error cargando Actividad-Material:", error)
     }
@@ -225,7 +227,7 @@ const CrudActividadMaterial = () => {
               <div className="modal-header bg-primary text-white">
                 <h5 className="modal-title fw-bold">
                   <i className="fa-solid fa-list-check me-2"></i>
-                  Materiales: {selectedActivity?.actividad?.Nom_Actividad || selectedActivity?.Actividad?.Nom_Actividad}
+                  Materiales: {selectedActivity?.actividad?.Nom_Actividad || selectedActivity?.Actividad?.Nom_Actividad || 'Actividad'}
                 </h5>
                 <button
                   type="button"
@@ -236,7 +238,7 @@ const CrudActividadMaterial = () => {
               </div>
               <div className="modal-body p-0">
                 <div className="list-group list-group-flush">
-                  {selectedActivity?.materialesList.map((m, index) => (
+                  {selectedActivity?.materialesList?.map((m, index) => (
                     <div key={index} className="list-group-item d-flex justify-content-between align-items-center p-3">
                       <div className="d-flex align-items-center">
                         <div className="bg-light rounded-circle p-2 me-3">
@@ -249,7 +251,7 @@ const CrudActividadMaterial = () => {
                       </span>
                     </div>
                   ))}
-                  {(selectedActivity?.materialesList.length === 0) && (
+                  {(!selectedActivity?.materialesList || selectedActivity.materialesList.length === 0) && (
                     <div className="p-4 text-center text-muted">
                         No hay materiales vinculados a esta actividad.
                     </div>

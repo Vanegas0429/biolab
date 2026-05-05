@@ -1,12 +1,17 @@
 import express from 'express';
 import { getAllEspecies, getEspecie, createEspecie, updateEspecie, deleteEspecie } from '../controllers/EspeciesController.js';
 
-const router = express.Router();
+import { verifyToken } from '../middlewares/authMiddlewares.js';
+import { checkMiddlewareX } from '../middlewares/middlewareX.js';
 
-router.get('/', getAllEspecies);
-router.get('/:id', getEspecie);
-router.post('/', createEspecie);
-router.put('/:id', updateEspecie);
-router.delete('/:id', deleteEspecie);
+const router = express.Router()
+
+;
+
+router.get('/', verifyToken, checkMiddlewareX, getAllEspecies);
+router.get('/:id', verifyToken, checkMiddlewareX, getEspecie);
+router.post('/', verifyToken, checkMiddlewareX, createEspecie);
+router.put('/:id', verifyToken, checkMiddlewareX, updateEspecie);
+router.delete('/:id', verifyToken, checkMiddlewareX, deleteEspecie);
 
 export default router;

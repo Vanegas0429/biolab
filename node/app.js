@@ -113,8 +113,8 @@ ActividadEquipoModel.belongsTo(ActividadModel, { foreignKey: 'Id_Actividad', as:
 ActividadModel.hasMany(ActividadEquipoModel, { foreignKey: 'Id_Actividad', as: 'ActividadEquipos'});
 
 // Equipo -> ActividadEquipo
-ActividadEquipoModel.belongsTo(EquipoModel, { foreignKey: 'id_equipo', as: 'Equipo'});
-EquipoModel.hasMany(ActividadEquipoModel, { foreignKey: 'id_equipo', as: 'ActividadEquipos'});
+ActividadEquipoModel.belongsTo(EquipoModel, { foreignKey: 'Id_Equipo', as: 'Equipo'});
+EquipoModel.hasMany(ActividadEquipoModel, { foreignKey: 'Id_Equipo', as: 'ActividadEquipos'});
 
 // Actividad -> ActividadMaterial
 ActividadMaterialModel.belongsTo(ActividadModel, { foreignKey: 'Id_Actividad', as: 'Actividad'});

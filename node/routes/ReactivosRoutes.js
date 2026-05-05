@@ -3,6 +3,9 @@ import { getAllReactivos, getReactivo, createReactivo, updateReactivo, deleteRea
 import multer from 'multer';
 import path from 'path';
 
+import { verifyToken } from '../middlewares/authMiddlewares.js';
+import { checkMiddlewareX } from '../middlewares/middlewareX.js';
+
 const router = express.Router()
 
 const almacenamiento = multer.diskStorage({
@@ -16,10 +19,10 @@ const almacenamiento = multer.diskStorage({
 
 const upload = multer({ storage: almacenamiento })
 
-router.get('/', getAllReactivos);
-router.get('/:id', getReactivo);
-router.post('/', upload.single('Ficha_tecnica'), createReactivo);
-router.put('/:id', upload.single('Ficha_tecnica'), updateReactivo);
-router.delete('/:id', deleteReactivo);
+router.get('/', verifyToken, checkMiddlewareX, getAllReactivos);
+router.get('/:id', verifyToken, checkMiddlewareX, getReactivo);
+router.post('/', verifyToken, checkMiddlewareX, upload.single('Ficha_tecnica'), createReactivo);
+router.put('/:id', verifyToken, checkMiddlewareX, upload.single('Ficha_tecnica'), updateReactivo);
+router.delete('/:id', verifyToken, checkMiddlewareX, deleteReactivo);
 
 export default router;

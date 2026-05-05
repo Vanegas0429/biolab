@@ -42,7 +42,8 @@ const CrudActividadReactivo = () => {
       }
       groups[actId].reactivosList.push({
         Id_ActividadReactivo: item.Id_ActividadReactivo,
-        nombre: item.reactivos?.Nom_reactivo || item.Reactivo?.Nom_reactivo,
+        Id_Reactivo: item.Id_Reactivo,
+        nombre: item.reactivos?.Nom_reactivo || item.Reactivo?.Nom_reactivo || 'Reactivo Desconocido',
         Estado: item.Estado
       });
     });
@@ -53,8 +54,9 @@ const CrudActividadReactivo = () => {
   // 🔹 Buscador sobre datos agrupados
   const filteredData = groupedData.filter((item) => {
     const text = filterText.toLowerCase();
+    const activityName = (item.actividades?.Nom_Actividad || item.Actividad?.Nom_Actividad || "").toLowerCase();
     return (
-      (item.actividades?.Nom_Actividad || item.Actividad?.Nom_Actividad || "").toLowerCase().includes(text) ||
+      activityName.includes(text) ||
       item.reactivosList.some(r => r.nombre?.toLowerCase().includes(text))
     );
   });
@@ -63,7 +65,7 @@ const CrudActividadReactivo = () => {
   const columnsTable = [
     { 
         name: 'Actividad', 
-        selector: row => row.actividades?.Nom_Actividad || row.Actividad?.Nom_Actividad,
+        selector: row => row.actividades?.Nom_Actividad || row.Actividad?.Nom_Actividad || 'Actividad no asignada',
         sortable: true,
         grow: 2
     },
@@ -77,7 +79,7 @@ const CrudActividadReactivo = () => {
           onClick={() => setSelectedActivity(row)}
         >
           <i className="fa-solid fa-flask-vial me-2"></i>
-          {row.reactivosList.length} {row.reactivosList.length === 1 ? 'Reactivo' : 'Reactivos'}
+          {row.reactivosList?.length || 0} {row.reactivosList?.length === 1 ? 'Reactivo' : 'Reactivos'}
         </button>
       )
     },
@@ -85,7 +87,7 @@ const CrudActividadReactivo = () => {
       name: 'Estado',
       cell: row => (
         <button
-          className={`btn btn-sm ${row.Estado =='Activo' ? 'btn-success' : 'btn-danger'}`}
+          className={`btn btn-sm ${row.Estado === 'Activo' ? 'btn-success' : 'btn-danger'}`}
           onClick={() => toggleEstado(row)}
         >
           {row.Estado}
@@ -115,7 +117,7 @@ const CrudActividadReactivo = () => {
   const getAllActividadReactivo = async () => {
     try {
         const response = await apiAxios.get('/api/ActividadReactivo')
-        setActividadReactivo(response.data)
+        setActividadReactivo(response.data || [])
     } catch (error) {
         console.error("Error cargando Actividad-Reactivo:", error)
     }
@@ -225,7 +227,7 @@ const CrudActividadReactivo = () => {
               <div className="modal-header bg-primary text-white">
                 <h5 className="modal-title fw-bold">
                   <i className="fa-solid fa-list-check me-2"></i>
-                  Reactivos: {selectedActivity?.actividades?.Nom_Actividad || selectedActivity?.Actividad?.Nom_Actividad}
+                  Reactivos: {selectedActivity?.actividades?.Nom_Actividad || selectedActivity?.Actividad?.Nom_Actividad || 'Actividad'}
                 </h5>
                 <button
                   type="button"
@@ -236,7 +238,7 @@ const CrudActividadReactivo = () => {
               </div>
               <div className="modal-body p-0">
                 <div className="list-group list-group-flush">
-                  {selectedActivity?.reactivosList.map((r, index) => (
+                  {selectedActivity?.reactivosList?.map((r, index) => (
                     <div key={index} className="list-group-item d-flex justify-content-between align-items-center p-3">
                       <div className="d-flex align-items-center">
                         <div className="bg-light rounded-circle p-2 me-3">
@@ -249,7 +251,7 @@ const CrudActividadReactivo = () => {
                       </span>
                     </div>
                   ))}
-                  {(selectedActivity?.reactivosList.length === 0) && (
+                  {(!selectedActivity?.reactivosList || selectedActivity.reactivosList.length === 0) && (
                     <div className="p-4 text-center text-muted">
                         No hay reactivos vinculados a esta actividad.
                     </div>

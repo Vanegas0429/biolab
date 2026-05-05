@@ -23,10 +23,11 @@ import CrudActividadMaterial from './ActividadMaterial/CrudActividadMaterial';
 import CrudActividadReactivo from './ActividadReactivo/CrudActividadReactivo';
 import UsuarioRegistroAdmin from './home/UsuarioRegisterAdmin';
 import Calendario from './Calendario/Calendario.jsx';
+import GestionUsuarios from './home/GestionUsuarios';
 
 // Componente de ruta protegida por roles
 const ProtectedRoute = ({ isAuth, userRol, allowedRoles, children }) => {
-  if (!isAuth) return <Navigate to="/login" replace />;
+  if (!isAuth) return <Navigate to="/" replace />;
   if (allowedRoles && !allowedRoles.includes(userRol)) return <Navigate to="/sin-acceso" replace />;
   return children;
 };
@@ -100,8 +101,8 @@ function App() {
 
   if (isLoading) return <div className="d-flex align-items-center justify-content-center" style={{ minHeight: '100vh' }}>Cargando...</div>;
 
-  // Roles con acceso completo (admin)
-  const ADMIN_ROLES = ['administrador', 'gerente', 'instructor_gerente', 'instructor', 'gestor'];
+  // Roles con acceso a la gestión operativa (MiddelWare X)
+  const STAFF_ROLES = ['administrador', 'instructor', 'gestor', 'pasante'];
 
   return (
     <>
@@ -171,6 +172,7 @@ function App() {
                 <ul className="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
                   <li><h6 className="dropdown-header">Perfil</h6></li>
                   <li><span className="dropdown-item-text text-muted small"><i className="fa-regular fa-id-card me-2"></i>{userProfile.documento}</span></li>
+                  <li><span className="dropdown-item-text text-muted small"><i className="fa-solid fa-phone me-2"></i>{userProfile.telefono || 'Sin teléfono'}</span></li>
                   <li><span className="dropdown-item-text text-muted small"><i className="fa-regular fa-envelope me-2"></i>{userProfile.correo}</span></li>
                 </ul>
               </div>
@@ -193,64 +195,64 @@ function App() {
           </ProtectedRoute>
         } />
 
-        {/* Rutas solo para roles admin */}
+        {/* Rutas solo para roles operativos (MiddelWare X) */}
         <Route path='/Especie' element={
-          <ProtectedRoute isAuth={isAuth} userRol={userRol} allowedRoles={ADMIN_ROLES}>
+          <ProtectedRoute isAuth={isAuth} userRol={userRol} allowedRoles={STAFF_ROLES}>
             <CrudEspecie />
           </ProtectedRoute>
         } />
         <Route path='/Sup_Plantas' element={
-          <ProtectedRoute isAuth={isAuth} userRol={userRol} allowedRoles={ADMIN_ROLES}>
+          <ProtectedRoute isAuth={isAuth} userRol={userRol} allowedRoles={STAFF_ROLES}>
             <CrudSup_Plantas />
           </ProtectedRoute>
         } />
         <Route path='/Produccion' element={
-          <ProtectedRoute isAuth={isAuth} userRol={userRol} allowedRoles={ADMIN_ROLES}>
+          <ProtectedRoute isAuth={isAuth} userRol={userRol} allowedRoles={STAFF_ROLES}>
             <CrudProduccion />
           </ProtectedRoute>
         } />
         <Route path='/Reactivo' element={
-          <ProtectedRoute isAuth={isAuth} userRol={userRol} allowedRoles={ADMIN_ROLES}>
+          <ProtectedRoute isAuth={isAuth} userRol={userRol} allowedRoles={STAFF_ROLES}>
             <CrudReactivos />
           </ProtectedRoute>
         } />
         <Route path='/Entrada' element={
-          <ProtectedRoute isAuth={isAuth} userRol={userRol} allowedRoles={ADMIN_ROLES}>
+          <ProtectedRoute isAuth={isAuth} userRol={userRol} allowedRoles={STAFF_ROLES}>
             <CrudEntrada />
           </ProtectedRoute>
         } />
         <Route path='/Equipo' element={
-          <ProtectedRoute isAuth={isAuth} userRol={userRol} allowedRoles={[...ADMIN_ROLES, 'solicitante']}>
+          <ProtectedRoute isAuth={isAuth} userRol={userRol} allowedRoles={[...STAFF_ROLES, 'solicitante']}>
             <CrudEquipos userRol={userRol} />
           </ProtectedRoute>
         } />
         <Route path='/Material' element={
-          <ProtectedRoute isAuth={isAuth} userRol={userRol} allowedRoles={ADMIN_ROLES}>
+          <ProtectedRoute isAuth={isAuth} userRol={userRol} allowedRoles={STAFF_ROLES}>
             <CrudMaterial />
           </ProtectedRoute>
         } />
         <Route path='/Actividad' element={
-          <ProtectedRoute isAuth={isAuth} userRol={userRol} allowedRoles={ADMIN_ROLES}>
+          <ProtectedRoute isAuth={isAuth} userRol={userRol} allowedRoles={STAFF_ROLES}>
             <CrudActividad />
           </ProtectedRoute>
         } />
         <Route path='/ActividadEquipo' element={
-          <ProtectedRoute isAuth={isAuth} userRol={userRol} allowedRoles={ADMIN_ROLES}>
+          <ProtectedRoute isAuth={isAuth} userRol={userRol} allowedRoles={STAFF_ROLES}>
             <CrudActividadEquipo />
           </ProtectedRoute>
         } />
         <Route path='/ActividadMaterial' element={
-          <ProtectedRoute isAuth={isAuth} userRol={userRol} allowedRoles={ADMIN_ROLES}>
+          <ProtectedRoute isAuth={isAuth} userRol={userRol} allowedRoles={STAFF_ROLES}>
             <CrudActividadMaterial />
           </ProtectedRoute>
         } />
         <Route path='/ActividadReactivo' element={
-          <ProtectedRoute isAuth={isAuth} userRol={userRol} allowedRoles={ADMIN_ROLES}>
+          <ProtectedRoute isAuth={isAuth} userRol={userRol} allowedRoles={STAFF_ROLES}>
             <CrudActividadReactivo />
           </ProtectedRoute>
         } />
         <Route path='/Practica' element={
-          <ProtectedRoute isAuth={isAuth} userRol={userRol} allowedRoles={ADMIN_ROLES}>
+          <ProtectedRoute isAuth={isAuth} userRol={userRol} allowedRoles={STAFF_ROLES}>
             <CrudPractica />
           </ProtectedRoute>
         } />
@@ -259,15 +261,20 @@ function App() {
             <UsuarioRegistroAdmin />
           </ProtectedRoute>
         } />
+        <Route path='/usuarios' element={
+          <ProtectedRoute isAuth={isAuth} userRol={userRol} allowedRoles={['administrador']}>
+            <GestionUsuarios />
+          </ProtectedRoute>
+        } />
         
         <Route path='/Calendario' element={
-          <ProtectedRoute isAuth={isAuth} userRol={userRol} allowedRoles={ADMIN_ROLES}>
+          <ProtectedRoute isAuth={isAuth} userRol={userRol} allowedRoles={STAFF_ROLES}>
             <Calendario />
           </ProtectedRoute>
         } />
 
         {/* Redirigir cualquier ruta desconocida */}
-        <Route path='*' element={<Navigate to={isAuth ? '/Reserva' : '/login'} replace />} />
+        <Route path='*' element={<Navigate to={isAuth ? '/Reserva' : '/'} replace />} />
       </Routes>
     </>
   );

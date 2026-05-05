@@ -6,6 +6,7 @@ import logo from "../assets/logo.png";
 const UsuarioRegistro = () => {
   const [nombre, setNombre] = useState("");
   const [documento, setDocumento] = useState("");
+  const [telefono, setTelefono] = useState("");
   const [correo, setCorreo] = useState("");
   const [contraseña, setContraseña] = useState("");
   const [error, setError] = useState(null);
@@ -20,6 +21,7 @@ const UsuarioRegistro = () => {
       await apiNode.post("/api/auth", {
         nombre,
         documento,
+        telefono,
         correo,
         contraseña
       });
@@ -98,6 +100,18 @@ const UsuarioRegistro = () => {
                   required
                 />
               </div>
+            </div>
+
+            <div className="mb-3"> 
+              <label className="form-label">Teléfono</label>
+              <input 
+                type="text"
+                className="form-control"
+                value={telefono} 
+                onChange={(e) => setTelefono(e.target.value)}
+                placeholder="Ingrese su número de teléfono" 
+                required 
+              /> 
             </div>
 
             <div className="mb-3"> <label className="form-label">Correo electrónico</label>

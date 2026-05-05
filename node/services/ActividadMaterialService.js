@@ -9,7 +9,7 @@ class ActividadMaterialService {
             {
                 include: [{
                     model: ActividadModel,
-                    as: 'actividad'
+                    as: 'Actividad'
                 }, 
                 {
                     model: MaterialModel,

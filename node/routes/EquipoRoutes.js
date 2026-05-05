@@ -2,6 +2,7 @@ import express from 'express'
 import { getAllEquipos, getEquipo, createEquipo, updateEquipo, deleteEquipo, deleteEquipoImage } from '../controllers/EquipoController.js'
 import multer from 'multer';
 import path from 'path';
+import { verifyToken } from '../middlewares/authMiddlewares.js';
 
 const router = express.Router()
 
@@ -22,11 +23,11 @@ const uploadFields = upload.fields([
     { name: 'ficha_tecnica', maxCount: 1 }
 ]);
 
-router.get('/', getAllEquipos);
-router.get('/:id', getEquipo);
-router.post('/', uploadFields, createEquipo);
-router.put('/:id', uploadFields, updateEquipo);
-router.delete('/:id', deleteEquipo);
-router.delete('/:id/imagen/:filename', deleteEquipoImage);
+router.get('/', verifyToken, getAllEquipos);
+router.get('/:id', verifyToken, getEquipo);
+router.post('/', verifyToken, uploadFields, createEquipo);
+router.put('/:id', verifyToken, uploadFields, updateEquipo);
+router.delete('/:id', verifyToken, deleteEquipo);
+router.delete('/:id/imagen/:filename', verifyToken, deleteEquipoImage);
 
 export default router;

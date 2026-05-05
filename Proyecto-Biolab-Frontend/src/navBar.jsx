@@ -78,12 +78,15 @@ const NavBar = ({ isAuth, logOut, userRol }) => {
           </>
         )}
 
-        {/* ADMIN */}
-        {['administrador', 'gerente', 'instructor_gerente', 'instructor', 'gestor'].includes(userRol) && (
+        {/* STAFF / ADMIN */}
+        {['administrador', 'instructor', 'gestor', 'pasante'].includes(userRol) && (
           <>
             <li className="nav-item mt-3 px-3 text-uppercase text-secondary fw-bold" style={{ fontSize: '0.75rem', letterSpacing: '1px' }}>Admin</li>
             {userRol === 'administrador' && (
-              <li className="nav-item"><Link className="nav-link px-3 py-2" onClick={() => navigateTo("/registroAdmin")}><i className="fa-solid fa-user-shield me-3 w-20px text-center"></i>Registrar Usuario</Link></li>
+              <>
+                <li className="nav-item"><Link className="nav-link px-3 py-2" onClick={() => navigateTo("/registroAdmin")}><i className="fa-solid fa-user-shield me-3 w-20px text-center"></i>Registrar Usuario</Link></li>
+                <li className="nav-item"><Link className="nav-link px-3 py-2" onClick={() => navigateTo("/usuarios")}><i className="fa-solid fa-users-gear me-3 w-20px text-center"></i>Gestión Usuarios</Link></li>
+              </>
             )}
             <li className="nav-item"><Link className="nav-link px-3 py-2" onClick={() => navigateTo("/Calendario")}><i className="fa-solid fa-calendar-check me-3 w-20px text-center"></i>Calendario</Link></li>
           </>
