@@ -197,18 +197,18 @@ const CrudEquipos = ({ userRol }) => {
             <span className="input-group-text border-0 bg-transparent ps-3">
               <i className="fa-solid fa-magnifying-glass text-muted"></i>
             </span>
-            <input 
-              type="text" 
-              className="form-control border-0 py-2 shadow-none bg-transparent" 
-              placeholder="Buscar equipo..." 
+            <input
+              type="text"
+              className="form-control border-0 py-2 shadow-none bg-transparent"
+              placeholder="Buscar equipo..."
               value={filterText}
               onChange={(e) => setFilterText(e.target.value)}
             />
           </div>
           {userRol !== 'solicitante' && (
-            <button 
+            <button
               className="btn btn-primary rounded-pill px-4 shadow-sm"
-              data-bs-toggle="modal" 
+              data-bs-toggle="modal"
               data-bs-target="#exampleModal"
               onClick={() => setRowToEdit(null)}
             >
@@ -239,15 +239,15 @@ const CrudEquipos = ({ userRol }) => {
                   <div className="d-flex align-items-center py-2">
                     <div className="me-3 position-relative">
                       {imgs.length > 0 ? (
-                        <img 
-                          src={`http://localhost:8000/uploads/${imgs[0]}`} 
+                        <img
+                          src={`http://localhost:8000/uploads/${imgs[0]}`}
                           alt={row.nombre}
                           className="rounded shadow-sm border"
                           style={{ width: '45px', height: '45px', objectFit: 'cover', cursor: 'pointer' }}
                           onClick={() => openCarousel(row)}
                         />
                       ) : (
-                        <div 
+                        <div
                           className="bg-light text-muted d-flex align-items-center justify-content-center rounded border"
                           style={{ width: '45px', height: '45px', borderStyle: 'dashed !important', cursor: userRol !== 'solicitante' ? 'pointer' : 'default' }}
                           onClick={() => userRol !== 'solicitante' && triggerImageUpload(row)}
@@ -271,7 +271,7 @@ const CrudEquipos = ({ userRol }) => {
             {
               name: 'MARCA / GRUPO',
               sortable: true,
-              width: '180px',
+              width: '250px',
               cell: (row) => (
                 <div>
                   <div className="text-dark fw-medium">{row.marca || 'N/A'}</div>
@@ -283,13 +283,13 @@ const CrudEquipos = ({ userRol }) => {
               name: 'LÍNEA',
               selector: row => row.linea || 'N/A',
               sortable: true,
-              width: '120px'
+              width: '250px'
             },
             {
-              name: 'C. COSTOS',
+              name: 'CENTRO DE COSTOS',
               selector: row => row.centro_costos || 'N/A',
               sortable: true,
-              width: '120px'
+              width: '200px'
             },
             {
               name: 'FICHA',
@@ -297,7 +297,7 @@ const CrudEquipos = ({ userRol }) => {
               width: '80px',
               cell: (row) => (
                 row.ficha_tecnica ? (
-                  <button 
+                  <button
                     className="btn btn-sm btn-outline-primary rounded-pill px-3 shadow-none"
                     onClick={() => {
                       setPdfUrl(`http://localhost:8000/uploads/${row.ficha_tecnica}`);
@@ -319,9 +319,9 @@ const CrudEquipos = ({ userRol }) => {
               name: 'ESTADO',
               sortable: true,
               center: true,
-              width: '120px',
+              width: '150px',
               cell: (row) => (
-                <span 
+                <span
                   className={`status-badge ${row.estado === 'Activo' ? 'status-badge-activo' : 'status-badge-inactivo'}`}
                   style={{ cursor: userRol !== 'solicitante' ? 'pointer' : 'default' }}
                   onClick={() => userRol !== 'solicitante' && toggleEstado(row)}
@@ -333,12 +333,12 @@ const CrudEquipos = ({ userRol }) => {
             ...(userRol !== 'solicitante' ? [{
               name: 'ACCIONES',
               center: true,
-              width: '100px',
+              width: '150px',
               cell: (row) => (
-                <button 
+                <button
                   className="btn-action btn-action-edit"
                   onClick={() => setRowToEdit(row)}
-                  data-bs-toggle="modal" 
+                  data-bs-toggle="modal"
                   data-bs-target="#exampleModal"
                   title="Editar"
                 >

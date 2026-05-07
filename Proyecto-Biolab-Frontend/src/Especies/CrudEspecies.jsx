@@ -2,6 +2,7 @@ import { useState, useEffect } from "react"
 import apiAxios from "../api/axiosConfig.js"
 import DataTable from 'react-data-table-component'
 import EspeciesForm from "./EspeciesForm.jsx"
+import Swal from 'sweetalert2'
 
 const CrudEspecie = () => {
 
@@ -16,11 +17,11 @@ const CrudEspecie = () => {
 
     let estadoNuevo = ''
 
-    if(row.Estado === 'Activo'){
+    if (row.Estado === 'Activo') {
 
       estadoNuevo = 'Inactivo'
 
-    }else{
+    } else {
       estadoNuevo = 'Activo'
     }
 
@@ -39,11 +40,48 @@ const CrudEspecie = () => {
 
 
   const columnsTable = [
-    { name: 'Id_Especie', selector: row => row.Id_especie, sortable: true },
+    { name: 'Id', selector: row => row.Id_especie, sortable: true, width: '100px' },
     { name: 'Nombre de especie', selector: row => row.Nom_especie, sortable: true },
+    {
+      name: 'Imagen',
+      center: true,
+      width: '400px',
+      cell: row => (
+        row.img_especie ? (
+          <img
+            src={`http://localhost:8000/uploads/${row.img_especie}`}
+            alt={row.Nom_especie}
+            className="rounded shadow-sm border my-2"
+            style={{ width: '45px', height: '45px', objectFit: 'cover', cursor: 'pointer' }}
+            onClick={() => {
+              Swal.fire({
+                imageUrl: `http://localhost:8000/uploads/${row.img_especie}`,
+                imageAlt: row.Nom_especie,
+                showConfirmButton: false,
+                showCloseButton: true,
+                customClass: {
+                  closeButton: 'custom-swal-close-btn'
+                },
+                background: 'transparent',
+                backdrop: `rgba(0,0,0,0.8)`
+              })
+            }}
+          />
+        ) : (
+          <div
+            className="bg-light text-muted d-flex align-items-center justify-content-center rounded border my-2"
+            style={{ width: '45px', height: '45px', borderStyle: 'dashed !important' }}
+            title="Sin imagen"
+          >
+            <i className="fa-solid fa-image opacity-50"></i>
+          </div>
+        )
+      )
+    },
     {
       name: 'Estado',
       sortable: true,
+      width: '200px',
       cell: row => (
         <span
           className={`status-badge ${row.Estado === 'Activo' ? 'status-badge-activo' : 'status-badge-inactivo'}`}
@@ -56,7 +94,8 @@ const CrudEspecie = () => {
     },
     {
       name: 'Acciones',
-      right: true,
+      center: true,
+      width: '200px',
       cell: row => (
         <button
           className="btn-action btn-action-edit"
@@ -100,11 +139,11 @@ const CrudEspecie = () => {
           </div>
           <div className="col-12 col-md-auto text-md-end text-center">
             <button type="button" className="btn btn-primary px-4 shadow-sm" data-bs-toggle="modal" data-bs-target="#exampleModal" id="closeModal" onClick={() => setRowToEdit(null)}>
-              Agregar Especie 
+              Agregar Especie
             </button>
           </div>
         </div>
-         <DataTable
+        <DataTable
           title="Especie"
           columns={columnsTable}
           data={newListEspecie}
@@ -130,7 +169,7 @@ const CrudEspecie = () => {
           ]}
         />
 
-        
+
 
         {/* Modal */}
         <div className="modal fade" id="exampleModal" tabIndex="-1">

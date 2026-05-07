@@ -105,18 +105,7 @@ const ReactivosForm = ({ hideModal, rowToEdit, refreshList }) => {
                 />
             </div>
 
-            <div className="mb-3">
-                <label className="form-label">Estado Reactivo</label>
-                <select
-                    className="form-control"
-                    value={Est_reactivo}
-                    onChange={(e) => setEst_Reactivo(e.target.value)}
-                >
-                    <option value="">Selecciona uno</option>
-                    <option value="Bueno">Bueno</option>
-                    <option value="Dañado">Dañado</option>
-                </select>
-            </div>
+
 
             {/* Campo Ficha Técnica PDF */}
             <div className="mb-3">

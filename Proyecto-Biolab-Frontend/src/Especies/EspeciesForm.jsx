@@ -13,28 +13,42 @@ const EspeciesForm = ({ hideModal, rowToEdit }) => {
 
     //Campos del formulario
     const [Nom_especie, setNom_especie] = useState("");
+    const [img_especie, setImgEspecie] = useState(null);
     const [textFormButton, setTextFormButton] = useState("Enviar");
 
     useEffect(() => {
         if (rowToEdit) {
             setNom_especie(rowToEdit.Nom_especie || "");
             setEstado(rowToEdit.Estado || "Activo"); // cargar estado si es edición
+            setImgEspecie(null); // Reset image when editing
             setTextFormButton("Actualizar");
         } else {
             setEstado("Activo");
             setNom_especie("");
+            setImgEspecie(null);
             setTextFormButton("Enviar");
         }
     }, [rowToEdit]);
 
     const crearEspecie = async () => {
-        return apiAxios.post("/api/Especie", { Nom_especie, Estado });
+        const formData = new FormData();
+        formData.append("Nom_especie", Nom_especie);
+        formData.append("Estado", Estado);
+        if (img_especie) formData.append("img_especie", img_especie);
+
+        return apiAxios.post("/api/Especie", formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        });
     };
 
     const actualizarEspecie = async () => {
-        return apiAxios.put(`/api/Especie/${rowToEdit.Id_especie}`, {
-            Nom_especie,
-            Estado
+        const formData = new FormData();
+        formData.append("Nom_especie", Nom_especie);
+        formData.append("Estado", Estado);
+        if (img_especie) formData.append("img_especie", img_especie);
+
+        return apiAxios.put(`/api/Especie/${rowToEdit.Id_especie}`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
         });
     };
 
@@ -94,6 +108,19 @@ const EspeciesForm = ({ hideModal, rowToEdit }) => {
                     className="form-control"
                     value={Nom_especie}
                     onChange={(e) => setNom_especie(e.target.value)}
+                />
+            </div>
+
+            <div className="mb-3">
+                <label htmlFor="img_especie" className="form-label">
+                    Imagen de la Especie (Opcional):
+                </label>
+                <input
+                    type="file"
+                    id="img_especie"
+                    className="form-control"
+                    accept="image/*"
+                    onChange={(e) => setImgEspecie(e.target.files[0])}
                 />
             </div>
 

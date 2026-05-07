@@ -15,17 +15,17 @@ const [Estado, setEstado] = useState("Activo");
   const [Num_lote, setNum_lote] = useState('');
   const [Med_Cultivo, setMed_Cultivo] = useState('');
   const [Met_Propagacion, setMet_Propagacion] = useState('');
-  const [Fc_Iniciales, setFc_Iniciales] = useState('');
-  const [Fc_Bacterias, setFc_Bacterias] = useState('');
-  const [Fc_Hongos, setFc_Hongos] = useState('');
-  const [Fs_Desarrollo, setFs_Desarrollo] = useState('');
-  const [Fra_Desarrollo, setFra_Desarrollo] = useState('');
-  const [Fd_BR, setFd_BR] = useState('');
-  const [Fd_RA, setFd_RA] = useState('');
-  const [Fd_CA, setFd_CA] = useState('');
-  const [Fd_MOR, setFd_MOR] = useState('');
-  const [Fd_GER, setFd_GER] = useState('');
-  const [Num_endurecimiento, setNum_endurecimiento] = useState('');
+  const [Fc_Iniciales, setFc_Iniciales] = useState(0);
+  const [Fc_Bacterias, setFc_Bacterias] = useState(0);
+  const [Fc_Hongos, setFc_Hongos] = useState(0);
+  const [Fs_Desarrollo, setFs_Desarrollo] = useState(0);
+  const [Fra_Desarrollo, setFra_Desarrollo] = useState(0);
+  const [Fd_BR, setFd_BR] = useState(0);
+  const [Fd_RA, setFd_RA] = useState(0);
+  const [Fd_CA, setFd_CA] = useState(0);
+  const [Fd_MOR, setFd_MOR] = useState(0);
+  const [Fd_GER, setFd_GER] = useState(0);
+  const [Num_endurecimiento, setNum_endurecimiento] = useState(0);
 
   const [Producciones, setProducciones] = useState([]);
 
@@ -38,17 +38,17 @@ useEffect(() => {
     setNum_lote(rowToEdit.Num_lote ?? '');
     setMed_Cultivo(rowToEdit.Med_Cultivo ?? '');
     setMet_Propagacion(rowToEdit.Met_Propagacion ?? '');
-    setFc_Iniciales(rowToEdit.Fc_Iniciales ?? '');
-    setFc_Bacterias(rowToEdit.Fc_Bacterias ?? '');
-    setFc_Hongos(rowToEdit.Fc_Hongos ?? '');
-    setFs_Desarrollo(rowToEdit.Fs_Desarrollo ?? '');
-    setFra_Desarrollo(rowToEdit.Fra_Desarrollo ?? '');
-    setFd_BR(rowToEdit.Fd_BR ?? '');
-    setFd_RA(rowToEdit.Fd_RA ?? '');
-    setFd_CA(rowToEdit.Fd_CA ?? '');
-    setFd_MOR(rowToEdit.Fd_MOR ?? '');
-    setFd_GER(rowToEdit.Fd_GER ?? '');
-    setNum_endurecimiento(rowToEdit.Num_endurecimiento ?? '');
+    setFc_Iniciales(rowToEdit.Fc_Iniciales ?? 0);
+    setFc_Bacterias(rowToEdit.Fc_Bacterias ?? 0);
+    setFc_Hongos(rowToEdit.Fc_Hongos ?? 0);
+    setFs_Desarrollo(rowToEdit.Fs_Desarrollo ?? 0);
+    setFra_Desarrollo(rowToEdit.Fra_Desarrollo ?? 0);
+    setFd_BR(rowToEdit.Fd_BR ?? 0);
+    setFd_RA(rowToEdit.Fd_RA ?? 0);
+    setFd_CA(rowToEdit.Fd_CA ?? 0);
+    setFd_MOR(rowToEdit.Fd_MOR ?? 0);
+    setFd_GER(rowToEdit.Fd_GER ?? 0);
+    setNum_endurecimiento(rowToEdit.Num_endurecimiento ?? 0);
     setId_produccion(rowToEdit.Id_produccion ?? '');
   } else {
     // CREAR: limpiar todos los campos
@@ -56,17 +56,17 @@ useEffect(() => {
     setNum_lote('');
     setMed_Cultivo('');
     setMet_Propagacion('');
-    setFc_Iniciales('');
-    setFc_Bacterias('');
-    setFc_Hongos('');
-    setFs_Desarrollo('');
-    setFra_Desarrollo('');
-    setFd_BR('');
-    setFd_RA('');
-    setFd_CA('');
-    setFd_MOR('');
-    setFd_GER('');
-    setNum_endurecimiento('');
+    setFc_Iniciales(0);
+    setFc_Bacterias(0);
+    setFc_Hongos(0);
+    setFs_Desarrollo(0);
+    setFra_Desarrollo(0);
+    setFd_BR(0);
+    setFd_RA(0);
+    setFd_CA(0);
+    setFd_MOR(0);
+    setFd_GER(0);
+    setNum_endurecimiento(0);
     setId_produccion('');
   }
 }, [rowToEdit]);
@@ -140,6 +140,35 @@ const actualizarSup_Planta = async () => {
   );
 };
 
+  const handleFrascosChange = (setter) => (e) => {
+    let newValue = Number(e.target.value) || 0;
+    if (newValue < 0) newValue = 0;
+    const iniciales = Number(Fc_Iniciales) || 0;
+    
+    // Suma de los demás campos, excluyendo el que se está modificando
+    const sumOthers = 
+      (setter === setFc_Bacterias ? 0 : Number(Fc_Bacterias) || 0) +
+      (setter === setFc_Hongos ? 0 : Number(Fc_Hongos) || 0) +
+      (setter === setFs_Desarrollo ? 0 : Number(Fs_Desarrollo) || 0) +
+      (setter === setFd_BR ? 0 : Number(Fd_BR) || 0) +
+      (setter === setFd_RA ? 0 : Number(Fd_RA) || 0) +
+      (setter === setFd_CA ? 0 : Number(Fd_CA) || 0) +
+      (setter === setFd_MOR ? 0 : Number(Fd_MOR) || 0) +
+      (setter === setFd_GER ? 0 : Number(Fd_GER) || 0);
+
+    if (sumOthers + newValue > iniciales) {
+      MySwal.fire({
+        title: "Límite alcanzado",
+        text: `No puedes exceder los frascos iniciales (${iniciales}). Te quedan ${iniciales - sumOthers} disponibles.`,
+        icon: "warning",
+        timer: 2000,
+        showConfirmButton: false
+      });
+      return;
+    }
+    setter(newValue);
+  };
+
 const gestionarForm = async (e) => {
   e.preventDefault();
 
@@ -149,6 +178,26 @@ const gestionarForm = async (e) => {
         text: "Por favor completa todos los campos obligatorios",
         icon: "error"
       });
+    return;
+  }
+
+  const iniciales = Number(Fc_Iniciales) || 0;
+  const sumaDestino = 
+    (Number(Fc_Bacterias) || 0) + 
+    (Number(Fc_Hongos) || 0) + 
+    (Number(Fs_Desarrollo) || 0) + 
+    (Number(Fd_BR) || 0) + 
+    (Number(Fd_RA) || 0) + 
+    (Number(Fd_CA) || 0) + 
+    (Number(Fd_MOR) || 0) + 
+    (Number(Fd_GER) || 0);
+
+  if (sumaDestino > iniciales) {
+    MySwal.fire({
+      title: "Error",
+      text: `La suma de frascos distribuidos (${sumaDestino}) excede la cantidad de frascos iniciales (${iniciales}).`,
+      icon: "error"
+    });
     return;
   }
 
@@ -197,7 +246,7 @@ const gestionarForm = async (e) => {
       {/* Fc_Iniciales */}
       <div className="mb-3">
         <label htmlFor="Fc_Iniciales">Fc Iniciales:</label>
-        <input type="number" id="Fc_Iniciales" className="form-control" value={Fc_Iniciales} onChange={e => setFc_Iniciales(e.target.value)} />
+        <input type="number" min="0" id="Fc_Iniciales" className="form-control" value={Fc_Iniciales} onChange={e => setFc_Iniciales(Math.max(0, Number(e.target.value)) || 0)} />
       </div>
 
       {/* Medio de Cultivo */}
@@ -225,16 +274,16 @@ const gestionarForm = async (e) => {
 
       <div className="mb-3">
         <label htmlFor="Fc_Bacterias">Bacterias:</label>
-        <input type="number" id="Fc_Bacterias" className="form-control" value={Fc_Bacterias} onChange={e => setFc_Bacterias(e.target.value)} />
+        <input type="number" min="0" id="Fc_Bacterias" className="form-control" value={Fc_Bacterias} onChange={handleFrascosChange(setFc_Bacterias)} />
 
         <label htmlFor="Fc_Hongos" className="mt-2">Hongos:</label>
-        <input type="number" id="Fc_Hongos" className="form-control" value={Fc_Hongos} onChange={e => setFc_Hongos(e.target.value)} />
+        <input type="number" min="0" id="Fc_Hongos" className="form-control" value={Fc_Hongos} onChange={handleFrascosChange(setFc_Hongos)} />
       </div>
 
       {/* Frascos con y sin desarrollo */}
       <div className="mb-3">
         <label htmlFor="Fs_Desarrollo">Frascos sin desarrollo:</label>
-        <input type="number" id="Fs_Desarrollo" className="form-control" value={Fs_Desarrollo} onChange={e => setFs_Desarrollo(e.target.value)} />
+        <input type="number" min="0" id="Fs_Desarrollo" className="form-control" value={Fs_Desarrollo} onChange={handleFrascosChange(setFs_Desarrollo)} />
       </div>
 
       {/* Detalles Fd */}
@@ -244,25 +293,25 @@ const gestionarForm = async (e) => {
 
       <div className="mb-3">
         <label>BR:</label>
-        <input type="number" className="form-control" value={Fd_BR} onChange={e => setFd_BR(e.target.value)} />
+        <input type="number" min="0" className="form-control" value={Fd_BR} onChange={handleFrascosChange(setFd_BR)} />
 
         <label>RA:</label>
-        <input type="number" className="form-control" value={Fd_RA} onChange={e => setFd_RA(e.target.value)} />
+        <input type="number" min="0" className="form-control" value={Fd_RA} onChange={handleFrascosChange(setFd_RA)} />
 
         <label>CA:</label>
-        <input type="number" className="form-control" value={Fd_CA} onChange={e => setFd_CA(e.target.value)} />
+        <input type="number" min="0" className="form-control" value={Fd_CA} onChange={handleFrascosChange(setFd_CA)} />
 
         <label>MOR:</label>
-        <input type="number" className="form-control" value={Fd_MOR} onChange={e => setFd_MOR(e.target.value)} />
+        <input type="number" min="0" className="form-control" value={Fd_MOR} onChange={handleFrascosChange(setFd_MOR)} />
 
         <label>GER:</label>
-        <input type="number" className="form-control" value={Fd_GER} onChange={e => setFd_GER(e.target.value)} />
+        <input type="number" min="0" className="form-control" value={Fd_GER} onChange={handleFrascosChange(setFd_GER)} />
       </div>
 
       {/* Num endurecimiento */}
       <div className="mb-3">
         <label htmlFor="Num_endurecimiento">Número de Endurecimiento:</label>
-        <input type="number" id="Num_endurecimiento" className="form-control" value={Num_endurecimiento} onChange={e => setNum_endurecimiento(e.target.value)} />
+        <input type="number" min="0" id="Num_endurecimiento" className="form-control" value={Num_endurecimiento} onChange={e => setNum_endurecimiento(Math.max(0, Number(e.target.value)) || 0)} />
       </div>
 
       {/* Producción */}

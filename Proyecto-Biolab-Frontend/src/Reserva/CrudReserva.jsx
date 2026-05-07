@@ -132,18 +132,13 @@ const CrudReserva = () => {
   // 🔹 Columnas de la tabla
   const columnsTable = useMemo(
     () => [
-      { name: "Id_Reserva", selector: (row) => row?.Id_Reserva ?? "", sortable: true },
+      { name: "Id", selector: (row) => row?.Id_Reserva ?? "", sortable: true, width: "80px" },
       { name: "Tipo", selector: (row) => row?.Tip_Reserva ?? "", sortable: true },
-      { name: "Estado Reserva", selector: (row) => row?.Des_Estado ?? "", sortable: true },
-      { name: "Motivo R/C", selector: (row) => row?.Mot_RecCan ?? "", sortable: true },
-      { name: "Solicitante", selector: (row) => row?.Nom_Solicitante ?? "", sortable: true },
-      { name: "Documento", selector: (row) => row?.Doc_Solicitante ?? "", sortable: true },
-      { name: "Correo", selector: (row) => row?.Cor_Solicitante ?? "", sortable: true },
-      { name: "Teléfono", selector: (row) => row?.Tel_Solicitante ?? "", sortable: true },
-      { name: "Aprendices", selector: (row) => row?.Can_Aprendices ?? "", sortable: true },
+      { name: "Solicitante", selector: (row) => row?.Nom_Solicitante ?? "", sortable: true, wrap: true },
+      { name: "Ficha", selector: (row) => row?.Num_Ficha ?? "", sortable: true },
       { name: "Fecha", selector: (row) => row?.Fec_Reserva ?? "", sortable: true },
       { name: "Hora", selector: (row) => row?.Hor_Reserva ?? "", sortable: true },
-      { name: "Ficha", selector: (row) => row?.Num_Ficha ?? "", sortable: true },
+      { name: "Estado Reserva", selector: (row) => row?.Des_Estado ?? "", sortable: true },
       {
       name: 'Estado',
       cell: row => {

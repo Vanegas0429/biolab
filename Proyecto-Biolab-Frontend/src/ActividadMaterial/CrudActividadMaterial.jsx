@@ -8,7 +8,7 @@ const CrudActividadMaterial = () => {
   const [rowToEdit, setRowToEdit] = useState(null)
   const [ActividadMaterial, setActividadMaterial] = useState([])
   const [filterText, setFilterText] = useState("")
-  
+
   // Estados para el modal de detalle de materiales
   const [selectedActivity, setSelectedActivity] = useState(null)
 
@@ -31,7 +31,7 @@ const CrudActividadMaterial = () => {
   // 🔹 Lógica de Agrupación
   const groupedData = useMemo(() => {
     const groups = {};
-    
+
     ActividadMaterial.forEach(item => {
       const actId = item.Id_Actividad;
       if (!groups[actId]) {
@@ -63,26 +63,26 @@ const CrudActividadMaterial = () => {
 
   // 🔹 Columnas
   const columnsTable = [
-    { 
-        name: 'ID', 
-        selector: row => row.Id_Actividad,
-        sortable: true,
-        width: '70px'
+    {
+      name: 'ID',
+      selector: row => row.Id_Actividad,
+      sortable: true,
+      width: '100px'
     },
-    { 
-        name: 'ACTIVIDAD', 
-        selector: row => row.actividad?.Nom_Actividad || row.Actividad?.Nom_Actividad || 'Actividad no asignada',
-        sortable: true,
-        grow: 2
+    {
+      name: 'ACTIVIDAD',
+      selector: row => row.actividad?.Nom_Actividad || row.Actividad?.Nom_Actividad || 'Actividad no asignada',
+      sortable: true,
+      grow: 2
     },
-    { 
-      name: 'MATERIALES', 
+    {
+      name: 'MATERIALES',
       center: true,
-      width: '150px',
+      width: '600px',
       cell: row => (
-        <button 
+        <button
           className="btn btn-sm btn-outline-primary fw-bold rounded-pill px-3 shadow-none"
-          data-bs-toggle="modal" 
+          data-bs-toggle="modal"
           data-bs-target="#materialesListModal"
           onClick={() => setSelectedActivity(row)}
         >
@@ -94,7 +94,7 @@ const CrudActividadMaterial = () => {
     {
       name: 'ESTADO',
       center: true,
-      width: '120px',
+      width: '200px',
       cell: row => (
         <span
           className={`status-badge ${row.Estado === 'Activo' ? 'status-badge-activo' : 'status-badge-inactivo'}`}
@@ -108,7 +108,7 @@ const CrudActividadMaterial = () => {
     {
       name: 'ACCIONES',
       center: true,
-      width: '100px',
+      width: '200px',
       cell: row => (
         <button
           className="btn-action btn-action-edit mx-auto"
@@ -130,10 +130,10 @@ const CrudActividadMaterial = () => {
 
   const getAllActividadMaterial = async () => {
     try {
-        const response = await apiAxios.get('/api/ActividadMaterial')
-        setActividadMaterial(response.data || [])
+      const response = await apiAxios.get('/api/ActividadMaterial')
+      setActividadMaterial(response.data || [])
     } catch (error) {
-        console.error("Error cargando Actividad-Material:", error)
+      console.error("Error cargando Actividad-Material:", error)
     }
   }
 
@@ -172,20 +172,20 @@ const CrudActividadMaterial = () => {
         </div>
 
         <div className="card border-0 shadow-lg overflow-hidden" style={{ borderRadius: '20px' }}>
-            <DataTable
-                columns={columnsTable}
-                data={filteredData}
-                keyField="Id_Actividad"
-                pagination
-                highlightOnHover
-                responsive
-                noDataComponent={
-                  <div className="text-center py-5 text-muted">
-                    <i className="fa-solid fa-list-check fs-1 mb-3 d-block opacity-25"></i>
-                    No se encontraron registros.
-                  </div>
-                }
-            />
+          <DataTable
+            columns={columnsTable}
+            data={filteredData}
+            keyField="Id_Actividad"
+            pagination
+            highlightOnHover
+            responsive
+            noDataComponent={
+              <div className="text-center py-5 text-muted">
+                <i className="fa-solid fa-list-check fs-1 mb-3 d-block opacity-25"></i>
+                No se encontraron registros.
+              </div>
+            }
+          />
         </div>
 
         {/* Modal Formulario (Agregar/Editar) */}
@@ -248,7 +248,7 @@ const CrudActividadMaterial = () => {
                   ))}
                   {(!selectedActivity?.materialesList || selectedActivity.materialesList.length === 0) && (
                     <div className="p-4 text-center text-muted">
-                        No hay materiales vinculados a esta actividad.
+                      No hay materiales vinculados a esta actividad.
                     </div>
                   )}
                 </div>
