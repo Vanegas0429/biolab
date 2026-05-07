@@ -321,7 +321,7 @@ const gestionarForm = async (e) => {
           <option value="">Selecciona</option>
           {Producciones.map(p => (
             <option key={p.Id_produccion} value={p.Id_produccion}>
-              {p.Especie.Nom_especie} - {p.Tip_produccion} - {p.Fec_produccion}
+              {p.Especie?.Nom_especie || 'Sin Especie'} - {p.Tip_produccion} - {p.Fec_produccion}
             </option>
           ))}
         </select>

@@ -15,21 +15,25 @@ const CrudReactivos = () => {
   const [pdfUrl, setPdfUrl] = useState("");
 
   const toggleEstado = async (row) => {
-    let estadoNuevo = row.Estado === 'Activo' ? 'Inactivo' : 'Activo';
+    const estadoNuevo = row.Estado === 'Activo' ? 'Inactivo' : 'Activo';
+    const result = await Swal.fire({
+      title: `¿${estadoNuevo === 'Activo' ? 'Activar' : 'Inactivar'} reactivo?`,
+      text: row.Nom_reactivo,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#059669',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Sí, confirmar',
+      cancelButtonText: 'Cancelar'
+    });
+    if (!result.isConfirmed) return;
     try {
-      await apiAxios.put(`/api/Reactivo/${row.Id_Reactivo}`, {
-        ...row,
-        Estado: estadoNuevo
-      });
+      await apiAxios.put(`/api/Reactivo/${row.Id_Reactivo}`, { ...row, Estado: estadoNuevo });
       getAllReactivos();
-      Swal.fire({
-        title: 'Estado actualizado',
-        icon: 'success',
-        timer: 1500,
-        showConfirmButton: false
-      });
+      Swal.fire({ title: 'Estado actualizado', icon: 'success', timer: 1500, showConfirmButton: false });
     } catch (error) {
       console.error("Error actualizando estado:", error);
+      Swal.fire('Error', 'No se pudo actualizar el estado', 'error');
     }
   };
 

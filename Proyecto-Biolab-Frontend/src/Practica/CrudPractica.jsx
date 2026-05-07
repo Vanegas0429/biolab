@@ -2,6 +2,7 @@ import { useState, useEffect } from "react"
 import apiAxios from "../api/axiosConfig.js"
 import DataTable from 'react-data-table-component'
 import PracticaForm from "./PracticaForm.jsx"
+import Swal from "sweetalert2"
 
 const CrudPractica = () => {
 
@@ -16,24 +17,30 @@ const CrudPractica = () => {
     { name: 'Fecha', selector: row => row.Reserva?.Fec_Reserva },
     { name: 'Hora', selector: row => row.Reserva?.Hor_Reserva },
     {
-      name: 'Estado',
+      name: 'ESTADO',
+      center: true,
+      width: '150px',
       cell: row => (
-        <button
-          className={`btn btn-sm ${row.Estado ? 'btn-success' : 'btn-danger'}`}
+        <span
+          className={`status-badge ${row.Estado ? 'status-badge-activo' : 'status-badge-inactivo'}`}
+          style={{ cursor: 'pointer' }}
           onClick={() => toggleEstado(row)}
         >
           {row.Estado ? 'Activo' : 'Inactivo'}
-        </button>
+        </span>
       )
     },
     {
-      name: 'Acciones',
-      selector: row => (
+      name: 'ACCIONES',
+      center: true,
+      width: '120px',
+      cell: row => (
         <button
-          className="btn btn-sm bg-info"
+          className="btn-action btn-action-edit mx-auto"
           onClick={() => setRowToEdit(row)}
           data-bs-toggle="modal"
           data-bs-target="#exampleModal"
+          title="Editar"
         >
           <i className="fa-solid fa-pencil"></i>
         </button>
@@ -66,15 +73,24 @@ const CrudPractica = () => {
   }
 
   const toggleEstado = async (row) => {
+    const estadoNuevo = !row.Estado;
+    const result = await Swal.fire({
+      title: `¿${estadoNuevo ? 'Activar' : 'Inactivar'} práctica?`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#059669',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Sí, confirmar',
+      cancelButtonText: 'Cancelar'
+    });
+    if (!result.isConfirmed) return;
     try {
-      await apiAxios.put(`/api/Practica/${row.Id_Practica}`, {
-        ...row,
-        Estado: !row.Estado
-      })
-
-      getAllPracticas() // Recargar tabla
+      await apiAxios.put(`/api/Practica/${row.Id_Practica}`, { ...row, Estado: estadoNuevo });
+      getAllPracticas();
+      Swal.fire({ title: 'Estado actualizado', icon: 'success', timer: 1500, showConfirmButton: false });
     } catch (error) {
-      console.error("Error actualizando estado:", error)
+      console.error("Error actualizando estado:", error);
+      Swal.fire('Error', 'No se pudo actualizar el estado', 'error');
     }
   }
 

@@ -41,7 +41,21 @@ const CrudEquipos = ({ userRol }) => {
   };
 
   const toggleEstado = async (row) => {
-    let estadoNuevo = row.estado === 'Activo' ? 'Inactivo' : 'Activo';
+    const estadoNuevo = row.estado === 'Activo' ? 'Inactivo' : 'Activo';
+
+    const result = await Swal.fire({
+      title: `¿${estadoNuevo === 'Activo' ? 'Activar' : 'Inactivar'} equipo?`,
+      text: `Equipo: ${row.nombre}`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#059669',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Sí, confirmar',
+      cancelButtonText: 'Cancelar'
+    });
+
+    if (!result.isConfirmed) return;
+
     try {
       await apiAxios.put(`/api/Equipo/${row.id_equipo}`, {
         ...row,
@@ -56,6 +70,7 @@ const CrudEquipos = ({ userRol }) => {
       });
     } catch (error) {
       console.error("Error actualizando estado:", error);
+      Swal.fire('Error', 'No se pudo actualizar el estado', 'error');
     }
   };
 
@@ -293,7 +308,7 @@ const CrudEquipos = ({ userRol }) => {
             },
             {
               name: 'FICHA',
-              center: true,
+              center: "true",
               width: '80px',
               cell: (row) => (
                 row.ficha_tecnica ? (
@@ -318,7 +333,7 @@ const CrudEquipos = ({ userRol }) => {
             {
               name: 'ESTADO',
               sortable: true,
-              center: true,
+              center: "true",
               width: '150px',
               cell: (row) => (
                 <span
@@ -332,7 +347,7 @@ const CrudEquipos = ({ userRol }) => {
             },
             ...(userRol !== 'solicitante' ? [{
               name: 'ACCIONES',
-              center: true,
+              center: "true",
               width: '150px',
               cell: (row) => (
                 <button

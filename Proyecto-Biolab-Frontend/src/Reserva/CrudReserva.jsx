@@ -20,35 +20,42 @@ const CrudReserva = () => {
   const userObj = localStorage.getItem('UsuarioLaboratorio');
   let loggedUser = null;
   if (userObj) {
-    try { loggedUser = JSON.parse(userObj); } catch(e){}
+    try { loggedUser = JSON.parse(userObj); } catch (e) { }
   }
 
-   const toggleBooleano = async (row) => {
+  const toggleBooleano = async (row) => {
+    const estadoNuevo = row.Booleano === 'Activo' ? 'Inactivo' : 'Activo';
 
-    console.log(row.Booleano)
+    const result = await Swal.fire({
+      title: `¿${estadoNuevo === 'Activo' ? 'Activar' : 'Inactivar'} reserva?`,
+      text: `Reserva ID: ${row.Id_Reserva} - ${row.Nom_Solicitante}`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#059669',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Sí, confirmar',
+      cancelButtonText: 'Cancelar'
+    });
 
-    let estadoNuevo = ''
+    if (!result.isConfirmed) return;
 
-    if(row.Booleano === 'Activo'){
-
-      estadoNuevo = 'Inactivo'
-
-    }else{
-      estadoNuevo = 'Activo'
-    }
-
-    console.log(estadoNuevo)
     try {
       await apiAxios.put(`/api/Reserva/${row.Id_Reserva}`, {
         ...row,
         Booleano: estadoNuevo
       });
-
       fetchReservas();
+      Swal.fire({
+        title: 'Estado actualizado',
+        icon: 'success',
+        timer: 1500,
+        showConfirmButton: false
+      });
     } catch (error) {
       console.error("Error actualizando estado:", error);
+      Swal.fire('Error', 'No se pudo actualizar el estado', 'error');
     }
-  }; 
+  };
 
   // 🔹 Cerrar modal
   const hideModal = () => {
@@ -64,16 +71,17 @@ const CrudReserva = () => {
       const response = await apiAxios.get("/api/Reserva");
       const data = response.data;
       const list = Array.isArray(data) ? data : data?.data ?? [];
-      
+
       let filteredList = list;
       if (loggedUser && loggedUser.rol === 'solicitante') {
         filteredList = list.filter(
           (r) => r && (r.Doc_Solicitante === String(loggedUser.documento) || r.Cor_Solicitante === loggedUser.correo)
         );
       }
-      
+
       setReserva((filteredList ?? []).filter(Boolean));
     } catch (error) {
+      console.error("Error cargando reservas:", error);
     } finally {
       setIsLoading(false);
     }
@@ -85,6 +93,7 @@ const CrudReserva = () => {
       const res = await apiAxios.get("/api/Estado");
       setEstados(res.data ?? []);
     } catch (error) {
+      console.error("Error cargando estados:", error);
     }
   };
 
@@ -102,7 +111,6 @@ const CrudReserva = () => {
       const found = Reserva.find(r => Number(r.Id_Reserva) === idToFind);
       if (found) {
         onView(found);
-        // Limpiar el estado para que no se reabra al recargar o navegar de nuevo
         window.history.replaceState({}, document.title);
       }
     }
@@ -128,67 +136,6 @@ const CrudReserva = () => {
     setIsViewOnly(true);
     setFormOpenToken((prev) => prev + 1);
   };
-
-  // 🔹 Columnas de la tabla
-  const columnsTable = useMemo(
-    () => [
-      { name: "Id", selector: (row) => row?.Id_Reserva ?? "", sortable: true, width: "80px" },
-      { name: "Tipo", selector: (row) => row?.Tip_Reserva ?? "", sortable: true },
-      { name: "Solicitante", selector: (row) => row?.Nom_Solicitante ?? "", sortable: true, wrap: true },
-      { name: "Ficha", selector: (row) => row?.Num_Ficha ?? "", sortable: true },
-      { name: "Fecha", selector: (row) => row?.Fec_Reserva ?? "", sortable: true },
-      { name: "Hora", selector: (row) => row?.Hor_Reserva ?? "", sortable: true },
-      { name: "Estado Reserva", selector: (row) => row?.Des_Estado ?? "", sortable: true },
-      {
-      name: 'Estado',
-      cell: row => {
-        if (loggedUser?.rol === 'solicitante') {
-          return <span className={`badge ${row.Booleano === 'Activo' ? 'bg-success' : 'bg-danger'}`}>{row.Booleano}</span>;
-        }
-        return (
-          <button
-            className={`btn btn-sm ${row.Booleano =='Activo' ? 'btn-success' : 'btn-danger'}`}
-            onClick={() => toggleBooleano(row)}
-            disabled={['Finalizado', 'Rechazado', 'Cancelado'].includes(row.Des_Estado)}
-          >
-            {row.Booleano}
-          </button>
-        );
-      }
-    },
-      {
-        name: "Acciones",
-        width: "120px",
-        cell: (row) => (
-          <div className="d-flex gap-2">
-            <button
-              type="button"
-              className="btn btn-sm btn-secondary"
-              data-bs-toggle="modal"
-              data-bs-target="#modalReserva"
-              onClick={() => onView(row)}
-              title="Ver detalles"
-            >
-              <i className="fa-solid fa-eye"></i>
-            </button>
-            {loggedUser?.rol !== 'solicitante' && (
-              <button
-                type="button"
-                className="btn btn-sm btn-info"
-                data-bs-toggle="modal"
-                data-bs-target="#modalReserva"
-                onClick={() => onEdit(row)}
-                title="Editar"
-              >
-                <i className="fa-solid fa-pencil"></i>
-              </button>
-            )}
-          </div>
-        ),
-      },
-    ],
-    []
-  );
 
   // 🔹 Filtro de búsqueda
   const filteredItems = useMemo(() => {
@@ -219,59 +166,130 @@ const CrudReserva = () => {
     });
   }, [Reserva, filterText]);
 
-  const modalTitle = isViewOnly 
-    ? "Detalles de Reserva" 
+  const modalTitle = isViewOnly
+    ? "Detalles de Reserva"
     : rowToEdit?.Id_Reserva ? "Editar Reserva" : "Nueva Reserva";
 
   return (
-    <>
-      <div className="container-fluid px-4 px-md-5 mt-5" style={{ paddingTop: '2rem' }}>
-        <div className="row d-flex justify-content-between align-items-center mb-4 gap-3 gap-md-0">
-          <div className="col-12 col-md-6 col-lg-4">
+    <div className="container-fluid py-4 fade-in">
+      {/* HEADER */}
+      <div className="row mb-4 align-items-center g-3">
+        <div className="col">
+          <div className="d-flex align-items-center gap-3">
+            <div className="bg-primary text-white rounded-circle d-flex justify-content-center align-items-center shadow-sm" style={{ width: '50px', height: '50px' }}>
+              <i className="fa-solid fa-calendar-check fs-4"></i>
+            </div>
+            <div>
+              <h2 className="fw-bold mb-0" style={{ color: 'var(--secondary-color)' }}>Gestión de Reservas</h2>
+              <p className="text-muted mb-0 small">Control y seguimiento de solicitudes de espacio y recursos.</p>
+            </div>
+          </div>
+        </div>
+        <div className="col-md-auto d-flex gap-2">
+          <div className="input-group shadow-sm rounded-pill overflow-hidden bg-white border" style={{ width: '300px' }}>
+            <span className="input-group-text border-0 bg-transparent ps-3">
+              <i className="fa-solid fa-magnifying-glass text-muted"></i>
+            </span>
             <input
-              className="form-control shadow-sm"
-              placeholder="Buscar..."
+              type="text"
+              className="form-control border-0 py-2 shadow-none bg-transparent"
+              placeholder="Buscar reserva..."
               value={filterText}
               onChange={(e) => setFilterText(e.target.value)}
             />
           </div>
-          <div className="col-12 col-md-auto text-md-end text-center">
-            <button
-              type="button"
-              className="btn btn-primary px-4 shadow-sm"
-              data-bs-toggle="modal"
-              data-bs-target="#modalReserva"
-              onClick={onCreate}
-            >
-              Nueva Reserva
-            </button>
-          </div>
+          <button
+            className="btn btn-primary rounded-pill px-4 shadow-sm"
+            data-bs-toggle="modal"
+            data-bs-target="#modalReserva"
+            onClick={onCreate}
+          >
+            <i className="fa-solid fa-plus me-2"></i>Nueva Reserva
+          </button>
         </div>
+      </div>
 
-        {/* Tabla */}
+      {/* TABLA ESTILO PREMIUM CON DATATABLE */}
+      <div className="card border-0 shadow-lg overflow-hidden" style={{ borderRadius: '20px' }}>
         <DataTable
-          title="Lista de Reservas"
-          columns={columnsTable}
+          columns={[
+            { name: "ID_RESERVA", selector: (row) => row?.Id_Reserva ?? "", sortable: true, width: '110px' },
+            { name: "TIPO", selector: (row) => row?.Tip_Reserva ?? "", sortable: true, width: '120px' },
+            { name: "ESTADO RES...", selector: (row) => row?.Des_Estado ?? "", sortable: true, width: '150px' },
+            { name: "MOTIVO R/C", selector: (row) => row?.Mot_RecCan ?? "", sortable: true, width: '150px' },
+            { name: "SOLICITANTE", selector: (row) => row?.Nom_Solicitante ?? "", sortable: true, width: '180px' },
+            { name: "DOCUMENTO", selector: (row) => row?.Doc_Solicitante ?? "", sortable: true, width: '140px' },
+            { name: "CORREO", selector: (row) => row?.Cor_Solicitante ?? "", sortable: true, width: '200px' },
+            { name: "TELÉFONO", selector: (row) => row?.Tel_Solicitante ?? "", sortable: true, width: '140px' },
+            { name: "APRENDICES", selector: (row) => row?.Can_Aprendices ?? "", sortable: true, width: '120px' },
+            { name: "FECHA", selector: (row) => row?.Fec_Reserva ?? "", sortable: true, width: '120px' },
+            { name: "HORA", selector: (row) => row?.Hor_Reserva ?? "", sortable: true, width: '120px' },
+            { name: "FICHA", selector: (row) => row?.Num_Ficha ?? "", sortable: true, width: '120px' },
+            {
+              name: 'ESTADO',
+              center: "true",
+              width: '125px',
+              cell: row => {
+                if (loggedUser?.rol === 'solicitante') {
+                  return <span className={`status-badge ${row.Booleano === 'Activo' ? 'status-badge-activo' : 'status-badge-inactivo'}`}>{row.Booleano}</span>;
+                }
+                return (
+                  <span
+                    className={`status-badge ${row.Booleano === 'Activo' ? 'status-badge-activo' : 'status-badge-inactivo'}`}
+                    style={{ cursor: !['Finalizado', 'Rechazado', 'Cancelado'].includes(row.Des_Estado) ? 'pointer' : 'default' }}
+                    onClick={() => !['Finalizado', 'Rechazado', 'Cancelado'].includes(row.Des_Estado) && toggleBooleano(row)}
+                  >
+                    {row.Booleano}
+                  </span>
+                );
+              }
+            },
+            {
+              name: "ACCIONES",
+              center: "true",
+              width: '120px',
+              cell: (row) => (
+                <div className="d-flex gap-2">
+                  <button
+                    type="button"
+                    className="btn-action"
+                    style={{ background: '#64748b', color: 'white' }}
+                    data-bs-toggle="modal"
+                    data-bs-target="#modalReserva"
+                    onClick={() => onView(row)}
+                    title="Ver detalles"
+                  >
+                    <i className="fa-solid fa-eye"></i>
+                  </button>
+                  {loggedUser?.rol !== 'solicitante' && (
+                    <button
+                      type="button"
+                      className="btn-action btn-action-edit"
+                      data-bs-toggle="modal"
+                      data-bs-target="#modalReserva"
+                      onClick={() => onEdit(row)}
+                      title="Editar"
+                    >
+                      <i className="fa-solid fa-pencil"></i>
+                    </button>
+                  )}
+                </div>
+              ),
+            },
+          ]}
           data={filteredItems}
           pagination
           progressPending={isLoading}
           highlightOnHover
-          striped
           persistTableHead
           noDataComponent="No hay registros"
           conditionalRowStyles={[
             {
-              when: (row) => row.Booleano === "Activo",
-              style: {
-                backgroundColor: "#ffffff",
-                color: "#000000",
-              },
-            },
-            {
               when: (row) => row.Booleano === "Inactivo",
               style: {
-                backgroundColor: "#aeadad",
-                color: "#6c757d",
+                backgroundColor: "#f8fafc",
+                color: "#94a3b8",
+                opacity: 0.8
               },
             },
           ]}
@@ -286,22 +304,22 @@ const CrudReserva = () => {
         aria-hidden="true"
       >
         <div className="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h5 className="modal-title">{modalTitle}</h5>
+          <div className="modal-content shadow-lg border-0" style={{ borderRadius: '20px' }}>
+            <div className="modal-header bg-primary text-white border-0 py-3" style={{ borderTopLeftRadius: '20px', borderTopRightRadius: '20px' }}>
+              <h5 className="modal-title fw-bold">{modalTitle}</h5>
               <button
                 type="button"
-                className="btn-close"
+                className="btn-close btn-close-white shadow-none"
                 data-bs-dismiss="modal"
                 aria-label="Close"
               ></button>
             </div>
 
-            <div className="modal-body position-relative">
+            <div className="modal-body position-relative p-4">
               {isViewOnly && (
-                <div 
-                  className="position-absolute w-100 h-100 start-0 top-0" 
-                  style={{ zIndex: 10, backgroundColor: 'rgba(255,255,255,0.3)' }}
+                <div
+                  className="position-absolute w-100 h-100 start-0 top-0"
+                  style={{ zIndex: 10, backgroundColor: 'rgba(255,255,255,0.1)' }}
                 ></div>
               )}
               <ReservaForm
@@ -315,12 +333,11 @@ const CrudReserva = () => {
                 isViewOnly={isViewOnly}
               />
             </div>
-
-            <div className="modal-footer">
+            <div className="modal-footer border-0">
               <button
                 id="closeModal"
                 type="button"
-                className="btn btn-secondary"
+                className="btn btn-secondary rounded-pill px-4"
                 data-bs-dismiss="modal"
               >
                 Cerrar
@@ -329,7 +346,7 @@ const CrudReserva = () => {
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

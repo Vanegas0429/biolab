@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import apiAxios from '../api/axiosConfig';
 import Swal from 'sweetalert2';
+import DataTable from 'react-data-table-component';
 
 const GestionUsuarios = () => {
     const [usuarios, setUsuarios] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
 
-    const rolesDisponibles = ['administrador', 'solicitante', 'pasante', 'gestor', 'instructor', 'gerente', 'instructor_gerente'];
+    const rolesDisponibles = ['administrador', 'solicitante', 'pasante', 'gestor'];
 
     const fetchUsuarios = async () => {
         try {
@@ -34,19 +35,21 @@ const GestionUsuarios = () => {
                 timer: 2000,
                 showConfirmButton: false
             });
-            fetchUsuarios(); // Recargar lista
+            fetchUsuarios();
         } catch (error) {
             console.error("Error al actualizar rol:", error);
             Swal.fire('Error', 'No se pudo actualizar el rol', 'error');
         }
     };
 
-    const filteredUsuarios = usuarios.filter(u => 
-        u.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        u.correo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        u.documento.toString().includes(searchTerm) ||
-        u.telefono?.includes(searchTerm)
-    );
+    const filteredUsuarios = useMemo(() => {
+        return usuarios.filter(u => 
+            u.nombre?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            u.correo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            u.documento?.toString().includes(searchTerm) ||
+            u.telefono?.includes(searchTerm)
+        );
+    }, [usuarios, searchTerm]);
 
     if (loading) return (
         <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '60vh' }}>
@@ -87,69 +90,57 @@ const GestionUsuarios = () => {
                 </div>
             </div>
 
-            {/* TABLA ESTILO PREMIUM CON CABECERA OSCURA */}
+            {/* TABLA ESTILO PREMIUM CON DATATABLE */}
             <div className="card border-0 shadow-lg overflow-hidden" style={{ borderRadius: '20px' }}>
-                <div className="table-responsive">
-                    <table className="table table-hover align-middle mb-0">
-                        <thead>
-                            <tr style={{ background: 'var(--secondary-color)', color: 'white' }}>
-                                <th className="px-4 py-3 border-0 fw-semibold" style={{ fontSize: '0.9rem', letterSpacing: '0.5px' }}>USUARIO</th>
-                                <th className="py-3 border-0 fw-semibold" style={{ fontSize: '0.9rem', letterSpacing: '0.5px' }}>DOCUMENTO</th>
-                                <th className="py-3 border-0 fw-semibold" style={{ fontSize: '0.9rem', letterSpacing: '0.5px' }}>TELÉFONO</th>
-                                <th className="py-3 border-0 fw-semibold" style={{ fontSize: '0.9rem', letterSpacing: '0.5px' }}>CORREO</th>
-                                <th className="py-3 border-0 fw-semibold" style={{ fontSize: '0.9rem', letterSpacing: '0.5px' }}>ROL ACTUAL</th>
-                                <th className="px-4 py-3 border-0 text-end fw-semibold" style={{ fontSize: '0.9rem', letterSpacing: '0.5px' }}>ACCIONES</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredUsuarios.map((u) => (
-                                <tr key={u.uuid} className="last-child-border-0">
-                                    <td className="px-4 py-3">
-                                        <div className="d-flex align-items-center">
-                                            <div className="bg-primary text-white rounded-circle d-flex justify-content-center align-items-center me-3 shadow-sm border border-white border-2" style={{ width: '42px', height: '42px', fontWeight: 'bold', fontSize: '1rem' }}>
-                                                {u.nombre ? u.nombre.charAt(0).toUpperCase() : 'U'}
-                                            </div>
-                                            <div>
-                                                <div className="fw-bold text-dark" style={{ fontSize: '0.95rem' }}>{u.nombre}</div>
-                                                <small className="text-muted text-uppercase fw-semibold" style={{ fontSize: '0.6rem' }}>UUID: {u.uuid ? u.uuid.substring(0,8) : 'N/A'}...</small>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="py-3 text-secondary fw-medium">{u.documento}</td>
-                                    <td className="py-3 text-secondary">{u.telefono || <span className="badge bg-light text-muted border fw-normal">N/A</span>}</td>
-                                    <td className="py-3 text-secondary" style={{ fontSize: '0.9rem' }}>{u.correo}</td>
-                                    <td className="py-3">
-                                        <span className={`badge rounded-pill px-3 py-2 ${u.rol === 'administrador' ? 'bg-danger text-white' : 'bg-primary-subtle text-primary border border-primary-subtle'}`} style={{ fontSize: '0.75rem', textTransform: 'capitalize', fontWeight: '600' }}>
-                                            {u.rol.replace('_', ' ')}
-                                        </span>
-                                    </td>
-                                    <td className="px-4 py-3 text-end">
-                                        <div className="d-inline-block" style={{ width: '180px' }}>
-                                            <select 
-                                                className="form-select form-select-sm rounded-pill border-light-subtle shadow-sm px-3"
-                                                value={u.rol}
-                                                onChange={(e) => handleRolChange(u.uuid, e.target.value)}
-                                                style={{ cursor: 'pointer', fontSize: '0.85rem', backgroundPosition: 'right 0.75rem center' }}
-                                            >
-                                                {rolesDisponibles.map(r => (
-                                                    <option key={r} value={r}>{r.charAt(0).toUpperCase() + r.slice(1).replace('_', ' ')}</option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                            {filteredUsuarios.length === 0 && (
-                                <tr>
-                                    <td colSpan="6" className="text-center py-5 text-muted">
-                                        <i className="fa-solid fa-user-slash fs-1 mb-3 d-block opacity-25"></i>
-                                        No se encontraron usuarios que coincidan con la búsqueda.
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+                <DataTable
+                    columns={[
+                        {
+                            name: 'USUARIO',
+                            sortable: true,
+                            grow: 2,
+                            cell: row => (
+                                <div className="d-flex align-items-center py-3">
+                                    <div className="bg-primary-subtle text-primary rounded-circle d-flex justify-content-center align-items-center fw-bold me-3" style={{ width: '40px', height: '40px', fontSize: '0.9rem' }}>
+                                        {row.nombre?.charAt(0).toUpperCase() || 'U'}
+                                    </div>
+                                    <div>
+                                        <div className="fw-bold text-dark">{row.nombre}</div>
+                                        <small className="text-muted">{row.correo}</small>
+                                    </div>
+                                </div>
+                            )
+                        },
+                        { name: 'DOCUMENTO', selector: row => row.documento, sortable: true, width: '150px' },
+                        { name: 'TELÉFONO', selector: row => row.telefono || 'N/A', sortable: true, width: '150px' },
+                        {
+                            name: 'ROL ACTUAL',
+                            sortable: true,
+                            width: '250px',
+                            cell: row => (
+                                <select 
+                                    className="form-select form-select-sm border-0 bg-light rounded-pill px-3 shadow-none"
+                                    value={row.rol}
+                                    onChange={(e) => handleRolChange(row.id, e.target.value)}
+                                    style={{ fontSize: '0.85rem', fontWeight: '500' }}
+                                >
+                                    {rolesDisponibles.map(r => (
+                                        <option key={r} value={r}>{r.replace('_', ' ').toUpperCase()}</option>
+                                    ))}
+                                </select>
+                            )
+                        }
+                    ]}
+                    data={filteredUsuarios}
+                    pagination
+                    highlightOnHover
+                    persistTableHead
+                    noDataComponent={
+                        <div className="text-center py-5 text-muted">
+                            <i className="fa-solid fa-user-slash fs-1 mb-3 d-block opacity-25"></i>
+                            No se encontraron usuarios.
+                        </div>
+                    }
+                />
             </div>
         </div>
     );

@@ -6,8 +6,14 @@ export const checkMiddlewareX = (req, res, next) => {
         }
 
         const allowedRoles = ['pasante', 'gestor', 'instructor', 'administrador'];
-        
+        const isSolicitante = req.user.rol.toLowerCase() === 'solicitante';
+        const isGetRequest = req.method === 'GET';
+
         if (!allowedRoles.includes(req.user.rol.toLowerCase())) {
+            // Permitir GET a solicitantes para catálogos, otros métodos prohibidos
+            if (isSolicitante && isGetRequest) {
+                return next();
+            }
             return res.status(403).json({ message: 'Este rol no permite acceso a este módulo' });
         }
 

@@ -54,12 +54,7 @@ function App() {
 
   const logOut = () => {
     localStorage.removeItem('UsuarioLaboratorio');
-    setIsAuth(false);
-    setUserRol(null);
-    setUserProfile(null);
-    setNotificaciones([]);
-    setUnreadCount(0);
-    navigate('/');
+    window.location.href = '/';
   };
 
   useEffect(() => {
@@ -99,85 +94,90 @@ function App() {
     }
   }, [isAuth, userRol]);
 
+  useEffect(() => {
+    if (isAuth) {
+      document.body.classList.add('has-sidebar');
+    } else {
+      document.body.classList.remove('has-sidebar');
+    }
+  }, [isAuth]);
+
   if (isLoading) return <div className="d-flex align-items-center justify-content-center" style={{ minHeight: '100vh' }}>Cargando...</div>;
 
   // Roles con acceso a la gestión operativa (MiddelWare X)
-  const STAFF_ROLES = ['administrador', 'instructor', 'gestor', 'pasante'];
+  const STAFF_ROLES = ['administrador', 'gestor', 'pasante'];
 
   return (
     <>
-      <NavBar isAuth={isAuth} logOut={logOut} userRol={userRol} />
+      {isAuth && <NavBar isAuth={isAuth} logOut={logOut} userRol={userRol} />}
       
       {/* HEADER INTEGRADO */}
       {location.pathname !== "/" && (
-        <div className="container-fluid pt-3 pb-2 position-relative main-header" style={{ animation: "fadeIn 0.5s ease-in-out", zIndex: 3000000 }}>
-          {/* Centro: Logo y Título */}
-          <div className="d-flex justify-content-center align-items-center header-content">
-            <img 
-              src="/logo.png" 
-              alt="Logo BIOLAB" 
-              className="main-logo me-3 me-md-4"
-            />
-            <div className="d-flex flex-column justify-content-center">
-              <span className="m-0 fw-bold lh-1 main-title" style={{ color: 'var(--primary-color)' }}>BIOLAB</span>
-            </div>
-          </div>
+        <div className="container-fluid px-3 px-md-4 py-2 main-header" style={{ animation: "fadeIn 0.5s ease-in-out", zIndex: 3000000 }}>
+          <div className="d-flex align-items-center justify-content-between w-100">
 
-          {/* Derecha: Perfil y Notificaciones */}
-          {isAuth && userProfile && (
-            <div className="header-user-actions pe-2 pe-md-4 d-flex align-items-center gap-3 gap-md-4">
-              {/* Campana Notificaciones */}
-              {userRol !== 'solicitante' && (
-                <div className="dropdown">
-                  <div className="position-relative" style={{ cursor: 'pointer' }} data-bs-toggle="dropdown" aria-expanded="false" onClick={() => setUnreadCount(0)}>
-                    <i className="fa-regular fa-bell fs-4 text-secondary"></i>
-                    {unreadCount > 0 && (
-                      <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style={{ fontSize: '0.6rem' }}>
-                        {unreadCount}
-                      </span>
-                    )}
-                  </div>
-                  <ul className="dropdown-menu dropdown-menu-end shadow border-0 mt-2 p-0" style={{ minWidth: '320px', overflow: 'hidden', zIndex: 100000 }}>
-                    <li><h6 className="dropdown-header border-bottom p-3">Notificaciones</h6></li>
-                    <div className="custom-scroll" style={{ maxHeight: '350px', overflowY: 'auto', overflowX: 'hidden' }}>
-                      {notificaciones.length === 0 ? (
-                        <li><span className="dropdown-item-text text-muted small p-3">No tienes notificaciones nuevas.</span></li>
-                      ) : (
-                        notificaciones.map((notif, idx) => (
-                          <li key={idx} className="border-bottom last-child-border-0">
-                            <div className="dropdown-item d-flex flex-column p-3" onClick={() => navigate('/Reserva', { state: { highlightId: notif.Id_Reserva } })} style={{ cursor: 'pointer', whiteSpace: 'normal' }}>
-                              <span className="fw-bold text-primary" style={{ fontSize: '0.85rem' }}>Nueva Reserva: {notif.Tip_Reserva}</span>
-                              <span className="text-dark mt-1" style={{ fontSize: '0.8rem' }}>{notif.Nom_Solicitante}</span>
-                              <span className="text-muted mt-1" style={{ fontSize: '0.75rem' }}><i className="fa-regular fa-calendar me-1"></i>{notif.Fec_Reserva}</span>
-                            </div>
-                          </li>
-                        ))
+            {/* Izquierda: Logo y Título */}
+            <div className="d-flex align-items-center gap-2">
+              <img src="/logo.png" alt="Logo BIOLAB" style={{ width: '42px', height: '42px', borderRadius: '50%', objectFit: 'cover' }} />
+              <span className="d-none d-sm-inline fw-bold fs-4 lh-1" style={{ color: 'var(--primary-color)', letterSpacing: '2px' }}>BIOLAB</span>
+            </div>
+
+            {/* Derecha: Perfil y Notificaciones */}
+            {isAuth && userProfile && (
+              <div className="d-flex align-items-center gap-2 gap-md-3">
+                {/* Campana Notificaciones */}
+                {userRol !== 'solicitante' && (
+                  <div className="dropdown">
+                    <div className="position-relative" style={{ cursor: 'pointer' }} data-bs-toggle="dropdown" aria-expanded="false" onClick={() => setUnreadCount(0)}>
+                      <i className="fa-regular fa-bell fs-5 text-secondary"></i>
+                      {unreadCount > 0 && (
+                        <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style={{ fontSize: '0.6rem' }}>
+                          {unreadCount}
+                        </span>
                       )}
                     </div>
+                    <ul className="dropdown-menu dropdown-menu-end shadow border-0 mt-2 p-0" style={{ minWidth: '300px', overflow: 'hidden', zIndex: 100000 }}>
+                      <li><h6 className="dropdown-header border-bottom p-3">Notificaciones</h6></li>
+                      <div className="custom-scroll" style={{ maxHeight: '350px', overflowY: 'auto', overflowX: 'hidden' }}>
+                        {notificaciones.length === 0 ? (
+                          <li><span className="dropdown-item-text text-muted small p-3">No tienes notificaciones nuevas.</span></li>
+                        ) : (
+                          notificaciones.map((notif, idx) => (
+                            <li key={idx} className="border-bottom last-child-border-0">
+                              <div className="dropdown-item d-flex flex-column p-3" onClick={() => navigate('/Reserva', { state: { highlightId: notif.Id_Reserva } })} style={{ cursor: 'pointer', whiteSpace: 'normal' }}>
+                                <span className="fw-bold text-primary" style={{ fontSize: '0.85rem' }}>Nueva Reserva: {notif.Tip_Reserva}</span>
+                                <span className="text-dark mt-1" style={{ fontSize: '0.8rem' }}>{notif.Nom_Solicitante}</span>
+                                <span className="text-muted mt-1" style={{ fontSize: '0.75rem' }}><i className="fa-regular fa-calendar me-1"></i>{notif.Fec_Reserva}</span>
+                              </div>
+                            </li>
+                          ))
+                        )}
+                      </div>
+                    </ul>
+                  </div>
+                )}
+
+                {/* Perfil */}
+                <div className="dropdown">
+                  <div className="d-flex align-items-center gap-2" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <div className="d-none d-md-flex flex-column text-end">
+                      <span className="fw-bold text-dark" style={{ fontSize: '0.85rem' }}>{userProfile.nombre}</span>
+                      <small className="text-muted text-uppercase" style={{ fontSize: '0.65rem' }}>{userProfile.rol}</small>
+                    </div>
+                    <div className="bg-primary text-white d-flex justify-content-center align-items-center rounded-circle shadow-sm flex-shrink-0" style={{ width: '40px', height: '40px', fontSize: '1rem', fontWeight: 'bold' }}>
+                      {userProfile.nombre ? userProfile.nombre.charAt(0).toUpperCase() : 'U'}
+                    </div>
+                  </div>
+                  <ul className="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
+                    <li><h6 className="dropdown-header">Perfil</h6></li>
+                    <li><span className="dropdown-item-text text-muted small"><i className="fa-regular fa-id-card me-2"></i>{userProfile.documento}</span></li>
+                    <li><span className="dropdown-item-text text-muted small"><i className="fa-solid fa-phone me-2"></i>{userProfile.telefono || 'Sin teléfono'}</span></li>
+                    <li><span className="dropdown-item-text text-muted small"><i className="fa-regular fa-envelope me-2"></i>{userProfile.correo}</span></li>
                   </ul>
                 </div>
-              )}
-
-              {/* Perfil */}
-              <div className="dropdown">
-                <div className="d-flex align-items-center gap-2" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                  <div className="d-none d-md-flex flex-column text-end">
-                    <span className="fw-bold text-dark" style={{ fontSize: '0.9rem' }}>{userProfile.nombre}</span>
-                    <small className="text-muted text-uppercase" style={{ fontSize: '0.7rem' }}>{userProfile.rol}</small>
-                  </div>
-                  <div className="bg-primary text-white d-flex justify-content-center align-items-center rounded-circle shadow-sm" style={{ width: '45px', height: '45px', fontSize: '1.2rem', fontWeight: 'bold' }}>
-                    {userProfile.nombre ? userProfile.nombre.charAt(0).toUpperCase() : 'U'}
-                  </div>
-                </div>
-                <ul className="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
-                  <li><h6 className="dropdown-header">Perfil</h6></li>
-                  <li><span className="dropdown-item-text text-muted small"><i className="fa-regular fa-id-card me-2"></i>{userProfile.documento}</span></li>
-                  <li><span className="dropdown-item-text text-muted small"><i className="fa-solid fa-phone me-2"></i>{userProfile.telefono || 'Sin teléfono'}</span></li>
-                  <li><span className="dropdown-item-text text-muted small"><i className="fa-regular fa-envelope me-2"></i>{userProfile.correo}</span></li>
-                </ul>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       )}
 

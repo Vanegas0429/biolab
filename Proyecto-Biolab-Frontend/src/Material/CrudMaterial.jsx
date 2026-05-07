@@ -11,21 +11,25 @@ const CrudMaterial = () => {
   const [loading, setLoading] = useState(true);
 
   const toggleEstado = async (row) => {
-    let estadoNuevo = row.Estado === 'Activo' ? 'Inactivo' : 'Activo';
+    const estadoNuevo = row.Estado === 'Activo' ? 'Inactivo' : 'Activo';
+    const result = await Swal.fire({
+      title: `¿${estadoNuevo === 'Activo' ? 'Activar' : 'Inactivar'} material?`,
+      text: row.Nom_Material,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#059669',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Sí, confirmar',
+      cancelButtonText: 'Cancelar'
+    });
+    if (!result.isConfirmed) return;
     try {
-      await apiAxios.put(`/api/Material/${row.Id_Material}`, {
-        ...row,
-        Estado: estadoNuevo
-      });
+      await apiAxios.put(`/api/Material/${row.Id_Material}`, { ...row, Estado: estadoNuevo });
       getAllMaterial();
-      Swal.fire({
-        title: 'Estado actualizado',
-        icon: 'success',
-        timer: 1500,
-        showConfirmButton: false
-      });
+      Swal.fire({ title: 'Estado actualizado', icon: 'success', timer: 1500, showConfirmButton: false });
     } catch (error) {
       console.error("Error actualizando estado:", error);
+      Swal.fire('Error', 'No se pudo actualizar el estado', 'error');
     }
   };
 

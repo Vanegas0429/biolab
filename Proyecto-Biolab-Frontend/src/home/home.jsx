@@ -70,12 +70,12 @@ const Home = () => {
       <div className="container mt-n5 position-relative" style={{ marginTop: "-50px", zIndex: 10 }}>
         <div className="row g-4 justify-content-center">
           {[
-            { icon: "flask", title: "Control Total", desc: "Monitoreo en tiempo real de recursos.", color: "#10b981" },
-            { icon: "microscope", title: "Equipos", desc: "Catálogo completo y disponibilidad.", color: "#3b82f6" },
-            { icon: "clipboard-check", title: "Eficiencia", desc: "Procesos de reserva optimizados.", color: "#8b5cf6" }
+            { icon: "flask", title: "Reactivos", desc: "Catálogo y control de sustancias.", color: "#10b981", path: "/Reactivo" },
+            { icon: "microscope", title: "Equipos", desc: "Inventario de equipos de laboratorio.", color: "#3b82f6", path: "/Equipo" },
+            { icon: "boxes-stacked", title: "Materiales", desc: "Control de insumos y materiales.", color: "#8b5cf6", path: "/Material" }
           ].map((stat, i) => (
             <div className="col-md-4 col-lg-3" key={i}>
-              <Link to={stat.title === "Equipos" ? "/Equipo" : "#"} className="text-decoration-none">
+              <Link to={stat.path} className="text-decoration-none">
                 <div className="card border-0 shadow-lg p-4 text-center hover-up h-100" style={{ borderTop: `4px solid ${stat.color}` }}>
                   <div className="icon-circle mb-3 mx-auto" style={{ backgroundColor: `${stat.color}15`, color: stat.color }}>
                     <i className={`fas fa-${stat.icon} fs-3`}></i>

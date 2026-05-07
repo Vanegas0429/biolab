@@ -25,22 +25,7 @@ const NavBar = ({ isAuth, logOut, userRol }) => {
   };
 
   const renderMenuItems = () => {
-    if (!isAuth) {
-      return (
-        <>
-          <li className="nav-item">
-            <Link className="nav-link px-3 py-2" onClick={() => navigateTo("/login")}>
-              <i className="fa-solid fa-user me-3 w-20px text-center"></i>Iniciar sesión
-            </Link>
-          </li>
-          <li className="nav-item">
-            <Link className="nav-link px-3 py-2" onClick={() => navigateTo("/register")}>
-              <i className="fa-solid fa-user-plus me-3 w-20px text-center"></i>Registrarse
-            </Link>
-          </li>
-        </>
-      );
-    }
+    if (!isAuth) return null;
 
     return (
       <>
@@ -79,7 +64,7 @@ const NavBar = ({ isAuth, logOut, userRol }) => {
         )}
 
         {/* STAFF / ADMIN */}
-        {['administrador', 'instructor', 'gestor', 'pasante'].includes(userRol) && (
+        {['administrador', 'gestor', 'pasante'].includes(userRol) && (
           <>
             <li className="nav-item mt-3 px-3 text-uppercase text-secondary fw-bold" style={{ fontSize: '0.75rem', letterSpacing: '1px' }}>Admin</li>
             {userRol === 'administrador' && (
@@ -106,12 +91,11 @@ const NavBar = ({ isAuth, logOut, userRol }) => {
                 className="bg-primary text-white d-flex justify-content-center align-items-center rounded-circle shadow-sm flex-shrink-0"
                 style={{ width: '40px', height: '40px', fontSize: '1.1rem', fontWeight: 'bold' }}
               >
-                {user.nombre ? user.nombre.charAt(0).toUpperCase() : 'U'}
+                {user.nombre ? user.nombre?.charAt(0).toUpperCase() : 'U'}
               </div>
             </div>
           </li>
         )}
-
 
         <li className="nav-item px-3 mb-4">
           <button className="btn btn-outline-danger w-100 rounded-pill fw-bold py-2 shadow-sm" onClick={logOut}>
@@ -146,14 +130,14 @@ const NavBar = ({ isAuth, logOut, userRol }) => {
         className={`sidebar-glass shadow-lg ${isOpen ? "open" : ""}`}
         onMouseLeave={() => setIsOpen(false)}
       >
-        <div className="d-flex flex-column h-100 p-4">
+        <div className="d-flex flex-column h-100 p-3">
 
           {/* Header del Sidebar */}
-          <div className="d-flex align-items-center gap-3 mb-5 mt-2">
-            <img src="/logo.png" alt="Logo" style={{ width: 50, height: 50, borderRadius: "50%", boxShadow: '0 4px 10px rgba(0,0,0,0.3)', objectFit: 'cover' }} />
+          <div className="d-flex align-items-center gap-2 mb-4 mt-1">
+            <img src="/logo.png" alt="Logo" style={{ width: 40, height: 40, borderRadius: "50%", boxShadow: '0 4px 10px rgba(0,0,0,0.3)', objectFit: 'cover' }} />
             <div className="d-flex flex-column text-white">
-              <span className="m-0 fw-bold fs-4 lh-1" style={{ letterSpacing: '1px', color: 'var(--primary-color)' }}>SENA</span>
-              <small className="opacity-75" style={{ fontSize: '0.85rem', letterSpacing: '3px', color: '#e2e8f0' }}>BIOLAB</small>
+              <span className="m-0 fw-bold fs-5 lh-1" style={{ letterSpacing: '1px', color: 'var(--primary-color)' }}>SENA</span>
+              <small className="opacity-75" style={{ fontSize: '0.75rem', letterSpacing: '2px', color: '#e2e8f0' }}>BIOLAB</small>
             </div>
           </div>
 

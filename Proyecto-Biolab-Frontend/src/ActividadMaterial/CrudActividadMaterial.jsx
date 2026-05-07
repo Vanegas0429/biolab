@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react"
 import apiAxios from "../api/axiosConfig.js"
 import DataTable from 'react-data-table-component'
 import ActividadMaterialForm from "./ActividadMaterialForm.jsx"
+import Swal from "sweetalert2"
 
 const CrudActividadMaterial = () => {
 
@@ -14,17 +15,24 @@ const CrudActividadMaterial = () => {
 
   // 🔹 Alternar Activo/Inactivo
   const toggleEstado = async (row) => {
-    let estadoNuevo = row.Estado === 'Activo' ? 'Inactivo' : 'Activo'
-
+    const estadoNuevo = row.Estado === 'Activo' ? 'Inactivo' : 'Activo';
+    const result = await Swal.fire({
+      title: `¿${estadoNuevo === 'Activo' ? 'Activar' : 'Inactivar'} registro?`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#059669',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Sí, confirmar',
+      cancelButtonText: 'Cancelar'
+    });
+    if (!result.isConfirmed) return;
     try {
-      await apiAxios.put(`/api/ActividadMaterial/${row.Id_ActividadMaterial}`, {
-        ...row,
-        Estado: estadoNuevo
-      });
-
+      await apiAxios.put(`/api/ActividadMaterial/${row.Id_ActividadMaterial}`, { ...row, Estado: estadoNuevo });
       getAllActividadMaterial();
+      Swal.fire({ title: 'Estado actualizado', icon: 'success', timer: 1500, showConfirmButton: false });
     } catch (error) {
       console.error("Error actualizando estado:", error);
+      Swal.fire('Error', 'No se pudo actualizar el estado', 'error');
     }
   };
 

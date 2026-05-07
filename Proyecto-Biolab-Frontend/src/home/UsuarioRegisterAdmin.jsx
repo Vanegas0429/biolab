@@ -133,7 +133,6 @@ const UsuarioRegistroAdmin = () => {
                 required
               >
                 <option value="">Selecciona uno</option>
-                <option value="instructor">Instructor</option>
                 <option value="pasante">Pasante</option>
                 <option value="gestor">Gestor</option>
               </select>
