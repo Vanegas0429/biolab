@@ -556,6 +556,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
             value={Tip_Reserva}
             onChange={(e) => setTip_Reserva(e.target.value)}
             required
+            disabled={isViewOnly}
           >
             <option value="Practica">Practica</option>
             <option value="Visita">Visita</option>
@@ -572,7 +573,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
                 setId_Estado(Number(e.target.value));
                 setMot_RecCan("");
               }}
-              disabled={esEstadoFinal}
+              disabled={esEstadoFinal || isViewOnly}
             >
               {!nombreEstadoActual && <option value="">Selecciona uno</option>}
 
@@ -621,6 +622,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
                 value={Mot_RecCan}
                 onChange={(e) => setMot_RecCan(e.target.value)}
                 required
+                readOnly={isViewOnly}
               />
             </div>
           )}
@@ -870,7 +872,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
             className="form-control"
             value={Nom_Solicitante}
             onChange={(e) => setNom_Solicitante(e.target.value)}
-            readOnly={getLoggedUser()?.rol === 'solicitante'}
+            readOnly={isViewOnly || getLoggedUser()?.rol === 'solicitante'}
             required
           />
         </div>
@@ -882,7 +884,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
             className="form-control"
             value={Doc_Solicitante}
             onChange={(e) => setDoc_Solicitante(e.target.value)}
-            readOnly={getLoggedUser()?.rol === 'solicitante'}
+            readOnly={isViewOnly || getLoggedUser()?.rol === 'solicitante'}
             required
           />
         </div>
@@ -894,7 +896,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
             className="form-control"
             value={Cor_Solicitante}
             onChange={(e) => setCor_Solicitante(e.target.value)}
-            readOnly={getLoggedUser()?.rol === 'solicitante'}
+            readOnly={isViewOnly || getLoggedUser()?.rol === 'solicitante'}
             required
           />
         </div>
@@ -906,6 +908,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
             className="form-control"
             value={Tel_Solicitante}
             onChange={(e) => setTel_Solicitante(e.target.value)}
+            readOnly={isViewOnly}
           />
         </div>
 
@@ -917,6 +920,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
             value={Can_Aprendices}
             onChange={(e) => setCan_Aprendices(e.target.value)}
             min={0}
+            readOnly={isViewOnly}
           />
         </div>
 
@@ -928,6 +932,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
             value={Fec_Reserva}
             onChange={(e) => setFec_Reserva(e.target.value)}
             required
+            readOnly={isViewOnly}
           />
         </div>
 
@@ -939,6 +944,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
             value={Hor_Reserva}
             onChange={(e) => setHor_Reserva(e.target.value)}
             required
+            readOnly={isViewOnly}
           />
         </div>
 
@@ -949,6 +955,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
             className="form-control"
             value={Num_Ficha}
             onChange={(e) => setNum_Ficha(e.target.value)}
+            readOnly={isViewOnly}
           />
         </div>
 

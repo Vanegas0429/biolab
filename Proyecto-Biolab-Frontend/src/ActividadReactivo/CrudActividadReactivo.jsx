@@ -8,7 +8,7 @@ const CrudActividadReactivo = () => {
   const [rowToEdit, setRowToEdit] = useState(null)
   const [ActividadReactivo, setActividadReactivo] = useState([])
   const [filterText, setFilterText] = useState("")
-  
+
   // Estados para el modal de detalle de reactivos
   const [selectedActivity, setSelectedActivity] = useState(null)
 
@@ -31,7 +31,7 @@ const CrudActividadReactivo = () => {
   // 🔹 Lógica de Agrupación
   const groupedData = useMemo(() => {
     const groups = {};
-    
+
     ActividadReactivo.forEach(item => {
       const actId = item.Id_Actividad;
       if (!groups[actId]) {
@@ -63,26 +63,26 @@ const CrudActividadReactivo = () => {
 
   // 🔹 Columnas
   const columnsTable = [
-    { 
-        name: 'ID', 
-        selector: row => row.Id_Actividad,
-        sortable: true,
-        width: '70px'
+    {
+      name: 'ID',
+      selector: row => row.Id_Actividad,
+      sortable: true,
+      width: '100px'
     },
-    { 
-        name: 'ACTIVIDAD', 
-        selector: row => row.actividades?.Nom_Actividad || row.Actividad?.Nom_Actividad || 'Actividad no asignada',
-        sortable: true,
-        grow: 2
+    {
+      name: 'ACTIVIDAD',
+      selector: row => row.actividades?.Nom_Actividad || row.Actividad?.Nom_Actividad || 'Actividad no asignada',
+      sortable: true,
+      grow: 2
     },
-    { 
-      name: 'REACTIVOS', 
+    {
+      name: 'REACTIVOS',
       center: true,
-      width: '150px',
+      width: '600px',
       cell: row => (
-        <button 
+        <button
           className="btn btn-sm btn-outline-primary fw-bold rounded-pill px-3 shadow-none"
-          data-bs-toggle="modal" 
+          data-bs-toggle="modal"
           data-bs-target="#reactivosListModal"
           onClick={() => setSelectedActivity(row)}
         >
@@ -94,7 +94,7 @@ const CrudActividadReactivo = () => {
     {
       name: 'ESTADO',
       center: true,
-      width: '120px',
+      width: '200px',
       cell: row => (
         <span
           className={`status-badge ${row.Estado === 'Activo' ? 'status-badge-activo' : 'status-badge-inactivo'}`}
@@ -108,7 +108,7 @@ const CrudActividadReactivo = () => {
     {
       name: 'ACCIONES',
       center: true,
-      width: '100px',
+      width: '200px',
       cell: row => (
         <button
           className="btn-action btn-action-edit mx-auto"
@@ -130,10 +130,10 @@ const CrudActividadReactivo = () => {
 
   const getAllActividadReactivo = async () => {
     try {
-        const response = await apiAxios.get('/api/ActividadReactivo')
-        setActividadReactivo(response.data || [])
+      const response = await apiAxios.get('/api/ActividadReactivo')
+      setActividadReactivo(response.data || [])
     } catch (error) {
-        console.error("Error cargando Actividad-Reactivo:", error)
+      console.error("Error cargando Actividad-Reactivo:", error)
     }
   }
 
@@ -172,20 +172,20 @@ const CrudActividadReactivo = () => {
         </div>
 
         <div className="card border-0 shadow-lg overflow-hidden" style={{ borderRadius: '20px' }}>
-            <DataTable
-                columns={columnsTable}
-                data={filteredData}
-                keyField="Id_Actividad"
-                pagination
-                highlightOnHover
-                responsive
-                noDataComponent={
-                  <div className="text-center py-5 text-muted">
-                    <i className="fa-solid fa-flask-vial fs-1 mb-3 d-block opacity-25"></i>
-                    No se encontraron registros.
-                  </div>
-                }
-            />
+          <DataTable
+            columns={columnsTable}
+            data={filteredData}
+            keyField="Id_Actividad"
+            pagination
+            highlightOnHover
+            responsive
+            noDataComponent={
+              <div className="text-center py-5 text-muted">
+                <i className="fa-solid fa-flask-vial fs-1 mb-3 d-block opacity-25"></i>
+                No se encontraron registros.
+              </div>
+            }
+          />
         </div>
 
         {/* Modal Formulario (Agregar/Editar) */}
@@ -248,7 +248,7 @@ const CrudActividadReactivo = () => {
                   ))}
                   {(!selectedActivity?.reactivosList || selectedActivity.reactivosList.length === 0) && (
                     <div className="p-4 text-center text-muted">
-                        No hay reactivos vinculados a esta actividad.
+                      No hay reactivos vinculados a esta actividad.
                     </div>
                   )}
                 </div>

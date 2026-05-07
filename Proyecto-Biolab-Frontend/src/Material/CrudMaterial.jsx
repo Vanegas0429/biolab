@@ -83,17 +83,17 @@ const CrudMaterial = () => {
             <span className="input-group-text border-0 bg-transparent ps-3">
               <i className="fa-solid fa-magnifying-glass text-muted"></i>
             </span>
-            <input 
-              type="text" 
-              className="form-control border-0 py-2 shadow-none bg-transparent" 
-              placeholder="Buscar material..." 
+            <input
+              type="text"
+              className="form-control border-0 py-2 shadow-none bg-transparent"
+              placeholder="Buscar material..."
               value={filterText}
               onChange={(e) => setFilterText(e.target.value)}
             />
           </div>
-          <button 
+          <button
             className="btn btn-primary rounded-pill px-4 shadow-sm"
-            data-bs-toggle="modal" 
+            data-bs-toggle="modal"
             data-bs-target="#exampleModal"
             onClick={() => setRowToEdit(null)}
           >
@@ -110,7 +110,7 @@ const CrudMaterial = () => {
               name: 'ID',
               selector: row => row.Id_Material,
               sortable: true,
-              width: '80px'
+              width: '120px'
             },
             {
               name: 'MATERIAL',
@@ -126,9 +126,9 @@ const CrudMaterial = () => {
               name: 'ESTADO',
               sortable: true,
               center: true,
-              width: '150px',
+              width: '300px',
               cell: (row) => (
-                <span 
+                <span
                   className={`status-badge ${row.Estado === 'Activo' ? 'status-badge-activo' : 'status-badge-inactivo'}`}
                   style={{ cursor: 'pointer' }}
                   onClick={() => toggleEstado(row)}
@@ -140,12 +140,12 @@ const CrudMaterial = () => {
             {
               name: 'ACCIONES',
               center: true,
-              width: '100px',
+              width: '300px',
               cell: (row) => (
-                <button 
+                <button
                   className="btn-action btn-action-edit"
                   onClick={() => setRowToEdit(row)}
-                  data-bs-toggle="modal" 
+                  data-bs-toggle="modal"
                   data-bs-target="#exampleModal"
                   title="Editar"
                 >

@@ -3,19 +3,21 @@
 
 :root {
   /* Paleta de Colores BIOLAB */
-  --primary-color: #10b981; /* Verde esmeralda moderno */
+  --primary-color: #10b981;
+  /* Verde esmeralda moderno */
   --primary-hover: #059669;
-  --secondary-color: #0f172a; /* Azul oscuro elegante */
+  --secondary-color: #0f172a;
+  /* Azul oscuro elegante */
   --background-gradient: linear-gradient(135deg, #f0fdf4 0%, #e0f2fe 100%);
   --text-dark: #1e293b;
   --text-light: #f8fafc;
-  
+
   /* Glassmorphism */
   --glass-bg: rgba(255, 255, 255, 0.92);
   --glass-border: rgba(255, 255, 255, 0.5);
   --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
   --glass-blur: blur(10px);
-  
+
   /* Radios y Sombras */
   --radius-lg: 16px;
   --radius-md: 10px;
@@ -38,13 +40,16 @@ body {
   width: 8px;
   height: 8px;
 }
+
 ::-webkit-scrollbar-track {
   background: #f1f1f1;
 }
+
 ::-webkit-scrollbar-thumb {
   background: #cbd5e1;
   border-radius: 4px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: var(--primary-color);
 }
@@ -52,17 +57,26 @@ body {
 /* ==========================================
    COMPONENTES BOOTSTRAP OVERRIDES
    ========================================== */
-.container, .container-fluid {
+.container,
+.container-fluid {
   animation: fadeIn 0.5s ease-out;
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Tarjetas con Glassmorphism */
-.card, .modal-content {
+.card,
+.modal-content {
   background: var(--glass-bg) !important;
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
@@ -106,20 +120,23 @@ body {
   transform: translateY(-2px);
 }
 
-.btn-success, .bg-info {
+.btn-success,
+.bg-info {
   background: linear-gradient(135deg, var(--primary-color), #34d399) !important;
   border: none !important;
   color: white !important;
 }
 
-.btn-success:hover, .bg-info:hover {
+.btn-success:hover,
+.bg-info:hover {
   background: linear-gradient(135deg, var(--primary-hover), #10b981) !important;
   box-shadow: 0 6px 15px rgba(16, 185, 129, 0.3);
   transform: translateY(-2px);
 }
 
 /* Inputs y Formularios */
-.form-control, .form-select {
+.form-control,
+.form-select {
   border-radius: var(--radius-md) !important;
   border: 1px solid #cbd5e1 !important;
   padding: 0.6rem 1rem !important;
@@ -127,7 +144,8 @@ body {
   transition: all 0.3s ease !important;
 }
 
-.form-control:focus, .form-select:focus {
+.form-control:focus,
+.form-select:focus {
   border-color: var(--primary-color) !important;
   box-shadow: 0 0 0 0.25rem rgba(16, 185, 129, 0.25) !important;
   background-color: #ffffff !important;
@@ -155,7 +173,7 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.5px;
   border: none !important;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .status-badge-activo {
@@ -179,7 +197,7 @@ body {
   padding: 0 !important;
   border: none !important;
   transition: all 0.3s ease !important;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
 }
 
 .btn-action-edit {
@@ -262,7 +280,8 @@ body {
 
 .rdt_TableRow[style*="background-color: rgb(174, 173, 173)"],
 .rdt_TableRow[style*="backgroundColor: #aeadad"] {
-  background: rgba(241, 245, 249, 0.7) !important; /* Gris más estético */
+  background: rgba(241, 245, 249, 0.7) !important;
+  /* Gris más estético */
   color: #64748b !important;
 }
 
@@ -358,6 +377,7 @@ body {
     opacity: 0;
     transform: translateY(-10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -426,8 +446,13 @@ body {
 }
 
 @keyframes carouselFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 .carousel-container {
@@ -459,8 +484,15 @@ body {
 }
 
 @keyframes carouselImgIn {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 /* Flechas de navegación - FUERA de la imagen */
@@ -603,7 +635,7 @@ body {
   .carousel-actions {
     bottom: -50px;
   }
-  
+
   .carousel-action-btn {
     padding: 6px 16px;
     font-size: 0.8rem;
@@ -682,6 +714,7 @@ body {
     gap: 8px;
   }
 }
+
 .last-child-border-0:last-child {
   border-bottom: none !important;
 }
@@ -715,7 +748,7 @@ body {
   width: 90px;
   height: 90px;
   border-radius: 50%;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
   object-fit: cover;
   transition: all 0.3s ease;
 }
@@ -759,7 +792,7 @@ body {
     justify-content: center;
     width: 100%;
     margin-top: 0.5rem;
-    border-top: 1px solid rgba(0,0,0,0.05);
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
     padding-top: 0.8rem;
     padding-bottom: 0.5rem;
   }
@@ -781,7 +814,7 @@ body {
   .card {
     border-radius: var(--radius-md) !important;
   }
-  
+
   /* Ajuste de tablas en móvil */
   .rdt_Table {
     font-size: 0.8rem !important;
@@ -812,7 +845,7 @@ body {
 
 /* Fix para SweetAlert2 en capas superiores */
 .swal2-container {
-  z-index: 3000000 !important;
+  z-index: 6000000 !important;
 }
 
 /* ==========================================
@@ -838,7 +871,7 @@ body {
   font-size: 0.7rem;
   cursor: pointer;
   border: 2px solid white;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   transition: all 0.2s ease;
   z-index: 5;
   padding: 0;
@@ -847,4 +880,30 @@ body {
 .image-preview-remove:hover {
   background: #dc2626;
   transform: scale(1.1) rotate(90deg);
+}
+
+/* ==========================================
+   BOTÓN CERRAR PERSONALIZADO SWEETALERT
+   ========================================== */
+.custom-swal-close-btn {
+  position: fixed !important;
+  top: 45px !important;
+  right: 330px !important;
+  background-color: rgba(255, 255, 255, 0.15) !important;
+  color: white !important;
+  border-radius: 50% !important;
+  width: 48px !important;
+  height: 48px !important;
+  font-size: 1.6rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.3s ease !important;
+  z-index: 9999999 !important;
+}
+
+.custom-swal-close-btn:hover {
+  background-color: #ef4444 !important;
+  border-color: #ef4444 !important;
+  transform: scale(1.1) rotate(90deg) !important;
 }

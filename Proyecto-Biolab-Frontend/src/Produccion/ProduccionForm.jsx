@@ -5,7 +5,7 @@ import withReactContent from 'sweetalert2-react-content'
 
 const MySwal = withReactContent(Swal)
 
-const ProduccionForm = ({ hideModal, rowToEdit }) => {
+const ProduccionForm = ({ hideModal, rowToEdit, isViewOnly }) => {
 
     const [Lote, setLote_Produccion] = useState('')
     const [Tip_produccion, setTip_produccion] = useState('')
@@ -133,6 +133,7 @@ const ProduccionForm = ({ hideModal, rowToEdit }) => {
                     className="form-control"
                     value={Lote}
                     onChange={(e) => setLote_Produccion(e.target.value)}
+                    readOnly={isViewOnly}
                 />
             </div>
 
@@ -147,6 +148,7 @@ const ProduccionForm = ({ hideModal, rowToEdit }) => {
                     className="form-control"
                     value={Tip_produccion}
                     onChange={(e) => setTip_produccion(e.target.value)}
+                    disabled={isViewOnly}
                 >
                     <option value="">Selecciona uno</option>
                     <option value="Practica">Practica</option>
@@ -166,6 +168,7 @@ const ProduccionForm = ({ hideModal, rowToEdit }) => {
                     className="form-control"
                     value={Fec_produccion}
                     onChange={(e) => setFec_produccion(e.target.value)}
+                    readOnly={isViewOnly}
                 />
             </div>
 
@@ -176,6 +179,7 @@ const ProduccionForm = ({ hideModal, rowToEdit }) => {
                     className="form-control"
                     value={Id_especie}
                     onChange={(e) => setId_especie(Number(e.target.value))}
+                    disabled={isViewOnly}
                 >
                     <option value="">Selecciona</option>
                     {Especies.map(e => (
@@ -187,13 +191,15 @@ const ProduccionForm = ({ hideModal, rowToEdit }) => {
             </div>
 
             {/* Botón */}
-            <div className="mb-3">
-                <input
-                    type="submit"
-                    className="btn btn-primary w-50"
-                    value={textFormButton}
-                />
-            </div>
+            {!isViewOnly && (
+                <div className="mb-3">
+                    <input
+                        type="submit"
+                        className="btn btn-primary w-50"
+                        value={textFormButton}
+                    />
+                </div>
+            )}
 
         </form>
     )

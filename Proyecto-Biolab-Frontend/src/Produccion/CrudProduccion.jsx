@@ -8,6 +8,7 @@ const CrudProduccion = () => {
   const [rowToEdit, setRowToEdit] = useState(null)
   const [Produccion, setProduccion] = useState([])
   const [filterText, setFilterText] = useState("")
+  const [isViewOnly, setIsViewOnly] = useState(false)
 
   // 🔹 Alternar Activo/Inactivo
   const toggleEstado = async (row) => {
@@ -16,11 +17,11 @@ const CrudProduccion = () => {
 
     let estadoNuevo = ''
 
-    if(row.Estado === 'Activo'){
+    if (row.Estado === 'Activo') {
 
       estadoNuevo = 'Inactivo'
 
-    }else{
+    } else {
       estadoNuevo = 'Activo'
     }
 
@@ -39,7 +40,7 @@ const CrudProduccion = () => {
 
   // 🔹 Columnas
   const columnsTable = [
-    { name: 'Id_Produccion', selector: row => row.Id_produccion },
+    { name: 'ID', selector: row => row.Id_produccion },
     { name: 'Especie', selector: row => row.Especie?.Nom_especie },
     { name: 'Lote', selector: row => row.Lote },
     { name: 'Tipo de Produccion', selector: row => row.Tip_produccion },
@@ -48,7 +49,7 @@ const CrudProduccion = () => {
       name: 'Estado',
       cell: row => (
         <button
-          className={`btn btn-sm ${row.Estado =='Activo' ? 'btn-success' : 'btn-danger'}`}
+          className={`btn btn-sm ${row.Estado == 'Activo' ? 'btn-success' : 'btn-danger'}`}
           onClick={() => toggleEstado(row)}
         >
           {row.Estado}
@@ -58,14 +59,17 @@ const CrudProduccion = () => {
     {
       name: 'Acciones',
       selector: row => (
-        <button
-          className="btn btn-sm bg-info"
-          onClick={() => setRowToEdit(row)}
-          data-bs-toggle="modal"
-          data-bs-target="#exampleModal"
-        >
-          <i className="fa-solid fa-pencil"></i>
-        </button>
+        <div className="d-flex gap-2">
+          <button
+            className="btn btn-sm bg-info"
+            onClick={() => { setRowToEdit(row); setIsViewOnly(false); }}
+            data-bs-toggle="modal"
+            data-bs-target="#exampleModal"
+            title="Editar"
+          >
+            <i className="fa-solid fa-pencil"></i>
+          </button>
+        </div>
       )
     }
   ]
@@ -85,7 +89,7 @@ const CrudProduccion = () => {
     const text = filterText.toLowerCase();
     return (
       sup.Lote?.toLowerCase().includes(text) ||
-      sup.Especie?.Nom_especie.toLowerCase().includes(text) 
+      sup.Especie?.Nom_especie.toLowerCase().includes(text)
     );
   });
 
@@ -114,7 +118,7 @@ const CrudProduccion = () => {
               className="btn btn-primary px-4 shadow-sm"
               data-bs-toggle="modal"
               data-bs-target="#exampleModal"
-              onClick={() => setRowToEdit(null)}
+              onClick={() => { setRowToEdit(null); setIsViewOnly(false); }}
             >
               Agregar Producción
             </button>
@@ -154,7 +158,7 @@ const CrudProduccion = () => {
 
               <div className="modal-header">
                 <h1 className="modal-title fs-5">
-                  {rowToEdit ? "Editar Producción" : "Agregar Producción"}
+                  {isViewOnly ? "Detalles de Producción" : rowToEdit ? "Editar Producción" : "Agregar Producción"}
                 </h1>
                 <button
                   type="button"
@@ -164,11 +168,18 @@ const CrudProduccion = () => {
                 ></button>
               </div>
 
-              <div className="modal-body">
+              <div className="modal-body position-relative">
+                {isViewOnly && (
+                  <div
+                    className="position-absolute w-100 h-100 start-0 top-0"
+                    style={{ zIndex: 10, backgroundColor: 'rgba(255,255,255,0.3)' }}
+                  ></div>
+                )}
                 <ProduccionForm
                   hideModal={hideModal}
                   refreshList={getAllProduccion}
                   rowToEdit={rowToEdit}
+                  isViewOnly={isViewOnly}
                 />
               </div>
 

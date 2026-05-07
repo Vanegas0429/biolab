@@ -8,7 +8,7 @@ const CrudActividadEquipo = () => {
   const [rowToEdit, setRowToEdit] = useState(null)
   const [ActividadEquipo, setActividadEquipo] = useState([])
   const [filterText, setFilterText] = useState("")
-  
+
   // Estados para el modal de detalle de equipos
   const [selectedActivity, setSelectedActivity] = useState(null)
 
@@ -34,7 +34,7 @@ const CrudActividadEquipo = () => {
   // 🔹 Lógica de Agrupación
   const groupedData = useMemo(() => {
     const groups = {};
-    
+
     ActividadEquipo.forEach(item => {
       const actId = item.Id_Actividad;
       if (!groups[actId]) {
@@ -65,26 +65,26 @@ const CrudActividadEquipo = () => {
 
   // 🔹 Columnas
   const columnsTable = [
-    { 
-        name: 'ID', 
-        selector: row => row.Id_Actividad,
-        sortable: true,
-        width: '70px'
+    {
+      name: 'ID',
+      selector: row => row.Id_Actividad,
+      sortable: true,
+      width: '100px'
     },
-    { 
-        name: 'ACTIVIDAD', 
-        selector: row => row.Actividad?.Nom_Actividad,
-        sortable: true,
-        grow: 2
+    {
+      name: 'ACTIVIDAD',
+      selector: row => row.Actividad?.Nom_Actividad,
+      sortable: true,
+      grow: 2
     },
-    { 
-      name: 'EQUIPOS', 
+    {
+      name: 'EQUIPOS',
       center: true,
-      width: '150px',
+      width: '600px',
       cell: row => (
-        <button 
+        <button
           className="btn btn-sm btn-outline-primary fw-bold rounded-pill px-3 shadow-none"
-          data-bs-toggle="modal" 
+          data-bs-toggle="modal"
           data-bs-target="#equiposListModal"
           onClick={() => setSelectedActivity(row)}
         >
@@ -96,7 +96,7 @@ const CrudActividadEquipo = () => {
     {
       name: 'ESTADO',
       center: true,
-      width: '120px',
+      width: '200px',
       cell: row => (
         <span
           className={`status-badge ${row.Estado === 'Activo' ? 'status-badge-activo' : 'status-badge-inactivo'}`}
@@ -110,7 +110,7 @@ const CrudActividadEquipo = () => {
     {
       name: 'ACCIONES',
       center: true,
-      width: '100px',
+      width: '200px',
       cell: row => (
         <button
           className="btn-action btn-action-edit mx-auto"
@@ -132,10 +132,10 @@ const CrudActividadEquipo = () => {
 
   const getAllActividadEquipo = async () => {
     try {
-        const response = await apiAxios.get('/api/ActividadEquipo')
-        setActividadEquipo(response.data)
+      const response = await apiAxios.get('/api/ActividadEquipo')
+      setActividadEquipo(response.data)
     } catch (error) {
-        console.error("Error cargando Actividad-Equipo:", error)
+      console.error("Error cargando Actividad-Equipo:", error)
     }
   }
 
@@ -152,15 +152,15 @@ const CrudActividadEquipo = () => {
         <div className="row d-flex justify-content-between align-items-center mb-4 gap-3 gap-md-0">
           <div className="col-12 col-md-6 col-lg-4">
             <div className="input-group shadow-sm">
-                <span className="input-group-text bg-white border-end-0">
-                    <i className="fa-solid fa-magnifying-glass text-muted"></i>
-                </span>
-                <input
-                    className="form-control border-start-0 ps-0"
-                    placeholder="Buscar actividad o equipo..."
-                    value={filterText}
-                    onChange={(e) => setFilterText(e.target.value)}
-                />
+              <span className="input-group-text bg-white border-end-0">
+                <i className="fa-solid fa-magnifying-glass text-muted"></i>
+              </span>
+              <input
+                className="form-control border-start-0 ps-0"
+                placeholder="Buscar actividad o equipo..."
+                value={filterText}
+                onChange={(e) => setFilterText(e.target.value)}
+              />
             </div>
           </div>
 
@@ -179,20 +179,20 @@ const CrudActividadEquipo = () => {
         </div>
 
         <div className="card border-0 shadow-lg overflow-hidden" style={{ borderRadius: '20px' }}>
-            <DataTable
-                columns={columnsTable}
-                data={filteredData}
-                keyField="Id_Actividad"
-                pagination
-                highlightOnHover
-                responsive
-                noDataComponent={
-                  <div className="text-center py-5 text-muted">
-                    <i className="fa-solid fa-list-check fs-1 mb-3 d-block opacity-25"></i>
-                    No se encontraron registros.
-                  </div>
-                }
-            />
+          <DataTable
+            columns={columnsTable}
+            data={filteredData}
+            keyField="Id_Actividad"
+            pagination
+            highlightOnHover
+            responsive
+            noDataComponent={
+              <div className="text-center py-5 text-muted">
+                <i className="fa-solid fa-list-check fs-1 mb-3 d-block opacity-25"></i>
+                No se encontraron registros.
+              </div>
+            }
+          />
         </div>
 
         {/* Modal Formulario (Agregar/Editar) */}
@@ -255,7 +255,7 @@ const CrudActividadEquipo = () => {
                   ))}
                   {selectedActivity?.equiposList.length === 0 && (
                     <div className="p-4 text-center text-muted">
-                        No hay equipos vinculados a esta actividad.
+                      No hay equipos vinculados a esta actividad.
                     </div>
                   )}
                 </div>

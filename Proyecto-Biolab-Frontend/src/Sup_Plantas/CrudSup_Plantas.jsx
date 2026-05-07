@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import apiAxios from "../api/axiosConfig.js";
 import DataTable from "react-data-table-component";
 import Sup_PlantasForm from "./Sup_PlantasForm.jsx";
+import ProduccionForm from "../Produccion/ProduccionForm.jsx";
 
 
 const CrudSup_Plantas = () => {
@@ -9,6 +10,7 @@ const CrudSup_Plantas = () => {
   const [Sup_Plantas, setSup_Plantas] = useState([]);
   const [filterText, setFilterText] = useState("");
   const [rowToEdit, setRowToEdit] = useState(null);
+  const [rowToViewProduccion, setRowToViewProduccion] = useState(null);
 
   // 🔹 Función para alternar Activo/Inactivo
   const toggleEstado = async (row) => {
@@ -17,11 +19,11 @@ const CrudSup_Plantas = () => {
 
     let estadoNuevo = ''
 
-    if(row.Estado === 'Activo'){
+    if (row.Estado === 'Activo') {
 
       estadoNuevo = 'Inactivo'
 
-    }else{
+    } else {
       estadoNuevo = 'Activo'
     }
 
@@ -41,26 +43,44 @@ const CrudSup_Plantas = () => {
 
   // 🔹 Columnas de la tabla
   const columnsTable = [
-    { name: 'Id_Supervision', selector: row => row.Id_supervision },
-    { name: 'Numero de Lote', selector: row => row.Num_lote },
+    { name: 'ID', selector: row => row.Id_supervision },
+    { name: 'Lote', selector: row => row.Num_lote },
+    { name: 'Medio de Cultivo', selector: row => row.Med_Cultivo },
+    { name: 'Metodo de Propagacion', selector: row => row.Met_Propagacion },
     { name: 'Frascos Iniciales', selector: row => row.Fc_Iniciales },
-    { name: 'Fc_Bacterias', selector: row => row.Fc_Bacterias },
-    { name: 'Fc_Hongos', selector: row => row.Fc_Hongos },
-    { name: 'Frascos Sin Desarrollo', selector: row => row.Fs_Desarrollo },
-    { name: 'Fd_BR', selector: row => row.Fd_BR },
-    { name: 'Fd_RA', selector: row => row.Fd_RA },
-    { name: 'Fd_CA', selector: row => row.Fd_CA },
-    { name: 'Fd_MOR', selector: row => row.Fd_MOR },
-    { name: 'Fd_GER', selector: row => row.Fd_GER },
-    { name: 'Num_endurecimiento', selector: row => row.Num_endurecimiento },
-    { name: 'Med_Cultivo', selector: row => row.Med_Cultivo },
-    { name: 'Met_Propagacion', selector: row => row.Met_Propagacion },
-    { name: 'Producción', selector: row => row.Produccion?.Tip_produccion},
+    { name: 'Bacterias', selector: row => row.Fc_Bacterias },
+    { name: 'Hongos', selector: row => row.Fc_Hongos },
+    { name: 'Sin Desarrollo', selector: row => row.Fs_Desarrollo },
+    { name: 'BR', selector: row => row.Fd_BR },
+    { name: 'RA', selector: row => row.Fd_RA },
+    { name: 'CA', selector: row => row.Fd_CA },
+    { name: 'MOR', selector: row => row.Fd_MOR },
+    { name: 'GER', selector: row => row.Fd_GER },
+    { name: 'Num Endurecimiento', selector: row => row.Num_endurecimiento },
+    {
+      name: 'Producción',
+      width: '150px',
+      cell: row => (
+        <div className="d-flex align-items-center gap-2">
+          {row.Produccion && (
+            <button
+              className="btn btn-sm btn-outline-secondary p-1"
+              title="Ver Producción"
+              data-bs-toggle="modal"
+              data-bs-target="#modalProduccionView"
+              onClick={() => setRowToViewProduccion(row.Produccion)}
+            >
+              <i className="fa-solid fa-eye"></i>
+            </button>
+          )}
+        </div>
+      )
+    },
     {
       name: 'Estado',
       cell: row => (
         <button
-          className={`btn btn-sm ${row.Estado =='Activo' ? 'btn-success' : 'btn-danger'}`}
+          className={`btn btn-sm ${row.Estado == 'Activo' ? 'btn-success' : 'btn-danger'}`}
           onClick={() => toggleEstado(row)}
         >
           {row.Estado}
@@ -170,7 +190,7 @@ const CrudSup_Plantas = () => {
         />
 
 
-        {/* Modal */}
+        {/* Modal Supervision */}
         <div className="modal fade" id="exampleModal" tabIndex="-1">
           <div className="modal-dialog">
             <div className="modal-content">
@@ -183,7 +203,7 @@ const CrudSup_Plantas = () => {
                   type="button"
                   className="btn-close"
                   data-bs-dismiss="modal"
-                  id="closeModal"
+                  id="btnCloseModal"
                 ></button>
               </div>
 
@@ -193,6 +213,37 @@ const CrudSup_Plantas = () => {
                   refreshList={getAllSup_Plantas}
                   rowToEdit={rowToEdit}
                 />
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        {/* Modal Ver Produccion */}
+        <div className="modal fade" id="modalProduccionView" tabIndex="-1">
+          <div className="modal-dialog">
+            <div className="modal-content">
+
+              <div className="modal-header">
+                <h1 className="modal-title fs-5">Detalles de Producción</h1>
+                <button
+                  type="button"
+                  className="btn-close"
+                  data-bs-dismiss="modal"
+                ></button>
+              </div>
+
+              <div className="modal-body position-relative">
+                <div
+                  className="position-absolute w-100 h-100 start-0 top-0"
+                  style={{ zIndex: 10, backgroundColor: 'rgba(255,255,255,0.3)' }}
+                ></div>
+                {rowToViewProduccion && (
+                  <ProduccionForm
+                    rowToEdit={rowToViewProduccion}
+                    isViewOnly={true}
+                  />
+                )}
               </div>
 
             </div>

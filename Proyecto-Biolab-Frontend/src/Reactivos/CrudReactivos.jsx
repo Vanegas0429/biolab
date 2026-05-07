@@ -74,7 +74,7 @@ const CrudReactivos = () => {
   const newListReactivo = Reactivo.filter((uso) => {
     const textToSearch = filterText.toLowerCase();
     return uso.Nom_reactivo?.toLowerCase().includes(textToSearch) ||
-           uso.Nomenclatura?.toLowerCase().includes(textToSearch);
+      uso.Nomenclatura?.toLowerCase().includes(textToSearch);
   });
 
   const hideModal = () => {
@@ -111,17 +111,17 @@ const CrudReactivos = () => {
             <span className="input-group-text border-0 bg-transparent ps-3">
               <i className="fa-solid fa-magnifying-glass text-muted"></i>
             </span>
-            <input 
-              type="text" 
-              className="form-control border-0 py-2 shadow-none bg-transparent" 
-              placeholder="Buscar reactivo..." 
+            <input
+              type="text"
+              className="form-control border-0 py-2 shadow-none bg-transparent"
+              placeholder="Buscar reactivo..."
               value={filterText}
               onChange={(e) => setFilterText(e.target.value)}
             />
           </div>
-          <button 
+          <button
             className="btn btn-primary rounded-pill px-4 shadow-sm"
-            data-bs-toggle="modal" 
+            data-bs-toggle="modal"
             data-bs-target="#exampleModal"
             onClick={() => setRowToEdit(null)}
           >
@@ -154,20 +154,20 @@ const CrudReactivos = () => {
               name: 'NOMENCLATURA',
               selector: row => row.Nomenclatura || 'N/A',
               sortable: true,
-              width: '150px'
+              width: '250px'
             },
             {
               name: 'PRESENTACIÓN',
               selector: row => row.Presentacion || 'N/A',
               sortable: true,
-              width: '180px'
+              width: '250px'
             },
             {
               name: 'FICHA',
               center: true,
               cell: (row) => (
                 row.Ficha_tecnica ? (
-                  <button 
+                  <button
                     className="btn btn-sm btn-outline-primary rounded-pill px-3 shadow-none"
                     onClick={() => {
                       setPdfUrl(`http://localhost:8000/uploads/${row.Ficha_tecnica}`);
@@ -187,9 +187,9 @@ const CrudReactivos = () => {
               name: 'ESTADO',
               sortable: true,
               center: true,
-              width: '120px',
+              width: '200px',
               cell: (row) => (
-                <span 
+                <span
                   className={`status-badge ${row.Estado === 'Activo' ? 'status-badge-activo' : 'status-badge-inactivo'}`}
                   style={{ cursor: 'pointer' }}
                   onClick={() => toggleEstado(row)}
@@ -201,12 +201,12 @@ const CrudReactivos = () => {
             {
               name: 'ACCIONES',
               center: true,
-              width: '100px',
+              width: '200px',
               cell: (row) => (
-                <button 
+                <button
                   className="btn-action btn-action-edit"
                   onClick={() => setRowToEdit(row)}
-                  data-bs-toggle="modal" 
+                  data-bs-toggle="modal"
                   data-bs-target="#exampleModal"
                   title="Editar"
                 >

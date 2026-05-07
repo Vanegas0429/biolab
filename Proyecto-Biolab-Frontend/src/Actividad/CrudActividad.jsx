@@ -22,14 +22,14 @@ const CrudActividad = () => {
   };
 
   const columnsTable = [
-    { 
-      name: 'ID', 
+    {
+      name: 'ID',
       selector: row => row.Id_Actividad,
       sortable: true,
-      width: '80px'
+      width: '100px'
     },
-    { 
-      name: 'ACTIVIDAD', 
+    {
+      name: 'ACTIVIDAD',
       selector: row => row.Nom_Actividad,
       sortable: true,
       grow: 2
@@ -37,7 +37,7 @@ const CrudActividad = () => {
     {
       name: 'ESTADO',
       center: true,
-      width: '120px',
+      width: '250px',
       cell: row => (
         <span
           className={`status-badge ${row.Estado === 'Activo' ? 'status-badge-activo' : 'status-badge-inactivo'}`}
@@ -51,7 +51,7 @@ const CrudActividad = () => {
     {
       name: 'ACCIONES',
       center: true,
-      width: '100px',
+      width: '250px',
       cell: row => (
         <button
           className="btn-action btn-action-edit mx-auto"
@@ -96,27 +96,27 @@ const CrudActividad = () => {
         <div className="row d-flex justify-content-between align-items-center mb-4 gap-3 gap-md-0">
           <div className="col-12 col-md-6 col-lg-4">
             <div className="input-group shadow-sm">
-                <span className="input-group-text bg-white border-end-0">
-                    <i className="fa-solid fa-magnifying-glass text-muted"></i>
-                </span>
-                <input
-                    className="form-control border-start-0 ps-0"
-                    placeholder="Buscar actividad..."
-                    value={filterText}
-                    onChange={(e) => setFilterText(e.target.value)}
-                />
+              <span className="input-group-text bg-white border-end-0">
+                <i className="fa-solid fa-magnifying-glass text-muted"></i>
+              </span>
+              <input
+                className="form-control border-start-0 ps-0"
+                placeholder="Buscar actividad..."
+                value={filterText}
+                onChange={(e) => setFilterText(e.target.value)}
+              />
             </div>
           </div>
           <div className="col-12 col-md-auto text-md-end text-center">
-            <button 
-              type="button" 
-              className="btn btn-primary px-4 shadow-sm fw-bold" 
-              data-bs-toggle="modal" 
-              data-bs-target="#exampleModal" 
+            <button
+              type="button"
+              className="btn btn-primary px-4 shadow-sm fw-bold"
+              data-bs-toggle="modal"
+              data-bs-target="#exampleModal"
               onClick={() => setRowToEdit(null)}
             >
               <i className="fa-solid fa-plus me-2"></i>
-              Nueva Actividad 
+              Nueva Actividad
             </button>
           </div>
         </div>
