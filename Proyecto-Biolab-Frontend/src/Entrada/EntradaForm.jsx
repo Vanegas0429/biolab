@@ -6,10 +6,8 @@ import withReactContent from 'sweetalert2-react-content'
 
 const MySwal = withReactContent(Swal)
 
-const EntradaForm = ({ hideModal, rowToEdit }) => {
+const EntradaForm = ({ hideModal, refreshList, rowToEdit }) => {
 const [Estado, setEstado] = useState("Activo");
-
-
 
   // Campos del formulario
   const [Lote, setLote] = useState('');
@@ -111,25 +109,29 @@ const gestionarForm = async (e) => {
        MySwal.fire({
           title: "Actualizado",
           text: "Entrada actualizada correctamente",
-          icon: "success"
+          icon: "success",
+          timer: 2000,
+          showConfirmButton: false
         });
     } else {
       await crearEntrada(); // ➕ NUEVO
        MySwal.fire({
           title: "Creación",
           text: "Entrada creada correctamente",
-          icon: "success"
+          icon: "success",
+          timer: 2000,
+          showConfirmButton: false
         });
     }
 
-
+    refreshList();
     hideModal(); 
   } catch (error) {
     console.error("Error al guardar Entrada:", error);
       MySwal.fire({
       title:"Error",
       text: "Error al guardar la Entrada",
-      icon: "success"
+      icon: "error"
     })
   }
 };

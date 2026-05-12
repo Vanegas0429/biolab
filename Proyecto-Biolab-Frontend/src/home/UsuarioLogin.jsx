@@ -82,23 +82,35 @@ const UsuarioLogin = ({ setIsAuth, setUserRol, setUserProfile }) => {
             <label className="form-label text-secondary fw-semibold small">Contraseña</label>
             <input
               type="password"
-              className="form-control shadow-sm"
+              className="form-control shadow-sm mb-2"
               value={contraseña}
               onChange={(e) => setContraseña(e.target.value)}
               placeholder="••••••••"
               required
             />
           </div>
+          <div className="d-flex justify-content-between align-items-center mb-4">
 
-          <div className="form-check mb-4">
-            <input 
-              type="checkbox" 
-              className="form-check-input" 
-              id="rememberMe" 
-            />
-            <label className="form-check-label text-muted small" htmlFor="rememberMe">
-              Recordar mis datos
-            </label>
+            <div className="form-check mb-0">
+              <input 
+                type="checkbox" 
+                className="form-check-input" 
+                id="rememberMe" 
+              />
+              <label className="form-check-label text-muted small" htmlFor="rememberMe">
+                Recordar mis datos
+              </label>
+            </div>
+            <a 
+              href="/Forgot" 
+              className="text-decoration-none small fw-bold text-primary"
+              onClick={(e) => {
+                e.preventDefault();
+                navigate("/Forgot");
+              }}
+            >
+              ¿Olvidaste tu contraseña?
+            </a>
           </div>
 
           <button 

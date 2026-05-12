@@ -6,6 +6,8 @@ import NavBar from './navBar';
 import Home from './home/home';
 import UsuarioLogin from './home/UsuarioLogin';
 import UsuarioRegistro from './home/UsuarioRegister';
+import UsuarioForgot from './home/UsuarioForgot';
+
 
 // CRUDs protegidos
 import CrudPractica from './Practica/CrudPractica';
@@ -185,6 +187,7 @@ function App() {
         {/* Rutas públicas */}
         <Route path='/' element={<Home />} />
         <Route path='/login' element={isAuth ? <Navigate to='/' replace /> : <UsuarioLogin setIsAuth={setIsAuth} setUserRol={setUserRol} setUserProfile={setUserProfile} />} />
+        <Route path='/Forgot' element={<UsuarioForgot />} />
         <Route path='/register' element={<UsuarioRegistro />} />
         <Route path='/sin-acceso' element={<SinAcceso />} />
 

@@ -35,9 +35,8 @@ const CrudEquipos = ({ userRol }) => {
   };
 
   const hideModal = () => {
-    const modalElement = document.getElementById("exampleModal");
-    const modal = bootstrap.Modal.getInstance(modalElement);
-    if (modal) modal.hide();
+    const btn = document.getElementById('closeModal')
+    if (btn) btn.click()
   };
 
   const toggleEstado = async (row) => {
@@ -159,13 +158,28 @@ const CrudEquipos = ({ userRol }) => {
       formData.append('ficha_tecnica', file);
       formData.append('nombre', row.nombre || '');
       try {
-        await apiAxios.put(`/api/Equipo/${row.id_equipo}`, formData, {
+        const response = await apiAxios.put(`/api/Equipo/${row.id_equipo}`, formData, {
           headers: { "Content-Type": "multipart/form-data" }
         });
-        getAllEquipos();
-        Swal.fire('¡Éxito!', 'Ficha técnica subida', 'success');
+        
+        await getAllEquipos();
+
+        // Abrir el modal automáticamente con el nuevo archivo
+        if (response.data && response.data.ficha_tecnica) {
+          setPdfUrl(`http://localhost:8000/uploads/${response.data.ficha_tecnica}`);
+          setShowPdf(true);
+        }
+
+        Swal.fire({
+          title: '¡Éxito!',
+          text: 'Ficha técnica subida y abierta',
+          icon: 'success',
+          timer: 1500,
+          showConfirmButton: false
+        });
       } catch (error) {
         console.error("Error subiendo ficha técnica:", error);
+        Swal.fire('Error', 'No se pudo subir la ficha técnica', 'error');
       }
     };
     input.click();

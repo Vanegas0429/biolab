@@ -120,7 +120,7 @@ const GestionUsuarios = () => {
                                 <select 
                                     className="form-select form-select-sm border-0 bg-light rounded-pill px-3 shadow-none"
                                     value={row.rol}
-                                    onChange={(e) => handleRolChange(row.id, e.target.value)}
+                                    onChange={(e) => handleRolChange(row.uuid, e.target.value)}
                                     style={{ fontSize: '0.85rem', fontWeight: '500' }}
                                 >
                                     {rolesDisponibles.map(r => (

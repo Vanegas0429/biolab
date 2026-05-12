@@ -1,5 +1,6 @@
 import express from "express";
-import { registerUsuario, loginUsuario, getAllUsuarios, updateUsuarioRol } from "../controllers/UsuarioController.js";
+import { registerUsuario, loginUsuario, getAllUsuarios, updateUsuarioRol, forgotPassword } from "../controllers/UsuarioController.js";
+
 import { check } from "express-validator";
 import { verifyToken } from "../middlewares/authMiddlewares.js";
 import { checkMiddlewareY } from "../middlewares/middlewareY.js";
@@ -19,6 +20,8 @@ UsuarioRouter.post(
 );
 
 UsuarioRouter.post("/login", loginUsuario);
+UsuarioRouter.post("/forgot-password", forgotPassword);
+
 
 // Rutas de Administración (Protegidas)
 UsuarioRouter.get("/usuarios", verifyToken, checkMiddlewareY, getAllUsuarios);

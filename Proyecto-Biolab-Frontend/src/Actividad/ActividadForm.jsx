@@ -6,10 +6,8 @@ import withReactContent from 'sweetalert2-react-content'
 
 const MySwal = withReactContent(Swal)
 
-const ActividadForm = ({ hideModal, rowToEdit }) => {
+const ActividadForm = ({ hideModal, refreshList, rowToEdit }) => {
     const [Actividad, setActividad] = useState("Activo");
-
-
 
     //Campos del formulario
     const [Nom_Actividad, setNom_Actividad] = useState("");
@@ -57,17 +55,22 @@ const ActividadForm = ({ hideModal, rowToEdit }) => {
                 MySwal.fire({
                     title: "Actualizado",
                     text: "Actividad actualizada correctamente",
-                    icon: "success"
+                    icon: "success",
+                    timer: 2000,
+                    showConfirmButton: false
                 });
             } else {
                 await crearActividad();
                 MySwal.fire({
                     title: "Creación",
                     text: "Actividad creada correctamente",
-                    icon: "success"
+                    icon: "success",
+                    timer: 2000,
+                    showConfirmButton: false
                 });
             }
 
+            refreshList();
             hideModal();
         } catch (error) {
             console.error(
@@ -77,7 +80,7 @@ const ActividadForm = ({ hideModal, rowToEdit }) => {
             MySwal.fire({
                 title: "Error",
                 text: "Error al guardar la Actividad",
-                icon: "success"
+                icon: "error"
             })
         }
     };

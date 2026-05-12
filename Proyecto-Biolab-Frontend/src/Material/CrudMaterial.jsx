@@ -54,9 +54,8 @@ const CrudMaterial = () => {
   });
 
   const hideModal = () => {
-    const modalElement = document.getElementById("exampleModal");
-    const modal = bootstrap.Modal.getInstance(modalElement);
-    if (modal) modal.hide();
+    const btn = document.getElementById('closeModal')
+    if (btn) btn.click()
   };
 
   if (loading) return (

@@ -5,7 +5,7 @@ import withReactContent from 'sweetalert2-react-content'
 
 const MySwal = withReactContent(Swal)
 
-const ActividadEquipoForm = ({ hideModal, rowToEdit }) => {
+const ActividadEquipoForm = ({ hideModal, refreshList, rowToEdit }) => {
 
     const [Estado, setEstado] = useState("Activo")
     const [textFormButton, setTextFormButton] = useState('Enviar')
@@ -43,7 +43,7 @@ const ActividadEquipoForm = ({ hideModal, rowToEdit }) => {
     useEffect(() => {
         if (rowToEdit) {
             setId_Actividad(rowToEdit.Id_Actividad || '')
-            const selectedEq = rowToEdit.equiposList ? rowToEdit.equiposList.map(e => e.id_equipo) : [];
+            const selectedEq = rowToEdit.equiposList ? rowToEdit.equiposList.map(e => e.Id_Equipo || e.id_equipo) : [];
             setEquiposSeleccionados(selectedEq)
             setEstado(rowToEdit.Estado || 'Activo')
             setTextFormButton('Actualizar')
@@ -76,10 +76,10 @@ const ActividadEquipoForm = ({ hideModal, rowToEdit }) => {
     // 🔹 ACTUALIZAR
     const actualizarActividadEquipo = async () => {
         const initialEq = rowToEdit.equiposList || [];
-        const initialIds = initialEq.map(e => e.id_equipo);
+        const initialIds = initialEq.map(e => e.Id_Equipo || e.id_equipo);
         
         const toCreate = equiposSeleccionados.filter(id => !initialIds.includes(id));
-        const toDelete = initialEq.filter(e => !equiposSeleccionados.includes(e.id_equipo));
+        const toDelete = initialEq.filter(e => !equiposSeleccionados.includes(e.Id_Equipo || e.id_equipo));
 
         const promises = [];
 
@@ -132,6 +132,7 @@ const ActividadEquipoForm = ({ hideModal, rowToEdit }) => {
                 })
             }
 
+            refreshList && refreshList()
             hideModal && hideModal()
 
         } catch (error) {
@@ -172,16 +173,16 @@ const ActividadEquipoForm = ({ hideModal, rowToEdit }) => {
                     <label className="fw-bold mb-1">Equipos (Múltiple):</label>
                     <div className="border rounded p-2" style={{ maxHeight: '200px', overflowY: 'auto', backgroundColor: '#f8f9fa' }}>
                         {Equipos.filter(e => e.estado === 'Activo').map(e => (
-                            <div className="form-check" key={e.id_equipo}>
+                            <div className="form-check" key={e.Id_Equipo || e.id_equipo}>
                                 <input 
                                     className="form-check-input" 
                                     type="checkbox" 
-                                    value={e.id_equipo} 
-                                    id={`equipo-${e.id_equipo}`}
-                                    checked={equiposSeleccionados.includes(e.id_equipo)}
-                                    onChange={() => handleCheckboxChange(e.id_equipo)}
+                                    value={e.Id_Equipo || e.id_equipo} 
+                                    id={`equipo-${e.Id_Equipo || e.id_equipo}`}
+                                    checked={equiposSeleccionados.includes(e.Id_Equipo || e.id_equipo)}
+                                    onChange={() => handleCheckboxChange(e.Id_Equipo || e.id_equipo)}
                                 />
-                                <label className="form-check-label" htmlFor={`equipo-${e.id_equipo}`}>
+                                <label className="form-check-label" htmlFor={`equipo-${e.Id_Equipo || e.id_equipo}`}>
                                     {e.nombre}
                                 </label>
                             </div>

@@ -48,13 +48,28 @@ const CrudReactivos = () => {
       formData.append('Ficha_tecnica', file);
       formData.append('Nom_reactivo', row.Nom_reactivo || '');
       try {
-        await apiAxios.put(`/api/Reactivo/${row.Id_Reactivo}`, formData, {
+        const response = await apiAxios.put(`/api/Reactivo/${row.Id_Reactivo}`, formData, {
           headers: { "Content-Type": "multipart/form-data" }
         });
-        getAllReactivos();
-        Swal.fire('¡Éxito!', 'Ficha técnica subida', 'success');
+        
+        await getAllReactivos();
+        
+        // Abrir el modal automáticamente con el nuevo archivo
+        if (response.data && response.data.Ficha_tecnica) {
+          setPdfUrl(`http://localhost:8000/uploads/${response.data.Ficha_tecnica}`);
+          setShowPdf(true);
+        }
+        
+        Swal.fire({
+          title: '¡Éxito!',
+          text: 'Ficha técnica subida y abierta',
+          icon: 'success',
+          timer: 1500,
+          showConfirmButton: false
+        });
       } catch (error) {
         console.error("Error subiendo ficha técnica:", error);
+        Swal.fire('Error', 'No se pudo subir la ficha técnica', 'error');
       }
     };
     input.click();
@@ -82,9 +97,8 @@ const CrudReactivos = () => {
   });
 
   const hideModal = () => {
-    const modalElement = document.getElementById("exampleModal");
-    const modal = bootstrap.Modal.getInstance(modalElement);
-    if (modal) modal.hide();
+    const btn = document.getElementById('closeModal')
+    if (btn) btn.click()
   };
 
   if (loading) return (

@@ -6,7 +6,7 @@ import withReactContent from 'sweetalert2-react-content'
 
 const MySwal = withReactContent(Swal)
 
-const MaterialForm = ({ hideModal, rowToEdit }) => {
+const MaterialForm = ({ hideModal, refreshList, rowToEdit }) => {
     const [Estado, setEstado] = useState("Activo");
 
 
@@ -57,17 +57,22 @@ const MaterialForm = ({ hideModal, rowToEdit }) => {
                 MySwal.fire({
                     title: "Actualizado",
                     text: "Material actualizada correctamente",
-                    icon: "success"
+                    icon: "success",
+                    timer: 2000,
+                    showConfirmButton: false
                 });
             } else {
                 await crearMaterial();
                 MySwal.fire({
                     title: "Creación",
                     text: "Material creada correctamente",
-                    icon: "success"
+                    icon: "success",
+                    timer: 2000,
+                    showConfirmButton: false
                 });
             }
 
+            refreshList();
             hideModal();
         } catch (error) {
             console.error(
@@ -77,7 +82,7 @@ const MaterialForm = ({ hideModal, rowToEdit }) => {
             MySwal.fire({
                 title: "Error",
                 text: "Error al guardar la Material",
-                icon: "success"
+                icon: "error"
             })
         }
     };

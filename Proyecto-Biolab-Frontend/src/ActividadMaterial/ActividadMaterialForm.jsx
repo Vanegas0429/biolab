@@ -5,7 +5,7 @@ import withReactContent from 'sweetalert2-react-content'
 
 const MySwal = withReactContent(Swal)
 
-const ActividadMaterialForm = ({ hideModal, rowToEdit }) => {
+const ActividadMaterialForm = ({ hideModal, refreshList, rowToEdit }) => {
 
     const [Estado, setEstado] = useState("Activo")
     const [textFormButton, setTextFormButton] = useState('Enviar')
@@ -132,6 +132,7 @@ const ActividadMaterialForm = ({ hideModal, rowToEdit }) => {
                 })
             }
 
+            refreshList && refreshList()
             hideModal && hideModal()
 
         } catch (error) {

@@ -42,3 +42,20 @@ export const updateUsuarioRol = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 };
+
+// OLVIDASTE CONTRASEÑA (RECUperar)
+export const forgotPassword = async (req, res) => {
+  try {
+    const { correo } = req.body;
+    if (!correo) return res.status(400).json({ message: "El correo es obligatorio" });
+
+    // Aquí llamaríamos al servicio para verificar y/o enviar email
+    // await UsuarioService.forgotPassword(correo);
+    
+    // Por ahora simulamos éxito si el correo es enviado
+    res.status(200).json({ message: "Instrucciones enviadas al correo" });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+

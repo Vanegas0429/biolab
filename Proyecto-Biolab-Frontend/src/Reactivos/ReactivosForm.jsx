@@ -57,12 +57,24 @@ const ReactivosForm = ({ hideModal, rowToEdit, refreshList }) => {
                 await apiAxios.put(`/api/Reactivo/${rowToEdit.Id_Reactivo}`, formData, {
                     headers: { "Content-Type": "multipart/form-data" }
                 });
-                MySwal.fire({ title: "Actualizado", text: "Reactivo actualizado correctamente", icon: "success" });
+                MySwal.fire({ 
+                    title: "Actualizado", 
+                    text: "Reactivo actualizado correctamente", 
+                    icon: "success",
+                    timer: 2000,
+                    showConfirmButton: false 
+                });
             } else {
                 await apiAxios.post("/api/Reactivo", formData, {
                     headers: { "Content-Type": "multipart/form-data" }
                 });
-                MySwal.fire({ title: "Creación", text: "Reactivo creado correctamente", icon: "success" });
+                MySwal.fire({ 
+                    title: "Creación", 
+                    text: "Reactivo creado correctamente", 
+                    icon: "success",
+                    timer: 2000,
+                    showConfirmButton: false 
+                });
             }
             if (refreshList) refreshList();
             hideModal();

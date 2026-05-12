@@ -5,7 +5,7 @@ import withReactContent from 'sweetalert2-react-content'
 
 const MySwal = withReactContent(Swal)
 
-const ProduccionForm = ({ hideModal, rowToEdit, isViewOnly }) => {
+const ProduccionForm = ({ hideModal, refreshList, rowToEdit, isViewOnly }) => {
 
     const [Lote, setLote_Produccion] = useState('')
     const [Tip_produccion, setTip_produccion] = useState('')
@@ -105,6 +105,7 @@ const ProduccionForm = ({ hideModal, rowToEdit, isViewOnly }) => {
                 })
             }
 
+            refreshList && refreshList()
             hideModal && hideModal()
 
         } catch (error) {

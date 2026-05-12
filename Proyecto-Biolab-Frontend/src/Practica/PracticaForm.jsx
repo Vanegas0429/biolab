@@ -5,7 +5,7 @@ import apiAxios from "../api/axiosConfig.js"
 import Swal from 'sweetalert2'
 import withReactContent from 'sweetalert2-react-content'
 
-const PracticaForm = ({ hideModal, rowToEdit }) => {
+const PracticaForm = ({ hideModal, rowToEdit, refreshList }) => {
 
     const Myswal = withReactContent(Swal)
 
@@ -51,14 +51,21 @@ const PracticaForm = ({ hideModal, rowToEdit }) => {
 
             // alert('Práctica creada correctamente')
             Myswal.fire({
-                title: "Actualizacion",
+                title: "Exito",
                 text: "Practica creada correctamente",
-                icon: "success"
+                icon: "success",
+                timer: 2000,
+                showConfirmButton: false
             })
+            refreshList && refreshList()
             hideModal()
 
         } catch (error) {
-            alert(error.message)
+            Myswal.fire({
+                title: "Error",
+                text: error.message,
+                icon: "error"
+            })
         }
     } else if (textFormButton === 'Actualizar') {
             try {
@@ -76,13 +83,20 @@ const PracticaForm = ({ hideModal, rowToEdit }) => {
                 Myswal.fire({
                 title: "Actualizacion",
                 text: "Practica actualizada correctamente",
-                icon: "success"
+                icon: "success",
+                timer: 2000,
+                showConfirmButton: false
             })
+                refreshList && refreshList()
                 hideModal();
 
             } catch (error) {
                 console.error("Error actualizar Practica", error.response ? error.response.data : error.message);
-                alert(error.message);
+                Myswal.fire({
+                    title: "Error",
+                    text: error.message,
+                    icon: "error"
+                })
             }
         }
     };
