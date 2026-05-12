@@ -180,7 +180,7 @@ const CrudReserva = () => {
               <i className="fa-solid fa-calendar-check fs-4"></i>
             </div>
             <div>
-              <h2 className="fw-bold mb-0" style={{ color: 'var(--secondary-color)' }}>Gestión de Reservas</h2>
+              <h2 className="fw-bold mb-0" style={{ color: 'var(--secondary-color)' }}>Mis Reservas</h2>
               <p className="text-muted mb-0 small">Control y seguimiento de solicitudes de espacio y recursos.</p>
             </div>
           </div>
@@ -204,7 +204,7 @@ const CrudReserva = () => {
             data-bs-target="#modalReserva"
             onClick={onCreate}
           >
-            <i className="fa-solid fa-plus me-2"></i>Nueva Reserva
+            <i className="fa-solid fa-plus me-2"></i>Nueva Solicitud
           </button>
         </div>
       </div>
@@ -215,7 +215,22 @@ const CrudReserva = () => {
           columns={[
             { name: "ID_RESERVA", selector: (row) => row?.Id_Reserva ?? "", sortable: true, width: '110px' },
             { name: "TIPO", selector: (row) => row?.Tip_Reserva ?? "", sortable: true, width: '120px' },
-            { name: "ESTADO RES...", selector: (row) => row?.Des_Estado ?? "", sortable: true, width: '150px' },
+            {
+              name: 'ESTADO RES...',
+              selector: (row) => row?.Des_Estado ?? "",
+              sortable: true,
+              width: '150px',
+              cell: row => {
+                const status = row.Des_Estado;
+                let badgeClass = 'bg-secondary';
+                if (status === 'Aprobado') badgeClass = 'bg-success';
+                else if (status === 'Rechazado' || status === 'Cancelado') badgeClass = 'bg-danger';
+                else if (status === 'En proceso') badgeClass = 'bg-warning text-dark';
+                else if (status === 'Solicitado') badgeClass = 'bg-info text-dark';
+
+                return <span className={`badge ${badgeClass} rounded-pill`}>{status}</span>;
+              }
+            },
             { name: "MOTIVO R/C", selector: (row) => row?.Mot_RecCan ?? "", sortable: true, width: '150px' },
             { name: "SOLICITANTE", selector: (row) => row?.Nom_Solicitante ?? "", sortable: true, width: '180px' },
             { name: "DOCUMENTO", selector: (row) => row?.Doc_Solicitante ?? "", sortable: true, width: '140px' },
@@ -225,25 +240,6 @@ const CrudReserva = () => {
             { name: "FECHA", selector: (row) => row?.Fec_Reserva ?? "", sortable: true, width: '120px' },
             { name: "HORA", selector: (row) => row?.Hor_Reserva ?? "", sortable: true, width: '120px' },
             { name: "FICHA", selector: (row) => row?.Num_Ficha ?? "", sortable: true, width: '120px' },
-            {
-              name: 'ESTADO',
-              center: "true",
-              width: '125px',
-              cell: row => {
-                if (loggedUser?.rol === 'solicitante') {
-                  return <span className={`status-badge ${row.Booleano === 'Activo' ? 'status-badge-activo' : 'status-badge-inactivo'}`}>{row.Booleano}</span>;
-                }
-                return (
-                  <span
-                    className={`status-badge ${row.Booleano === 'Activo' ? 'status-badge-activo' : 'status-badge-inactivo'}`}
-                    style={{ cursor: !['Finalizado', 'Rechazado', 'Cancelado'].includes(row.Des_Estado) ? 'pointer' : 'default' }}
-                    onClick={() => !['Finalizado', 'Rechazado', 'Cancelado'].includes(row.Des_Estado) && toggleBooleano(row)}
-                  >
-                    {row.Booleano}
-                  </span>
-                );
-              }
-            },
             {
               name: "ACCIONES",
               center: "true",
@@ -261,18 +257,6 @@ const CrudReserva = () => {
                   >
                     <i className="fa-solid fa-eye"></i>
                   </button>
-                  {loggedUser?.rol !== 'solicitante' && (
-                    <button
-                      type="button"
-                      className="btn-action btn-action-edit"
-                      data-bs-toggle="modal"
-                      data-bs-target="#modalReserva"
-                      onClick={() => onEdit(row)}
-                      title="Editar"
-                    >
-                      <i className="fa-solid fa-pencil"></i>
-                    </button>
-                  )}
                 </div>
               ),
             },

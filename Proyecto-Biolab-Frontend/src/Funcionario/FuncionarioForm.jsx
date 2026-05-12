@@ -47,40 +47,41 @@ const FuncionariosForm = () => {
     }
 
     return (
-        <>
-            <form onSubmit={gestionarForm} encType="multipart/form-data" className="col-12 col-md-6">
-                <div className="mb-3">
-                    <label htmlFor="Nombre" className="form-label">Nombre:</label>
-                    <input type="text" id="Nombre" className="form-control" value={Nombre} onChange={(e) => setNombre(e.target.value)} />
+        <form onSubmit={gestionarForm} className="container-fluid">
+            <div className="row g-3">
+                <div className="col-md-6">
+                    <label htmlFor="Nombre" className="form-label fw-bold">Nombre:</label>
+                    <input type="text" id="Nombre" className="form-control rounded-pill shadow-sm px-3" value={Nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Ej: Juan" />
                 </div>
-                <div className="mb-3">
-                    <label htmlFor="Apellido" className="form-label">Apellido:</label>
-                    <input type="text" id="Apellido" className="form-control" value={Apellido} onChange={(e) => setApellido(e.target.value)} />
+                <div className="col-md-6">
+                    <label htmlFor="Apellido" className="form-label fw-bold">Apellido:</label>
+                    <input type="text" id="Apellido" className="form-control rounded-pill shadow-sm px-3" value={Apellido} onChange={(e) => setApellido(e.target.value)} placeholder="Ej: Pérez" />
                 </div>
-                <div className="mb-3">
-                    <label htmlFor="Telefono" className="form-label">Telefono:</label>
-                    <input type="text" id="Telefono" className="form-control" value={Telefono} onChange={(e) => setTelefono(e.target.value)} />
+                <div className="col-md-6">
+                    <label htmlFor="Telefono" className="form-label fw-bold">Teléfono:</label>
+                    <input type="text" id="Telefono" className="form-control rounded-pill shadow-sm px-3" value={Telefono} onChange={(e) => setTelefono(e.target.value)} placeholder="Ej: 3001234567" />
                 </div>
-                <div className="mb-3">
-                    <label htmlFor="Correo" className="form-label">Correo:</label>
-                    <input type="text" id="Correo" className="form-control" value={Correo} onChange={(e) => setCorreo(e.target.value)} />
+                <div className="col-md-6">
+                    <label htmlFor="Correo" className="form-label fw-bold">Correo:</label>
+                    <input type="text" id="Correo" className="form-control rounded-pill shadow-sm px-3" value={Correo} onChange={(e) => setCorreo(e.target.value)} placeholder="Ej: juan.perez@sena.edu.co" />
                 </div>
-                <div className="mb-3">
-                    <label htmlFor="Cargo_Funcionario" className="form-label">Cargo funcionario:</label>
-                    <select type="text" id="Cargo_Funcionario" className="form-control" value={Cargo_Funcionario} onChange={(e) => setCargoFuncionario(e.target.value)}>
-                        <option value="">Selecciona uno</option>
+                <div className="col-md-12">
+                    <label htmlFor="Cargo_Funcionario" className="form-label fw-bold">Cargo del Funcionario:</label>
+                    <select id="Cargo_Funcionario" className="form-select rounded-pill shadow-sm px-3" value={Cargo_Funcionario} onChange={(e) => setCargoFuncionario(e.target.value)}>
+                        <option value="">Selecciona uno...</option>
                         <option value="1">Subdirector</option>
                         <option value="2">Coordinador</option>
                         <option value="3">Instructor</option>
                     </select>
                 </div> 
-                <div className="mb-3">
-                    <input type="submit" className="btn btn-primary w-50" value={textFormButton} />
+                <div className="col-12 text-center mt-4">
+                    <button type="submit" className="btn btn-primary rounded-pill px-5 shadow-sm fw-bold">
+                        <i className={`fa-solid ${textFormButton === 'Actualizar' ? 'fa-rotate' : 'fa-paper-plane'} me-2`}></i>
+                        {textFormButton}
+                    </button>
                 </div>   
-
-            </form>
-        
-        </>
+            </div>
+        </form>
     )
 }
 

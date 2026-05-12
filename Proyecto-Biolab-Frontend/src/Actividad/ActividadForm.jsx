@@ -86,26 +86,28 @@ const ActividadForm = ({ hideModal, refreshList, rowToEdit }) => {
     };
 
     return (
-        <form onSubmit={gestionarForm} className="col-12 col-md-6">
-            <div className="mb-3">
-                <label htmlFor="Nom_Actividad" className="form-label">
-                    Nombre de la Actividad:
-                </label>
-                <input
-                    type="text"
-                    id="Nom_Actividad"
-                    className="form-control"
-                    value={Nom_Actividad}
-                    onChange={(e) => setNom_Actividad(e.target.value)}
-                />
-            </div>
+        <form onSubmit={gestionarForm} className="container-fluid">
+            <div className="row g-3">
+                <div className="col-md-12">
+                    <label htmlFor="Nom_Actividad" className="form-label fw-bold">
+                        Nombre de la Actividad:
+                    </label>
+                    <input
+                        type="text"
+                        id="Nom_Actividad"
+                        className="form-control rounded-pill shadow-sm px-3"
+                        value={Nom_Actividad}
+                        onChange={(e) => setNom_Actividad(e.target.value)}
+                        placeholder="Ej: Siembra de tejidos"
+                    />
+                </div>
 
-            <div className="mb-3">
-                <input
-                    type="submit"
-                    className="btn btn-primary w-50"
-                    value={textFormButton}
-                />
+                <div className="col-12 text-center mt-4">
+                    <button type="submit" className="btn btn-primary rounded-pill px-5 shadow-sm fw-bold">
+                        <i className={`fa-solid ${rowToEdit ? 'fa-rotate' : 'fa-paper-plane'} me-2`}></i>
+                        {textFormButton}
+                    </button>
+                </div>
             </div>
         </form>
     );

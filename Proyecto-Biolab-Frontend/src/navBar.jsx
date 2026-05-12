@@ -29,7 +29,10 @@ const NavBar = ({ isAuth, logOut, userRol }) => {
 
     return (
       <>
-        <li className="nav-item"><Link className="nav-link px-3 py-2" onClick={() => navigateTo("/Reserva")}><i className="fa-solid fa-calendar-days me-3 w-20px text-center"></i>Reservas</Link></li>
+        {userRol !== 'solicitante' && (
+          <li className="nav-item"><Link className="nav-link px-3 py-2" onClick={() => navigateTo("/GestionReservas")}><i className="fa-solid fa-clipboard-check me-3 w-20px text-center"></i>Gestión de Reservas</Link></li>
+        )}
+        <li className="nav-item"><Link className="nav-link px-3 py-2" onClick={() => navigateTo("/Reserva")}><i className="fa-solid fa-calendar-days me-3 w-20px text-center"></i>Mis Reservas</Link></li>
 
         {/* Solo administradores ven Plantas */}
         {userRol !== 'solicitante' && (
@@ -44,10 +47,10 @@ const NavBar = ({ isAuth, logOut, userRol }) => {
         {/* SUBMENÚ INVENTARIO */}
         <li className="nav-item mt-3 px-3 text-uppercase text-secondary fw-bold" style={{ fontSize: '0.75rem', letterSpacing: '1px' }}>Inventario</li>
         <li className="nav-item"><Link className="nav-link px-3 py-2" onClick={() => navigateTo("/Equipo")}><i className="fa-solid fa-microscope me-3 w-20px text-center"></i>Equipos</Link></li>
+        <li className="nav-item"><Link className="nav-link px-3 py-2" onClick={() => navigateTo("/Reactivo")}><i className="fa-solid fa-flask me-3 w-20px text-center"></i>Reactivos</Link></li>
         {userRol !== 'solicitante' && (
           <>
             <li className="nav-item"><Link className="nav-link px-3 py-2" onClick={() => navigateTo("/Material")}><i className="fa-solid fa-boxes-stacked me-3 w-20px text-center"></i>Materiales</Link></li>
-            <li className="nav-item"><Link className="nav-link px-3 py-2" onClick={() => navigateTo("/Reactivo")}><i className="fa-solid fa-flask me-3 w-20px text-center"></i>Reactivos</Link></li>
             <li className="nav-item"><Link className="nav-link px-3 py-2" onClick={() => navigateTo("/Entrada")}><i className="fa-solid fa-box-open me-3 w-20px text-center"></i>Entradas</Link></li>
           </>
         )}
@@ -78,7 +81,7 @@ const NavBar = ({ isAuth, logOut, userRol }) => {
         )}
 
         <hr className="border-secondary opacity-25 my-3" />
-        
+
         {/* PERFIL ACTUAL */}
         {user && (
           <li className="nav-item px-3 mb-3">
@@ -87,7 +90,7 @@ const NavBar = ({ isAuth, logOut, userRol }) => {
                 <span className="text-white fw-bold text-truncate" style={{ fontSize: '1rem' }}>{user.nombre}</span>
                 <span className="text-uppercase fw-bold" style={{ fontSize: '0.7rem', letterSpacing: '1px', color: '#cbd5e1' }}>{user.rol}</span>
               </div>
-              <div 
+              <div
                 className="bg-primary text-white d-flex justify-content-center align-items-center rounded-circle shadow-sm flex-shrink-0"
                 style={{ width: '40px', height: '40px', fontSize: '1.1rem', fontWeight: 'bold' }}
               >

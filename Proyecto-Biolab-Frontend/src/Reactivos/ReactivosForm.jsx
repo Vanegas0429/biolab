@@ -85,70 +85,71 @@ const ReactivosForm = ({ hideModal, rowToEdit, refreshList }) => {
     };
 
     return (
-        <form onSubmit={gestionarForm}>
-            <div className="mb-3">
-                <label className="form-label">Nombre Reactivo</label>
-                <input
-                    type="text"
-                    className="form-control"
-                    value={Nom_reactivo}
-                    onChange={(e) => setNom_Reactivo(e.target.value)}
-                    required
-                />
-            </div>
+        <form onSubmit={gestionarForm} className="container-fluid">
+            <div className="row g-3">
+                {/* Nombre Reactivo */}
+                <div className="col-md-6">
+                    <label className="form-label fw-bold">Nombre del Reactivo:</label>
+                    <input
+                        type="text"
+                        className="form-control rounded-pill shadow-sm px-3"
+                        value={Nom_reactivo}
+                        onChange={(e) => setNom_Reactivo(e.target.value)}
+                        placeholder="Ej: Ácido Sulfúrico"
+                        required
+                    />
+                </div>
 
-            <div className="mb-3">
-                <label className="form-label">Nomenclatura</label>
-                <input
-                    type="text"
-                    className="form-control"
-                    value={Nomenclatura}
-                    onChange={(e) => setNomenclatura(e.target.value)}
-                />
-            </div>
+                {/* Nomenclatura */}
+                <div className="col-md-6">
+                    <label className="form-label fw-bold">Nomenclatura:</label>
+                    <input
+                        type="text"
+                        className="form-control rounded-pill shadow-sm px-3"
+                        value={Nomenclatura}
+                        onChange={(e) => setNomenclatura(e.target.value)}
+                        placeholder="Ej: H2SO4"
+                    />
+                </div>
 
-            <div className="mb-3">
-                <label className="form-label">Presentación</label>
-                <input
-                    type="text"
-                    className="form-control"
-                    value={Presentacion}
-                    onChange={(e) => setPresentacion(e.target.value)}
-                />
-            </div>
+                {/* Presentación */}
+                <div className="col-md-12">
+                    <label className="form-label fw-bold">Presentación:</label>
+                    <input
+                        type="text"
+                        className="form-control rounded-pill shadow-sm px-3"
+                        value={Presentacion}
+                        onChange={(e) => setPresentacion(e.target.value)}
+                        placeholder="Ej: Botella 1L, Frasco 500g"
+                    />
+                </div>
 
+                {/* Campo Ficha Técnica PDF */}
+                <div className="col-md-12">
+                    <label className="form-label fw-bold">
+                        <i className="fa-solid fa-file-pdf me-2 text-danger"></i>
+                        Ficha Técnica (PDF)
+                    </label>
+                    <input
+                        type="file"
+                        className="form-control rounded-pill shadow-sm px-3"
+                        accept=".pdf"
+                        onChange={(e) => setFichaTecnica(e.target.files[0])}
+                    />
+                    {fichaTecnica && (
+                        <small className="text-success mt-1 d-block ms-2">
+                            <i className="fa-solid fa-check-circle me-1"></i>
+                            {fichaTecnica.name}
+                        </small>
+                    )}
+                </div>
 
-
-            {/* Campo Ficha Técnica PDF */}
-            <div className="mb-3">
-                <label className="form-label">
-                    <i className="fa-solid fa-file-pdf me-2 text-danger"></i>
-                    Ficha Técnica (PDF)
-                </label>
-                <input
-                    type="file"
-                    className="form-control"
-                    accept=".pdf"
-                    onChange={(e) => setFichaTecnica(e.target.files[0])}
-                />
-                {fichaTecnica && (
-                    <small className="text-success mt-1 d-block">
-                        <i className="fa-solid fa-check-circle me-1"></i>
-                        {fichaTecnica.name}
-                    </small>
-                )}
-                {!fichaTecnica && rowToEdit?.Ficha_tecnica && (
-                    <small className="text-muted mt-1 d-block">
-                        <i className="fa-solid fa-file-pdf me-1"></i>
-                        Ya tiene ficha técnica cargada
-                    </small>
-                )}
-            </div>
-
-            <div className="mb-3 text-center">
-                <button type="submit" className="btn btn-primary w-50">
-                    {textFormButton}
-                </button>
+                <div className="col-12 text-center mt-4">
+                    <button type="submit" className="btn btn-primary rounded-pill px-5 shadow-sm fw-bold">
+                        <i className={`fa-solid ${rowToEdit ? 'fa-rotate' : 'fa-paper-plane'} me-2`}></i>
+                        {textFormButton}
+                    </button>
+                </div>
             </div>
         </form>
     );

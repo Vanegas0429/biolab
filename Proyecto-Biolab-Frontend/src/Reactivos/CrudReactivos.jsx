@@ -4,7 +4,7 @@ import ReactivosForm from "./ReactivosForm.jsx";
 import Swal from 'sweetalert2';
 import DataTable from 'react-data-table-component';
 
-const CrudReactivos = () => {
+const CrudReactivos = ({ userRol }) => {
   const [rowToEdit, setRowToEdit] = useState(null);
   const [Reactivo, setReactivo] = useState([]);
   const [filterText, setFilterText] = useState("");
@@ -137,14 +137,16 @@ const CrudReactivos = () => {
               onChange={(e) => setFilterText(e.target.value)}
             />
           </div>
-          <button
-            className="btn btn-primary rounded-pill px-4 shadow-sm"
-            data-bs-toggle="modal"
-            data-bs-target="#exampleModal"
-            onClick={() => setRowToEdit(null)}
-          >
-            <i className="fa-solid fa-plus me-2"></i>Nuevo Reactivo
-          </button>
+          {userRol !== 'solicitante' && (
+            <button
+              className="btn btn-primary rounded-pill px-4 shadow-sm"
+              data-bs-toggle="modal"
+              data-bs-target="#exampleModal"
+              onClick={() => setRowToEdit(null)}
+            >
+              <i className="fa-solid fa-plus me-2"></i>Nuevo Reactivo
+            </button>
+          )}
         </div>
       </div>
 
@@ -201,7 +203,7 @@ const CrudReactivos = () => {
                 )
               )
             },
-            {
+            ...(userRol !== 'solicitante' ? [{
               name: 'ESTADO',
               sortable: true,
               center: true,
@@ -231,7 +233,7 @@ const CrudReactivos = () => {
                   <i className="fa-solid fa-pencil"></i>
                 </button>
               )
-            }
+            }] : [])
           ]}
           data={newListReactivo}
           pagination

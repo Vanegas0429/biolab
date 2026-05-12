@@ -103,33 +103,33 @@ const PracticaForm = ({ hideModal, rowToEdit, refreshList }) => {
     
 
     return (
-        <>
-            <form onSubmit={gestionarForm} encType="multipart/form-data" className="col-12 col-md-6">
-
-                <div className="mb-3">
-                    <label htmlFor="Id_Reserva" className="form-label">Reserva:</label>
-                    
+        <form onSubmit={gestionarForm} className="container-fluid">
+            <div className="row g-3">
+                <div className="col-md-12">
+                    <label htmlFor="Id_Reserva" className="form-label fw-bold">Seleccionar Reserva:</label>
                     <select 
                         id="Id_Reserva" 
-                        className="form-control" 
+                        className="form-select rounded-pill shadow-sm px-3" 
                         value={Id_Reserva} 
                         onChange={(e) => setId_Reserva(e.target.value)}
                     >
-                        <option value="">Selecciona una...</option>
-
+                        <option value="">Selecciona una reserva...</option>
                         {reservas.map(res => (
                             <option key={res.Id_Reserva} value={res.Id_Reserva}>
-                                {res.Tip_Reserva} - {res.Nom_Solicitante} - {res.Fec_Reserva} - {res.Hor_Reserva}
+                                [{res.Tip_Reserva}] {res.Nom_Solicitante} - {res.Fec_Reserva}
                             </option>
                         ))}
                     </select>
                 </div> 
 
-                <div className="mb-3">
-                    <input type="submit" className="btn btn-primary w-50" value={textFormButton} />
+                <div className="col-12 text-center mt-4">
+                    <button type="submit" className="btn btn-primary rounded-pill px-5 shadow-sm fw-bold">
+                        <i className={`fa-solid ${textFormButton === 'Actualizar' ? 'fa-rotate' : 'fa-paper-plane'} me-2`}></i>
+                        {textFormButton}
+                    </button>
                 </div>   
-            </form>
-        </>
+            </div>
+        </form>
     )
 }
 
