@@ -28,7 +28,7 @@ useEffect(() => {
     setCan_Inicial(rowToEdit.Can_Inicial ?? '');
     setCan_Salida(rowToEdit.Can_Salida ?? '');
     setFec_Vencimiento(rowToEdit.Fec_Vencimiento ?? '');
-    setId_Reactivo(rowToEdit.Id_Reactivo ?? '');
+    setId_Reactivo(rowToEdit.Id_reactivo ?? rowToEdit.Id_Reactivo ?? '');
     setEstado(rowToEdit.Estado ?? "Activo");
   } else {
     // CREAR: limpiar todos los campos
@@ -138,52 +138,97 @@ const gestionarForm = async (e) => {
 
 
   return (
-    <form onSubmit={gestionarForm} className="col-16 col-md-6">
+    <form onSubmit={gestionarForm} className="container-fluid">
+      <div className="row g-3">
+        {/* Reactivo */}
+        <div className="col-md-6">
+          <label className="form-label fw-bold">Reactivo:</label>
+          <select 
+            className="form-select rounded-pill shadow-sm" 
+            value={Id_Reactivo} 
+            onChange={e => setId_Reactivo(Number(e.target.value))}
+          >
+            <option value="">Selecciona un reactivo</option>
+            {Reactivos.map(p => (
+              <option key={p.Id_Reactivo} value={p.Id_Reactivo}>
+                {p.Nom_reactivo}
+              </option>
+            ))}
+          </select>
+        </div>
 
-      <div className="mb-3">
-        <label>Reactivo:</label>
-        <select className="form-control" value={Id_Reactivo} onChange={e => setId_Reactivo(Number(e.target.value))}>
-          <option value="">Selecciona</option>
-          {Reactivos.map(p => (
-            <option key={p.Id_Reactivo} value={p.Id_Reactivo}>
-              {p.Nom_reactivo}
-            </option>
-          ))}
-        </select>
+        {/* Lote */}
+        <div className="col-md-6">
+          <label htmlFor="Lote" className="form-label fw-bold">Lote:</label>
+          <input 
+            type="text" 
+            id="Lote" 
+            className="form-control rounded-pill shadow-sm" 
+            value={Lote} 
+            onChange={e => setLote(e.target.value)} 
+            placeholder="Ingrese el lote"
+          />
+        </div>
+
+        {/* Unidad de Medida */}
+        <div className="col-md-6">
+          <label htmlFor="Uni_Medida" className="form-label fw-bold">Unidad de Medida:</label>
+          <select 
+            id="Uni_Medida" 
+            className="form-select rounded-pill shadow-sm" 
+            value={Uni_Medida} 
+            onChange={e => setUni_Medida(e.target.value)}
+          >
+            <option value="">Selecciona unidad</option>
+            {UnidadMedida.map(f => <option key={f} value={f}>{f}</option>)}
+          </select>
+        </div>
+
+        {/* Cantidad Inicial */}
+        <div className="col-md-6">
+          <label htmlFor="Can_Inicial" className="form-label fw-bold">Cantidad Inicial:</label>
+          <input 
+            type="number" 
+            id="Can_Inicial" 
+            className="form-control rounded-pill shadow-sm" 
+            value={Can_Inicial} 
+            onChange={e => setCan_Inicial(e.target.value)} 
+            placeholder="0"
+          />
+        </div>
+
+        {/* Cantidad Salida */}
+        <div className="col-md-6">
+          <label htmlFor="Can_Salida" className="form-label fw-bold">Cantidad Salida:</label>
+          <input 
+            type="number" 
+            id="Can_Salida" 
+            className="form-control rounded-pill shadow-sm" 
+            value={Can_Salida} 
+            onChange={e => setCan_Salida(e.target.value)} 
+            placeholder="0"
+          />
+        </div>
+
+        {/* Fecha Vencimiento */}
+        <div className="col-md-6">
+          <label htmlFor="Fec_Vencimiento" className="form-label fw-bold">Fecha Vencimiento:</label>
+          <input 
+            type="date" 
+            id="Fec_Vencimiento" 
+            className="form-control rounded-pill shadow-sm" 
+            value={Fec_Vencimiento} 
+            onChange={e => setFec_Vencimiento(e.target.value)} 
+          />
+        </div>
+
+        <div className="col-12 text-center mt-4">
+          <button type="submit" className="btn btn-primary rounded-pill px-5 shadow-sm fw-bold">
+            <i className="fa-solid fa-paper-plane me-2"></i>
+            {textFormButton}
+          </button>
+        </div>
       </div>
-
-
-      <div className="mb-3">
-        <label htmlFor="Lote">Lote:</label>
-        <input type="text" id="Lote" className="form-control" value={Lote} onChange={e => setLote(e.target.value)} />
-      </div>
-
-      <div className="mb-3">
-        <label htmlFor="Uni_Medida">Unidad de Medida:</label>
-        <select id="Uni_Medida" className="form-control" value={Uni_Medida} onChange={e => setUni_Medida(e.target.value)}>
-          <option value="">Selecciona uno</option>
-          {UnidadMedida.map(f => <option key={f} value={f}>{f}</option>)}
-        </select>
-      </div>
-
-      <div className="mb-3">
-        <label htmlFor="Can_Inicial">Cantida Inical:</label>
-        <input type="number" id="Can_Inicial" className="form-control" value={Can_Inicial} onChange={e => setCan_Inicial(e.target.value)} />
-      </div>
-
-      <div className="mb-3">
-        <label htmlFor="Can_Salida">Cantidad Salida:</label>
-        <input type="number" id="Can_Salida" className="form-control" value={Can_Salida} onChange={e => setCan_Salida(e.target.value)} />
-      </div>
-
-      <div className="mb-3">
-        <label htmlFor="Fec_Vencimiento">Fecha Vencimiento:</label>
-        <input type="date" id="Fec_Vencimiento" className="form-control" value={Fec_Vencimiento} onChange={e => setFec_Vencimiento(e.target.value)} />
-      </div>
-      <button className="btn btn-primary mt-3 w-50">{textFormButton}</button>
-
-      
-      
     </form>
   );
 };

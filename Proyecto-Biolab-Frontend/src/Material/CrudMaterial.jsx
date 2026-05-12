@@ -10,6 +10,11 @@ const CrudMaterial = () => {
   const [filterText, setFilterText] = useState("");
   const [loading, setLoading] = useState(true);
 
+  // Estado para el carrusel modal
+  const [carouselImages, setCarouselImages] = useState([]);
+  const [carouselIndex, setCarouselIndex] = useState(0);
+  const [showCarousel, setShowCarousel] = useState(false);
+
   const toggleEstado = async (row) => {
     const estadoNuevo = row.Estado === 'Activo' ? 'Inactivo' : 'Activo';
     const result = await Swal.fire({
@@ -31,6 +36,87 @@ const CrudMaterial = () => {
       console.error("Error actualizando estado:", error);
       Swal.fire('Error', 'No se pudo actualizar el estado', 'error');
     }
+  };
+
+  const parseImages = (imgField) => {
+    if (!imgField) return [];
+    try {
+      const parsed = JSON.parse(imgField);
+      return Array.isArray(parsed) ? parsed : [parsed];
+    } catch {
+      return [imgField];
+    }
+  };
+
+  const openCarousel = (row, startIndex = 0) => {
+    const imgs = parseImages(row.img_material);
+    if (imgs.length === 0) return;
+    setCarouselImages(imgs);
+    setCarouselIndex(startIndex);
+    setShowCarousel(true);
+  };
+
+  const carouselPrev = () => setCarouselIndex((prev) => (prev === 0 ? carouselImages.length - 1 : prev - 1));
+  const carouselNext = () => setCarouselIndex((prev) => (prev === carouselImages.length - 1 ? 0 : prev + 1));
+
+  const uploadImagesToMaterial = async (row, files) => {
+    if (!files || files.length === 0) return;
+    const formData = new FormData();
+    Array.from(files).forEach(f => formData.append('img_material', f));
+    formData.append('Nom_Material', row.Nom_Material || '');
+    try {
+      await apiAxios.put(`/api/Material/${row.Id_Material}`, formData, {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
+      await getAllMaterial();
+      Swal.fire('¡Éxito!', 'Imágenes subidas correctamente', 'success');
+    } catch (error) {
+      console.error("Error subiendo imágenes:", error);
+    }
+  };
+
+  const triggerImageUpload = (row) => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.multiple = true;
+    input.onchange = (e) => uploadImagesToMaterial(row, e.target.files);
+    input.click();
+  };
+
+  const deleteImage = async (materialId, filename) => {
+    const result = await Swal.fire({
+      title: '¿Estás seguro?',
+      text: "No podrás revertir esto",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Sí, eliminar'
+    });
+    if (!result.isConfirmed) return;
+
+    try {
+      await apiAxios.delete(`/api/Material/${materialId}/imagen/${filename}`);
+      await getAllMaterial();
+      const remaining = carouselImages.filter(img => img !== filename);
+      if (remaining.length === 0) {
+        setShowCarousel(false);
+      } else {
+        setCarouselImages(remaining);
+        setCarouselIndex((prev) => Math.min(prev, remaining.length - 1));
+      }
+      Swal.fire('Eliminada', 'La imagen ha sido eliminada.', 'success');
+    } catch (error) {
+      console.error("Error eliminando imagen:", error);
+    }
+  };
+
+  const findCarouselMaterial = () => {
+    return Material.find(mat => {
+      const imgs = parseImages(mat.img_material);
+      return imgs.some(img => carouselImages.includes(img));
+    });
   };
 
   useEffect(() => {
@@ -113,15 +199,55 @@ const CrudMaterial = () => {
               name: 'ID',
               selector: row => row.Id_Material,
               sortable: true,
-              width: '120px'
+              width: '100px'
             },
             {
               name: 'MATERIAL',
               sortable: true,
               grow: 2,
+              minWidth: '200px',
+              cell: (row) => {
+                const imgs = parseImages(row.img_material);
+                return (
+                  <div className="d-flex align-items-center py-2">
+                    <div className="me-3 position-relative">
+                      {imgs.length > 0 ? (
+                        <img
+                          src={`http://localhost:8000/uploads/${imgs[0]}`}
+                          alt={row.Nom_Material}
+                          className="rounded shadow-sm border"
+                          style={{ width: '45px', height: '45px', objectFit: 'cover', cursor: 'pointer' }}
+                          onClick={() => openCarousel(row)}
+                        />
+                      ) : (
+                        <div
+                          className="bg-light text-muted d-flex align-items-center justify-content-center rounded border"
+                          style={{ width: '45px', height: '45px', borderStyle: 'dashed !important', cursor: 'pointer' }}
+                          onClick={() => triggerImageUpload(row)}
+                        >
+                          <i className="fa-solid fa-camera opacity-50"></i>
+                        </div>
+                      )}
+                      {imgs.length > 1 && (
+                        <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary border border-white" style={{ fontSize: '0.6rem' }}>
+                          +{imgs.length - 1}
+                        </span>
+                      )}
+                    </div>
+                    <div className="fw-bold text-dark">{row.Nom_Material}</div>
+                  </div>
+                );
+              }
+            },
+            {
+              name: 'CANTIDAD',
+              selector: row => row.Can_Material,
+              sortable: true,
+              center: true,
+              width: '150px',
               cell: (row) => (
-                <div className="fw-bold text-dark py-2">
-                  {row.Nom_Material}
+                <div className={`fw-bold ${row.Can_Material === 0 ? 'text-danger' : 'text-dark'}`}>
+                  {row.Can_Material} <small className="text-muted">und</small>
                 </div>
               )
             },
@@ -129,7 +255,7 @@ const CrudMaterial = () => {
               name: 'ESTADO',
               sortable: true,
               center: true,
-              width: '300px',
+              width: '250px',
               cell: (row) => (
                 <span
                   className={`status-badge ${row.Estado === 'Activo' ? 'status-badge-activo' : 'status-badge-inactivo'}`}
@@ -143,7 +269,7 @@ const CrudMaterial = () => {
             {
               name: 'ACCIONES',
               center: true,
-              width: '300px',
+              width: '250px',
               cell: (row) => (
                 <button
                   className="btn-action btn-action-edit"
@@ -199,6 +325,29 @@ const CrudMaterial = () => {
           </div>
         </div>
       </div>
+
+      {/* MODAL CARRUSEL */}
+      {showCarousel && carouselImages.length > 0 && (
+        <div className="carousel-overlay" onClick={() => setShowCarousel(false)}>
+          <div className="carousel-container" onClick={(e) => e.stopPropagation()}>
+            <button className="carousel-close" onClick={() => setShowCarousel(false)}><i className="fa-solid fa-xmark"></i></button>
+            <div className="carousel-counter">{carouselIndex + 1} / {carouselImages.length}</div>
+            {carouselImages.length > 1 && (
+              <button className="carousel-arrow carousel-arrow-left" onClick={carouselPrev}><i className="fa-solid fa-chevron-left"></i></button>
+            )}
+            <div className="carousel-image-wrapper">
+              <img src={`http://localhost:8000/uploads/${carouselImages[carouselIndex]}`} alt={`Imagen ${carouselIndex + 1}`} className="carousel-image shadow-lg" />
+            </div>
+            {carouselImages.length > 1 && (
+              <button className="carousel-arrow carousel-arrow-right" onClick={carouselNext}><i className="fa-solid fa-chevron-right"></i></button>
+            )}
+            <div className="carousel-actions">
+              <button className="carousel-action-btn add-btn" onClick={() => { const mat = findCarouselMaterial(); if (mat) triggerImageUpload(mat); }}><i className="fa-solid fa-plus me-2"></i>Agregar</button>
+              <button className="carousel-action-btn delete-btn" onClick={() => { const mat = findCarouselMaterial(); if (mat) deleteImage(mat.Id_Material, carouselImages[carouselIndex]); }}><i className="fa-solid fa-trash-can me-2"></i>Eliminar</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

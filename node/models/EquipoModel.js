@@ -8,8 +8,6 @@ const EquipoModel = db.define("equipo", {
     grupo: { type: DataTypes.STRING },
     linea: { type: DataTypes.STRING },
     centro_costos: { type: DataTypes.STRING },
-    subcentro_costos: { type: DataTypes.STRING },
-    observaciones: { type: DataTypes.STRING },
     img_equipo: { type: DataTypes.TEXT },
     ficha_tecnica: { type: DataTypes.STRING },
     estado: { type: DataTypes.ENUM("Activo", "Inactivo") }

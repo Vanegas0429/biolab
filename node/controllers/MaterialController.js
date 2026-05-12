@@ -19,21 +19,59 @@ export const getMaterial = async (req, res) => {
     }
 }
 export const createMaterial = async (req, res) => {
-    try{
-        const Material = await MaterialService.create(req.body)
-        res.status(201).json({message: "Material creada", Material})
-        
-    }catch(error){
-        res.status(400).json({message: error.message})
+    try {
+        let imagenes = [];
+        if (req.files && req.files['img_material']) {
+            imagenes = req.files['img_material'].map(f => f.filename);
+        }
+
+        const data = {
+            ...req.body,
+            img_material: imagenes.length > 0 ? JSON.stringify(imagenes) : null
+        };
+
+        const Material = await MaterialService.create(data);
+        res.status(201).json({ message: "Material creada", Material });
+    } catch (error) {
+        res.status(400).json({ message: error.message });
     }
 }
 
 export const updateMaterial = async (req, res) => {
-    try{
-        await MaterialService.update(req.params.id, req.body)
-        res.status(200).json({message: "Material actualizada con éxito"})
-    }catch(error){
-        res.status(400).json({message: error.message})
+    try {
+        const materialExistente = await MaterialService.getById(req.params.id);
+        let imagenesExistentes = [];
+        try {
+            imagenesExistentes = JSON.parse(materialExistente.img_material || '[]');
+        } catch {
+            if (materialExistente.img_material) {
+                imagenesExistentes = [materialExistente.img_material];
+            }
+        }
+
+        if (req.files && req.files['img_material']) {
+            const nuevasImagenes = req.files['img_material'].map(f => f.filename);
+            imagenesExistentes = [...imagenesExistentes, ...nuevasImagenes];
+        }
+
+        const data = {
+            ...req.body,
+            img_material: imagenesExistentes.length > 0 ? JSON.stringify(imagenesExistentes) : materialExistente.img_material
+        };
+
+        await MaterialService.update(req.params.id, data);
+        res.status(200).json({ message: "Material actualizada con éxito" });
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+}
+
+export const deleteMaterialImage = async (req, res) => {
+    try {
+        await MaterialService.removeImage(req.params.id, req.params.filename);
+        res.status(200).json({ message: "Imagen eliminada correctamente" });
+    } catch (error) {
+        res.status(400).json({ message: error.message });
     }
 }
 export const deleteMaterial = async(req, res) =>{

@@ -26,6 +26,7 @@ import CrudActividadReactivo from './ActividadReactivo/CrudActividadReactivo';
 import UsuarioRegistroAdmin from './home/UsuarioRegisterAdmin';
 import Calendario from './Calendario/Calendario.jsx';
 import GestionUsuarios from './home/GestionUsuarios';
+import GestionReservas from './Reserva/GestionReservas';
 
 // Componente de ruta protegida por roles
 const ProtectedRoute = ({ isAuth, userRol, allowedRoles, children }) => {
@@ -198,6 +199,12 @@ function App() {
           </ProtectedRoute>
         } />
 
+        <Route path='/GestionReservas' element={
+          <ProtectedRoute isAuth={isAuth} userRol={userRol} allowedRoles={STAFF_ROLES}>
+            <GestionReservas />
+          </ProtectedRoute>
+        } />
+
         {/* Rutas solo para roles operativos (MiddelWare X) */}
         <Route path='/Especie' element={
           <ProtectedRoute isAuth={isAuth} userRol={userRol} allowedRoles={STAFF_ROLES}>
@@ -215,8 +222,8 @@ function App() {
           </ProtectedRoute>
         } />
         <Route path='/Reactivo' element={
-          <ProtectedRoute isAuth={isAuth} userRol={userRol} allowedRoles={STAFF_ROLES}>
-            <CrudReactivos />
+          <ProtectedRoute isAuth={isAuth} userRol={userRol} allowedRoles={[...STAFF_ROLES, 'solicitante']}>
+            <CrudReactivos userRol={userRol} />
           </ProtectedRoute>
         } />
         <Route path='/Entrada' element={

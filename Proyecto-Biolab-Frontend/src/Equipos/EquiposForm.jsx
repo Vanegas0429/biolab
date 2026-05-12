@@ -12,8 +12,6 @@ const EquiposForm = ({ hideModal, rowToEdit, refreshList }) => {
     const [grupo, setGrupo] = useState("");
     const [linea, setLinea] = useState("");
     const [centro_costos, setCentroCostos] = useState("");
-    const [subcentro_costos, setSubcentroCostos] = useState("");
-    const [observaciones, setObservaciones] = useState("");
     const [imagenes, setImagenes] = useState([]);        // Archivos nuevos seleccionados
     const [fichaTecnica, setFichaTecnica] = useState(null); // PDF seleccionado
 
@@ -34,8 +32,6 @@ const EquiposForm = ({ hideModal, rowToEdit, refreshList }) => {
         setGrupo(rowToEdit.grupo || "");
         setLinea(rowToEdit.linea || "");
         setCentroCostos(rowToEdit.centro_costos || "");
-        setSubcentroCostos(rowToEdit.subcentro_costos || "");
-        setObservaciones(rowToEdit.observaciones || "");
 
         setTextFormButton("Actualizar");
     };
@@ -46,8 +42,6 @@ const EquiposForm = ({ hideModal, rowToEdit, refreshList }) => {
         setGrupo("");
         setLinea("");
         setCentroCostos("");
-        setSubcentroCostos("");
-        setObservaciones("");
         setImagenes([]);
         setFichaTecnica(null);
 
@@ -63,8 +57,6 @@ const EquiposForm = ({ hideModal, rowToEdit, refreshList }) => {
         formData.append("grupo", grupo);
         formData.append("linea", linea);
         formData.append("centro_costos", centro_costos);
-        formData.append("subcentro_costos", subcentro_costos);
-        formData.append("observaciones", observaciones);
 
         // Agregar múltiples imágenes
         if (imagenes.length > 0) {
@@ -95,7 +87,7 @@ const EquiposForm = ({ hideModal, rowToEdit, refreshList }) => {
                     icon: "success",
                 });
 
-            } 
+            }
             // 🟢 SI NO EXISTE → CREAR
             else {
 
@@ -138,152 +130,138 @@ const EquiposForm = ({ hideModal, rowToEdit, refreshList }) => {
     };
 
     return (
-        <form onSubmit={gestionarForm} encType="multipart/form-data">
-
-            <div className="mb-3">
-                <label className="form-label">Nombre</label>
-                <input
-                    type="text"
-                    className="form-control"
-                    value={nombre}
-                    onChange={(e) => setNombre(e.target.value)}
-                    required
-                />
-            </div>
-
-            <div className="mb-3">
-                <label className="form-label">Marca</label>
-                <input
-                    type="text"
-                    className="form-control"
-                    value={marca}
-                    onChange={(e) => setMarca(e.target.value)}
-                />
-            </div>
-
-            <div className="mb-3">
-                <label className="form-label">Grupo</label>
-                <input
-                    type="text"
-                    className="form-control"
-                    value={grupo}
-                    onChange={(e) => setGrupo(e.target.value)}
-                />
-            </div>
-
-            <div className="mb-3">
-                <label className="form-label">Línea</label>
-                <input
-                    type="text"
-                    className="form-control"
-                    value={linea}
-                    onChange={(e) => setLinea(e.target.value)}
-                />
-            </div>
-
-            <div className="mb-3">
-                <label className="form-label">Centro de costos</label>
-                <input
-                    type="text"
-                    className="form-control"
-                    value={centro_costos}
-                    onChange={(e) => setCentroCostos(e.target.value)}
-                />
-            </div>
-
-            <div className="mb-3">
-                <label className="form-label">Subcentro de costos</label>
-                <input
-                    type="text"
-                    className="form-control"
-                    value={subcentro_costos}
-                    onChange={(e) => setSubcentroCostos(e.target.value)}
-                />
-            </div>
-
-            <div className="mb-3">
-                <label className="form-label">Observaciones</label>
-                <input
-                    type="text"
-                    className="form-control"
-                    value={observaciones}
-                    onChange={(e) => setObservaciones(e.target.value)}
-                />
-            </div>
-
-            {/* Campo de imágenes múltiples */}
-            <div className="mb-3">
-                <label className="form-label">
-                    <i className="fa-solid fa-images me-2 text-primary"></i>
-                    Imágenes del equipo
-                </label>
-                <input
-                    type="file"
-                    className="form-control"
-                    accept="image/*"
-                    multiple
-                    onChange={handleImageChange}
-                />
-                <small className="text-muted">Puedes seleccionar varias imágenes a la vez</small>
-            </div>
-
-            {/* Vista previa de imágenes seleccionadas */}
-            {imagenes.length > 0 && (
-                <div className="mb-3">
-                    <div className="d-flex flex-wrap gap-2 justify-content-center">
-                        {imagenes.map((file, i) => (
-                            <div key={i} className="image-preview-container">
-                                <img
-                                    src={URL.createObjectURL(file)}
-                                    alt={`Preview ${i + 1}`}
-                                    className="img-thumbnail"
-                                    style={{ width: "80px", height: "80px", objectFit: "cover" }}
-                                />
-                                <div 
-                                    className="image-preview-remove" 
-                                    onClick={() => removeImage(i)}
-                                    title="Quitar imagen"
-                                >
-                                    <i className="fa-solid fa-xmark"></i>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
+        <form onSubmit={gestionarForm} encType="multipart/form-data" className="container-fluid">
+            <div className="row g-3">
+                {/* Nombre */}
+                <div className="col-md-6">
+                    <label className="form-label fw-bold">Nombre del Equipo:</label>
+                    <input
+                        type="text"
+                        className="form-control rounded-pill shadow-sm px-3"
+                        value={nombre}
+                        onChange={(e) => setNombre(e.target.value)}
+                        placeholder="Ej: Microscopio Binocular"
+                        required
+                    />
                 </div>
-            )}
 
-            {/* Campo de ficha técnica PDF */}
-            <div className="mb-3">
-                <label className="form-label">
-                    <i className="fa-solid fa-file-pdf me-2 text-danger"></i>
-                    Ficha Técnica (PDF)
-                </label>
-                <input
-                    type="file"
-                    className="form-control"
-                    accept=".pdf"
-                    onChange={(e) => setFichaTecnica(e.target.files[0])}
-                />
-                {fichaTecnica && (
-                    <small className="text-success mt-1 d-block">
-                        <i className="fa-solid fa-check-circle me-1"></i>
-                        {fichaTecnica.name}
-                    </small>
+                {/* Marca */}
+                <div className="col-md-6">
+                    <label className="form-label fw-bold">Marca:</label>
+                    <input
+                        type="text"
+                        className="form-control rounded-pill shadow-sm px-3"
+                        value={marca}
+                        onChange={(e) => setMarca(e.target.value)}
+                        placeholder="Ej: Nikon"
+                    />
+                </div>
+
+                {/* Grupo */}
+                <div className="col-md-6">
+                    <label className="form-label fw-bold">Grupo:</label>
+                    <input
+                        type="text"
+                        className="form-control rounded-pill shadow-sm px-3"
+                        value={grupo}
+                        onChange={(e) => setGrupo(e.target.value)}
+                        placeholder="Ingrese el grupo"
+                    />
+                </div>
+
+                {/* Línea */}
+                <div className="col-md-6">
+                    <label className="form-label fw-bold">Línea:</label>
+                    <input
+                        type="text"
+                        className="form-control rounded-pill shadow-sm px-3"
+                        value={linea}
+                        onChange={(e) => setLinea(e.target.value)}
+                        placeholder="Ingrese la línea"
+                    />
+                </div>
+
+                {/* Centro de costos */}
+                <div className="col-md-12">
+                    <label className="form-label fw-bold">Centro de Costos:</label>
+                    <input
+                        type="text"
+                        className="form-control rounded-pill shadow-sm px-3"
+                        value={centro_costos}
+                        onChange={(e) => setCentroCostos(e.target.value)}
+                        placeholder="Ej: Lab-01-SEC"
+                    />
+                </div>
+
+                {/* Campo de imágenes múltiples */}
+                <div className="col-md-6">
+                    <label className="form-label fw-bold">
+                        <i className="fa-solid fa-images me-2 text-primary"></i>
+                        Imágenes del equipo
+                    </label>
+                    <input
+                        type="file"
+                        className="form-control rounded-pill shadow-sm px-3"
+                        accept="image/*"
+                        multiple
+                        onChange={handleImageChange}
+                    />
+                    <small className="text-muted d-block mt-1 ms-2">Puedes seleccionar varias imágenes.</small>
+                </div>
+
+                {/* Campo de ficha técnica PDF */}
+                <div className="col-md-6">
+                    <label className="form-label fw-bold">
+                        <i className="fa-solid fa-file-pdf me-2 text-danger"></i>
+                        Ficha Técnica (PDF)
+                    </label>
+                    <input
+                        type="file"
+                        className="form-control rounded-pill shadow-sm px-3"
+                        accept=".pdf"
+                        onChange={(e) => setFichaTecnica(e.target.files[0])}
+                    />
+                    {fichaTecnica && (
+                        <small className="text-success mt-1 d-block ms-2">
+                            <i className="fa-solid fa-check-circle me-1"></i>
+                            {fichaTecnica.name}
+                        </small>
+                    )}
+                </div>
+
+                {/* Vista previa de imágenes seleccionadas */}
+                {imagenes.length > 0 && (
+                    <div className="col-12 mt-2">
+                        <div className="d-flex flex-wrap gap-2 justify-content-center bg-light p-3 rounded-3 border border-dashed">
+                            {imagenes.map((file, i) => (
+                                <div key={i} className="position-relative">
+                                    <img
+                                        src={URL.createObjectURL(file)}
+                                        alt={`Preview ${i + 1}`}
+                                        className="rounded shadow-sm border"
+                                        style={{ width: "70px", height: "70px", objectFit: "cover" }}
+                                    />
+                                    <button
+                                        type="button"
+                                        className="btn btn-danger btn-sm position-absolute top-0 start-100 translate-middle rounded-circle p-0 d-flex align-items-center justify-content-center shadow"
+                                        style={{ width: '20px', height: '20px' }}
+                                        onClick={() => removeImage(i)}
+                                    >
+                                        <i className="fa-solid fa-xmark" style={{ fontSize: '10px' }}></i>
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
                 )}
-                {!fichaTecnica && rowToEdit?.ficha_tecnica && (
-                    <small className="text-muted mt-1 d-block">
-                        <i className="fa-solid fa-file-pdf me-1"></i>
-                        Ya tiene ficha técnica cargada
-                    </small>
-                )}
-            </div>
 
-            <div className="mb-3 text-center">
-                <button type="submit" className="btn btn-primary w-50">
-                    {textFormButton}
-                </button>
+                <div className="col-12 text-center mt-4">
+                    <button type="submit" className="btn btn-primary rounded-pill px-5 shadow-sm fw-bold">
+                        <i className={`fa-solid ${rowToEdit?.id_equipo ? 'fa-rotate' : 'fa-paper-plane'} me-2`}></i>
+                        {textFormButton}
+                    </button>
+                </div>
             </div>
-
         </form>
     );
 };

@@ -344,7 +344,7 @@ const CrudEquipos = ({ userRol }) => {
                 )
               )
             },
-            {
+            ...(userRol !== 'solicitante' ? [{
               name: 'ESTADO',
               sortable: true,
               center: "true",
@@ -352,13 +352,13 @@ const CrudEquipos = ({ userRol }) => {
               cell: (row) => (
                 <span
                   className={`status-badge ${row.estado === 'Activo' ? 'status-badge-activo' : 'status-badge-inactivo'}`}
-                  style={{ cursor: userRol !== 'solicitante' ? 'pointer' : 'default' }}
-                  onClick={() => userRol !== 'solicitante' && toggleEstado(row)}
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => toggleEstado(row)}
                 >
                   {row.estado}
                 </span>
               )
-            },
+            }] : []),
             ...(userRol !== 'solicitante' ? [{
               name: 'ACCIONES',
               center: "true",

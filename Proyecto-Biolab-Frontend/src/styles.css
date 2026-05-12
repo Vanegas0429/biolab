@@ -306,6 +306,13 @@ body.modal-open .main-header {
 .badge.bg-info    { background-color: rgba(59,130,246,0.12) !important; color: #2563eb !important; }
 .badge.bg-secondary { background-color: rgba(100,116,139,0.12) !important; color: #475569 !important; }
 
+/* SOFT BACKGROUNDS */
+.bg-primary-soft { background-color: rgba(5, 150, 105, 0.12) !important; }
+.bg-success-soft { background-color: rgba(16, 185, 129, 0.12) !important; }
+.bg-info-soft    { background-color: rgba(59, 130, 246, 0.12) !important; }
+.bg-danger-soft  { background-color: rgba(239, 68, 68, 0.12) !important; }
+.bg-warning-soft { background-color: rgba(245, 158, 11, 0.12) !important; }
+
 /* ==========================================
    SCROLLBAR PERSONALIZADO
    ========================================== */

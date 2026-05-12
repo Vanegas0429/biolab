@@ -9,6 +9,11 @@ const CrudEspecie = () => {
   const [Especie, setEspecie] = useState([])
   const [filterText, setFilterText] = useState("")
 
+  // Estado para el carrusel modal
+  const [carouselImages, setCarouselImages] = useState([]);
+  const [carouselIndex, setCarouselIndex] = useState(0);
+  const [showCarousel, setShowCarousel] = useState(false);
+
   useEffect(() => {
     getAllEspecies()
   }, [])
@@ -45,6 +50,87 @@ const CrudEspecie = () => {
     }
   };
 
+  const parseImages = (imgField) => {
+    if (!imgField) return [];
+    try {
+      const parsed = JSON.parse(imgField);
+      return Array.isArray(parsed) ? parsed : [parsed];
+    } catch {
+      return [imgField];
+    }
+  };
+
+  const openCarousel = (row, startIndex = 0) => {
+    const imgs = parseImages(row.img_especie);
+    if (imgs.length === 0) return;
+    setCarouselImages(imgs);
+    setCarouselIndex(startIndex);
+    setShowCarousel(true);
+  };
+
+  const carouselPrev = () => setCarouselIndex((prev) => (prev === 0 ? carouselImages.length - 1 : prev - 1));
+  const carouselNext = () => setCarouselIndex((prev) => (prev === carouselImages.length - 1 ? 0 : prev + 1));
+
+  const uploadImagesToEspecie = async (row, files) => {
+    if (!files || files.length === 0) return;
+    const formData = new FormData();
+    Array.from(files).forEach(f => formData.append('img_especie', f));
+    formData.append('Nom_especie', row.Nom_especie || '');
+    try {
+      await apiAxios.put(`/api/Especie/${row.Id_especie}`, formData, {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
+      await getAllEspecies();
+      Swal.fire('¡Éxito!', 'Imágenes subidas correctamente', 'success');
+    } catch (error) {
+      console.error("Error subiendo imágenes:", error);
+    }
+  };
+
+  const triggerImageUpload = (row) => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.multiple = true;
+    input.onchange = (e) => uploadImagesToEspecie(row, e.target.files);
+    input.click();
+  };
+
+  const deleteImage = async (especieId, filename) => {
+    const result = await Swal.fire({
+      title: '¿Estás seguro?',
+      text: "No podrás revertir esto",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Sí, eliminar'
+    });
+    if (!result.isConfirmed) return;
+
+    try {
+      await apiAxios.delete(`/api/Especie/${especieId}/imagen/${filename}`);
+      await getAllEspecies();
+      const remaining = carouselImages.filter(img => img !== filename);
+      if (remaining.length === 0) {
+        setShowCarousel(false);
+      } else {
+        setCarouselImages(remaining);
+        setCarouselIndex((prev) => Math.min(prev, remaining.length - 1));
+      }
+      Swal.fire('Eliminada', 'La imagen ha sido eliminada.', 'success');
+    } catch (error) {
+      console.error("Error eliminando imagen:", error);
+    }
+  };
+
+  const findCarouselEspecie = () => {
+    return Especie.find(esp => {
+      const imgs = parseImages(esp.img_especie);
+      return imgs.some(img => carouselImages.includes(img));
+    });
+  };
+
   const newListEspecie = useMemo(() => {
     const textToSearch = filterText.toLowerCase()
     return Especie.filter((uso) => uso.Nom_especie?.toLowerCase().includes(textToSearch))
@@ -75,17 +161,17 @@ const CrudEspecie = () => {
             <span className="input-group-text border-0 bg-transparent ps-3">
               <i className="fa-solid fa-magnifying-glass text-muted"></i>
             </span>
-            <input 
-              type="text" 
-              className="form-control border-0 py-2 shadow-none bg-transparent" 
-              placeholder="Buscar especie..." 
+            <input
+              type="text"
+              className="form-control border-0 py-2 shadow-none bg-transparent"
+              placeholder="Buscar especie..."
               value={filterText}
               onChange={(e) => setFilterText(e.target.value)}
             />
           </div>
-          <button 
+          <button
             className="btn btn-primary rounded-pill px-4 shadow-sm"
-            data-bs-toggle="modal" 
+            data-bs-toggle="modal"
             data-bs-target="#exampleModal"
             onClick={() => setRowToEdit(null)}
           >
@@ -99,9 +185,9 @@ const CrudEspecie = () => {
         <DataTable
           columns={[
             { name: 'ID', selector: row => row?.Id_especie ?? "N/A", sortable: true, width: '100px' },
-            { 
-              name: 'NOMBRE DE ESPECIE', 
-              selector: row => row?.Nom_especie ?? "N/A", 
+            {
+              name: 'NOMBRE DE ESPECIE',
+              selector: row => row?.Nom_especie ?? "N/A",
               sortable: true,
               grow: 2,
               cell: row => (
@@ -111,42 +197,46 @@ const CrudEspecie = () => {
             {
               name: 'IMAGEN',
               center: "true",
-              width: '150px',
-              cell: row => (
-                row.img_especie ? (
-                  <img
-                    src={`http://localhost:8000/uploads/${row.img_especie}`}
-                    alt={row.Nom_especie}
-                    className="rounded shadow-sm border my-2"
-                    style={{ width: '45px', height: '45px', objectFit: 'cover', cursor: 'pointer' }}
-                    onClick={() => {
-                      Swal.fire({
-                        imageUrl: `http://localhost:8000/uploads/${row.img_especie}`,
-                        imageAlt: row.Nom_especie,
-                        showConfirmButton: false,
-                        showCloseButton: true,
-                        customClass: {
-                          closeButton: 'custom-swal-close-btn'
-                        },
-                        background: 'transparent',
-                        backdrop: `rgba(0,0,0,0.8)`
-                      })
-                    }}
-                  />
-                ) : (
-                  <div className="bg-light text-muted d-flex align-items-center justify-content-center rounded border my-2" style={{ width: '45px', height: '45px', borderStyle: 'dashed !important' }}>
-                    <i className="fa-solid fa-image opacity-50"></i>
+              width: '220px',
+              cell: (row) => {
+                const imgs = parseImages(row.img_especie);
+                return (
+                  <div className="d-flex align-items-center py-2">
+                    <div className="position-relative">
+                      {imgs.length > 0 ? (
+                        <img
+                          src={`http://localhost:8000/uploads/${imgs[0]}`}
+                          alt={row.Nom_especie}
+                          className="rounded shadow-sm border"
+                          style={{ width: '45px', height: '45px', objectFit: 'cover', cursor: 'pointer' }}
+                          onClick={() => openCarousel(row)}
+                        />
+                      ) : (
+                        <div
+                          className="bg-light text-muted d-flex align-items-center justify-content-center rounded border"
+                          style={{ width: '45px', height: '45px', borderStyle: 'dashed !important', cursor: 'pointer' }}
+                          onClick={() => triggerImageUpload(row)}
+                        >
+                          <i className="fa-solid fa-camera opacity-50"></i>
+                        </div>
+                      )}
+                      {imgs.length > 1 && (
+                        <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary border border-white" style={{ fontSize: '0.6rem' }}>
+                          +{imgs.length - 1}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                )
-              )
+                );
+              }
             },
             {
               name: 'ESTADO',
               sortable: true,
               center: "true",
-              width: '150px',
+              width: '220px',
               cell: row => (
-                <span 
+                <span
                   className={`status-badge ${row.Estado === 'Activo' ? 'status-badge-activo' : 'status-badge-inactivo'}`}
                   onClick={() => toggleEstado(row)}
                   style={{ cursor: 'pointer' }}
@@ -158,12 +248,12 @@ const CrudEspecie = () => {
             {
               name: 'ACCIONES',
               center: "true",
-              width: '150px',
+              width: '220px',
               cell: row => (
-                <button 
+                <button
                   className="btn-action btn-action-edit"
                   onClick={() => setRowToEdit(row)}
-                  data-bs-toggle="modal" 
+                  data-bs-toggle="modal"
                   data-bs-target="#exampleModal"
                   title="Editar"
                 >
@@ -212,12 +302,32 @@ const CrudEspecie = () => {
                 rowToEdit={rowToEdit}
               />
             </div>
-            <div className="modal-footer border-0">
-              <button type="button" className="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cerrar</button>
-            </div>
           </div>
         </div>
       </div>
+
+      {/* MODAL CARRUSEL */}
+      {showCarousel && carouselImages.length > 0 && (
+        <div className="carousel-overlay" onClick={() => setShowCarousel(false)}>
+          <div className="carousel-container" onClick={(e) => e.stopPropagation()}>
+            <button className="carousel-close" onClick={() => setShowCarousel(false)}><i className="fa-solid fa-xmark"></i></button>
+            <div className="carousel-counter">{carouselIndex + 1} / {carouselImages.length}</div>
+            {carouselImages.length > 1 && (
+              <button className="carousel-arrow carousel-arrow-left" onClick={carouselPrev}><i className="fa-solid fa-chevron-left"></i></button>
+            )}
+            <div className="carousel-image-wrapper">
+              <img src={`http://localhost:8000/uploads/${carouselImages[carouselIndex]}`} alt={`Imagen ${carouselIndex + 1}`} className="carousel-image shadow-lg" />
+            </div>
+            {carouselImages.length > 1 && (
+              <button className="carousel-arrow carousel-arrow-right" onClick={carouselNext}><i className="fa-solid fa-chevron-right"></i></button>
+            )}
+            <div className="carousel-actions">
+              <button className="carousel-action-btn add-btn" onClick={() => { const esp = findCarouselEspecie(); if (esp) triggerImageUpload(esp); }}><i className="fa-solid fa-plus me-2"></i>Agregar</button>
+              <button className="carousel-action-btn delete-btn" onClick={() => { const esp = findCarouselEspecie(); if (esp) deleteImage(esp.Id_especie, carouselImages[carouselIndex]); }}><i className="fa-solid fa-trash-can me-2"></i>Eliminar</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

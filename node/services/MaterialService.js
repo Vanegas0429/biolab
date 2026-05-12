@@ -1,4 +1,6 @@
 import MaterialModel from "../models/MaterialModel.js";
+import fs from 'fs';
+import path from 'path';
 
 class MaterialService {
     async getAll(){
@@ -26,6 +28,33 @@ class MaterialService {
 
         if (!deleted) throw new Error ("Material no encontrada")
             return true
+    }
+
+    async removeImage(id, filename) {
+        const material = await this.getById(id);
+
+        let imagenes = [];
+        try {
+            imagenes = JSON.parse(material.img_material || '[]');
+        } catch {
+            if (material.img_material) {
+                imagenes = [material.img_material];
+            }
+        }
+
+        const nuevasImagenes = imagenes.filter(img => img !== filename);
+
+        await MaterialModel.update(
+            { img_material: nuevasImagenes.length > 0 ? JSON.stringify(nuevasImagenes) : null },
+            { where: { Id_Material: id } }
+        );
+
+        const filePath = path.join('public', 'uploads', filename);
+        if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+        }
+
+        return true;
     }
 }
 

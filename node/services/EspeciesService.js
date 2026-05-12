@@ -1,4 +1,6 @@
 import EspecieModel from "../models/EspeciesModel.js";
+import fs from 'fs';
+import path from 'path';
 
 class EspecieService {
     async getAll(){
@@ -26,6 +28,33 @@ class EspecieService {
 
         if (!deleted) throw new Error ("Especie no encontrada")
             return true
+    }
+
+    async removeImage(id, filename) {
+        const especie = await this.getById(id);
+
+        let imagenes = [];
+        try {
+            imagenes = JSON.parse(especie.img_especie || '[]');
+        } catch {
+            if (especie.img_especie) {
+                imagenes = [especie.img_especie];
+            }
+        }
+
+        const nuevasImagenes = imagenes.filter(img => img !== filename);
+
+        await EspecieModel.update(
+            { img_especie: nuevasImagenes.length > 0 ? JSON.stringify(nuevasImagenes) : null },
+            { where: { Id_especie: id } }
+        );
+
+        const filePath = path.join('public', 'uploads', filename);
+        if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+        }
+
+        return true;
     }
 }
 

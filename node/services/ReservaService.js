@@ -13,73 +13,153 @@ import ActividadModel from "../models/ActividadModel.js";
 import ActividadEquipoModel from "../models/ActividadEquipoModel.js";
 import ActividadMaterialModel from "../models/ActividadMaterialModel.js";
 import ActividadReactivoModel from "../models/ActividadReactivoModel.js";
+import EquipoModel from "../models/EquipoModel.js";
+import MaterialModel from "../models/MaterialModel.js";
+import ReactivosModel from "../models/ReactivosModel.js";
 
 class ReservaService {
   async getAll() {
     const reservas = await ReservaModel.findAll({
       order: [["Id_Reserva", "DESC"]],
+      include: [
+        {
+          model: ReservaActividadModel,
+          as: 'ReservaActividades',
+          include: [{ model: ActividadModel, as: 'Actividad' }]
+        },
+        {
+          model: ReservaEquipoModel,
+          as: 'ReservaEquipos',
+          include: [{ model: EquipoModel, as: 'Equipo' }]
+        },
+        {
+          model: ReservaMaterialModel,
+          as: 'ReservaMateriales',
+          include: [{ model: MaterialModel, as: 'Material' }]
+        },
+        {
+          model: ReservaReactivoModel,
+          as: 'ReservaReactivos',
+          include: [{ model: ReactivosModel, as: 'Reactivo' }]
+        },
+        {
+          model: ReservaEstadoModel,
+          as: 'ReservaEstados',
+          include: [{ model: EstadoModel, as: 'Estado' }]
+        }
+      ]
     });
 
-    const reservasConEstado = await Promise.all(
-      reservas.map(async (reserva) => {
-        const ultimoHistorial = await ReservaEstadoModel.findOne({
-          where: { Id_Reserva: reserva.Id_Reserva },
-          order: [["Id_ReservaEstado", "DESC"]],
-        });
+    return reservas.map(reserva => {
+      const json = reserva.toJSON();
+      
+      // Obtener último estado
+      const ultimoHistorial = json.ReservaEstados?.sort((a, b) => b.Id_ReservaEstado - a.Id_ReservaEstado)[0];
+      const estadoActual = ultimoHistorial?.Estado?.Tip_Estado ?? "";
+      const motivoActual = ultimoHistorial?.Mot_RecCan ?? "";
 
-        let estadoActual = "";
-        let motivoActual = "";
+      // Mapear detalles para facilitar el uso en frontend
+      const equipos = json.ReservaEquipos?.map(re => ({
+        ...re,
+        Nom_Equipo: re.Equipo?.nombre,
+        Uni_Medida: 'Unidades'
+      })) || [];
 
-        if (ultimoHistorial) {
-          const estado = await EstadoModel.findByPk(ultimoHistorial.Id_Estado);
-          estadoActual = estado?.Tip_Estado ?? "";
-          motivoActual = ultimoHistorial.Mot_RecCan ?? "";
-        }
+      const materiales = json.ReservaMateriales?.map(rm => ({
+        ...rm,
+        Nom_Material: rm.Material?.Nom_Material,
+        Uni_Medida: rm.Material?.Uni_Medida || 'Unidades'
+      })) || [];
 
-        return {
-          ...reserva.toJSON(),
-          Des_Estado: estadoActual,
-          Mot_RecCan: motivoActual,
-        };
-      })
-    );
+      const reactivos = json.ReservaReactivos?.map(rr => ({
+        ...rr,
+        Nom_Reactivo: rr.Reactivo?.Nom_reactivo,
+        Uni_Medida: rr.Reactivo?.Uni_Medida || 'ml/g'
+      })) || [];
 
-    return reservasConEstado;
+      return {
+        ...json,
+        Des_Estado: estadoActual,
+        Mot_RecCan: motivoActual,
+        equipos,
+        materiales,
+        reactivos,
+        actividades: json.ReservaActividades?.map(ra => ra.Actividad) || []
+      };
+    });
   }
 
   async getById(id) {
-    const reserva = await ReservaModel.findByPk(id);
+    const reserva = await ReservaModel.findByPk(id, {
+      include: [
+        {
+          model: ReservaActividadModel,
+          as: 'ReservaActividades',
+          include: [{ model: ActividadModel, as: 'Actividad' }]
+        },
+        {
+          model: ReservaEquipoModel,
+          as: 'ReservaEquipos',
+          include: [{ model: EquipoModel, as: 'Equipo' }]
+        },
+        {
+          model: ReservaMaterialModel,
+          as: 'ReservaMateriales',
+          include: [{ model: MaterialModel, as: 'Material' }]
+        },
+        {
+          model: ReservaReactivoModel,
+          as: 'ReservaReactivos',
+          include: [{ model: ReactivosModel, as: 'Reactivo' }]
+        },
+        {
+          model: ReservaEstadoModel,
+          as: 'ReservaEstados',
+          include: [{ model: EstadoModel, as: 'Estado' }]
+        }
+      ]
+    });
 
     if (!reserva) throw new Error("Reserva no encontrada");
 
-    const actividades = await ReservaActividadModel.findAll({
-      where: { Id_Reserva: id },
-    });
+    const json = reserva.toJSON();
+    
+    // Obtener último estado
+    const ultimoHistorial = json.ReservaEstados?.sort((a, b) => b.Id_ReservaEstado - a.Id_ReservaEstado)[0];
+    const estadoActual = ultimoHistorial?.Estado?.Tip_Estado ?? "";
+    const motivoActual = ultimoHistorial?.Mot_RecCan ?? "";
 
-    const equipos = await ReservaEquipoModel.findAll({
-      where: { Id_Reserva: id },
-    });
+    // Mapear detalles
+    const equipos = json.ReservaEquipos?.map(re => ({
+      ...re,
+      Nom_Equipo: re.Equipo?.nombre,
+      Uni_Medida: 'Unidades'
+    })) || [];
 
-    const materiales = await ReservaMaterialModel.findAll({
-      where: { Id_Reserva: id },
-    });
+    const materiales = json.ReservaMateriales?.map(rm => ({
+      ...rm,
+      Nom_Material: rm.Material?.Nom_Material,
+      Uni_Medida: rm.Material?.Uni_Medida || 'Unidades'
+    })) || [];
 
-    const reactivos = await ReservaReactivoModel.findAll({
-      where: { Id_Reserva: id },
-    });
-
-    const estados = await ReservaEstadoModel.findAll({
-      where: { Id_Reserva: id },
-      order: [["Id_ReservaEstado", "DESC"]],
-    });
+    const reactivos = json.ReservaReactivos?.map(rr => ({
+      ...rr,
+      Nom_Reactivo: rr.Reactivo?.Nom_reactivo,
+      Uni_Medida: rr.Reactivo?.Uni_Medida || 'ml/g',
+      Presentacion: rr.Reactivo?.Presentacion
+    })) || [];
 
     return {
-      reserva,
-      actividades,
+      reserva: {
+        ...json,
+        Des_Estado: estadoActual,
+        Mot_RecCan: motivoActual
+      },
+      actividades: json.ReservaActividades?.map(ra => ra.Actividad) || [],
       equipos,
       materiales,
       reactivos,
-      estados,
+      estados: json.ReservaEstados || []
     };
   }
 
@@ -431,12 +511,94 @@ class ReservaService {
   }
 
   async update(id, data) {
-    const result = await ReservaModel.update(data, { where: { Id_Reserva: id } });
-    const updated = result[0];
+    const transaction = await db_store.transaction();
+    try {
+      const {
+        Tip_Reserva,
+        Nom_Solicitante,
+        Doc_Solicitante,
+        Tel_Solicitante,
+        Cor_Solicitante,
+        Can_Aprendices,
+        Fec_Reserva,
+        Hor_Reserva,
+        Num_Ficha,
+        Booleano,
+        actividades,
+        equipos,
+        materiales,
+        reactivos,
+      } = data;
 
-    if (updated === 0) throw new Error("Reserva no encontrada o sin cambios");
+      // Actualizar datos básicos
+      await ReservaModel.update({
+        Tip_Reserva,
+        Nom_Solicitante,
+        Doc_Solicitante,
+        Tel_Solicitante,
+        Cor_Solicitante,
+        Can_Aprendices,
+        Fec_Reserva,
+        Hor_Reserva,
+        Num_Ficha,
+        Booleano,
+      }, { 
+        where: { Id_Reserva: id },
+        transaction 
+      });
 
-    return true;
+      // Si vienen recursos (edición completa), actualizar tablas intermedias
+      if (actividades || equipos || materiales || reactivos) {
+        // 1. Eliminar asociaciones actuales
+        await ReservaActividadModel.destroy({ where: { Id_Reserva: id }, transaction });
+        await ReservaEquipoModel.destroy({ where: { Id_Reserva: id }, transaction });
+        await ReservaMaterialModel.destroy({ where: { Id_Reserva: id }, transaction });
+        await ReservaReactivoModel.destroy({ where: { Id_Reserva: id }, transaction });
+
+        // 2. Crear nuevas asociaciones
+        if (Array.isArray(actividades)) {
+          for (const idAct of actividades) {
+            await ReservaActividadModel.create({ Id_Reserva: id, Id_Actividad: idAct }, { transaction });
+          }
+        }
+
+        if (Array.isArray(equipos)) {
+          for (const eq of equipos) {
+            await ReservaEquipoModel.create({ 
+              Id_Reserva: id, 
+              Id_Equipo: eq.Id_Equipo, 
+              Can_Equipos: eq.Can_Equipos 
+            }, { transaction });
+          }
+        }
+
+        if (Array.isArray(materiales)) {
+          for (const mat of materiales) {
+            await ReservaMaterialModel.create({ 
+              Id_Reserva: id, 
+              Id_Material: mat.Id_Material, 
+              Can_Materiales: mat.Can_Materiales 
+            }, { transaction });
+          }
+        }
+
+        if (Array.isArray(reactivos)) {
+          for (const reac of reactivos) {
+            await ReservaReactivoModel.create({ 
+              Id_Reserva: id, 
+              Id_Reactivo: reac.Id_Reactivo, 
+              Can_Reactivo: reac.Can_Reactivo 
+            }, { transaction });
+          }
+        }
+      }
+
+      await transaction.commit();
+      return true;
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
   }
 
   async delete(id) {

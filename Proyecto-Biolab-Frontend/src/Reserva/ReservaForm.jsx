@@ -12,6 +12,16 @@ const getLoggedUser = () => {
   }
 };
 
+const parseImages = (imgField) => {
+  if (!imgField) return [];
+  try {
+    const parsed = JSON.parse(imgField);
+    return Array.isArray(parsed) ? parsed : [parsed];
+  } catch {
+    return imgField ? [imgField] : [];
+  }
+};
+
 const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = false }) => {
   const reservaId = rowToEdit?.Id_Reserva;
   const isEditing = Boolean(reservaId);
@@ -123,8 +133,62 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
 
   const loadDataInForm = async () => {
     try {
+      // Si ya tenemos los detalles en rowToEdit (desde GestionReservas o CrudReserva actualizado)
+      if (rowToEdit.actividades || rowToEdit.equipos || rowToEdit.materiales || rowToEdit.reactivos) {
+        const reserva = rowToEdit;
+        setTip_Reserva(reserva.Tip_Reserva ?? "Practica");
+        setNom_Solicitante(reserva.Nom_Solicitante ?? "");
+        setDoc_Solicitante(reserva.Doc_Solicitante ?? "");
+        setCor_Solicitante(reserva.Cor_Solicitante ?? "");
+        setTel_Solicitante(reserva.Tel_Solicitante ?? "");
+        setCan_Aprendices(reserva.Can_Aprendices ?? "");
+        setFec_Reserva(reserva.Fec_Reserva ?? "");
+        setHor_Reserva(reserva.Hor_Reserva ?? "");
+        setNum_Ficha(reserva.Num_Ficha ?? "");
+        setBooleano(reserva.Booleano ?? "Activo");
+
+        const ultimoEstado = reserva.Des_Estado;
+        setId_EstadoActual(obtenerIdEstadoPorNombre(ultimoEstado));
+        setId_Estado(obtenerIdEstadoPorNombre(ultimoEstado));
+        setMot_RecCan(reserva.Mot_RecCan ?? "");
+
+        const actividadesIds = reserva.actividades?.map((a) => Number(a.Id_Actividad || a.id_actividad)) || [];
+        setActividadesSeleccionadas(actividadesIds);
+
+        setEquipos(reserva.equipos?.map((item) => ({ 
+          Id_Equipo: Number(item.Id_Equipo), 
+          Can_Equipos: Number(item.Can_Equipos),
+          Nom_Equipo: item.Nom_Equipo || item.nombre
+        })) || []);
+        setMateriales(reserva.materiales?.map((item) => ({ 
+          Id_Material: Number(item.Id_Material), 
+          Can_Materiales: Number(item.Can_Materiales),
+          Nom_Material: item.Nom_Material
+        })) || []);
+        setReactivos(reserva.reactivos?.map((item) => ({ 
+          Id_Reactivo: Number(item.Id_Reactivo), 
+          Can_Reactivo: Number(item.Can_Reactivo),
+          Nom_Reactivo: item.Nom_Reactivo || item.Nom_reactivo,
+          Presentacion: item.Presentacion
+        })) || []);
+
+        // Si es modo vista, no necesitamos consultar recursos adicionales ya que vienen en el rowToEdit
+        if (isViewOnly) {
+          // Pero si necesitamos cargar actividades para ver los nombres si no los tenemos
+          await loadActividades();
+          return;
+        }
+
+        if (actividadesIds.length > 0) {
+          await consultarRecursos(actividadesIds);
+        }
+        return;
+      }
+
+      // De lo contrario, fetch normal
       const res = await apiAxios.get(`/api/Reserva/${reservaId}`);
       const data = res.data ?? {};
+      // ... (resto del código existente)
 
       const reserva = data?.reserva ?? {};
       const actividades = data?.actividades ?? [];
@@ -157,6 +221,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
         equiposData.map((item) => ({
           Id_Equipo: Number(item.Id_Equipo),
           Can_Equipos: Number(item.Can_Equipos),
+          Nom_Equipo: item.Nom_Equipo || item.nombre
         }))
       );
 
@@ -164,6 +229,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
         materialesData.map((item) => ({
           Id_Material: Number(item.Id_Material),
           Can_Materiales: Number(item.Can_Materiales),
+          Nom_Material: item.Nom_Material
         }))
       );
 
@@ -171,6 +237,8 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
         reactivosData.map((item) => ({
           Id_Reactivo: Number(item.Id_Reactivo),
           Can_Reactivo: Number(item.Can_Reactivo),
+          Nom_Reactivo: item.Nom_Reactivo || item.Nom_reactivo,
+          Presentacion: item.Presentacion
         }))
       );
 
@@ -328,10 +396,22 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
   };
 
   const actualizarCantidadMaterial = (idMaterial, cantidad) => {
+    const id = Number(idMaterial);
+    const cant = Number(cantidad) || 0;
+    
+    // Buscar el material en los detalles de recursos para saber el stock real
+    const materialInfo = materialesDisponibles.find(m => Number(m.Id_Material) === id);
+    const stockDisponible = materialInfo ? Number(materialInfo.Can_Material) : 99999;
+
+    if (cant > stockDisponible) {
+      Swal.fire("Atención", `La cantidad solicitada (${cant}) supera el stock disponible (${stockDisponible})`, "warning");
+      return;
+    }
+
     setMateriales((prev) =>
       prev.map((item) =>
-        Number(item.Id_Material) === Number(idMaterial)
-          ? { ...item, Can_Materiales: Number(cantidad) || 0 }
+        Number(item.Id_Material) === id
+          ? { ...item, Can_Materiales: cant }
           : item
       )
     );
@@ -462,6 +542,15 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
         Swal.fire("Atención", "La reserva de práctica permite máximo 3 actividades", "warning");
         return;
       }
+
+      // Validar cantidades de materiales contra stock
+      for (const mat of materiales) {
+        const info = materialesDisponibles.find(m => Number(m.Id_Material) === Number(mat.Id_Material));
+        if (info && Number(mat.Can_Materiales) > Number(info.Can_Material)) {
+          Swal.fire("Error de Stock", `El material '${info.Nom_Material}' solo tiene ${info.Can_Material} unidades disponibles.`, "error");
+          return;
+        }
+      }
     }
 
     const payload = {
@@ -497,18 +586,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
         resetForm();
         hideModal?.();
       } else {
-        await apiAxios.put(`/api/Reserva/${reservaId}`, {
-          Tip_Reserva,
-          Nom_Solicitante,
-          Doc_Solicitante,
-          Cor_Solicitante,
-          Tel_Solicitante,
-          Can_Aprendices: Number(Can_Aprendices) || 0,
-          Fec_Reserva,
-          Hor_Reserva,
-          Num_Ficha,
-          Booleano,
-        });
+        await apiAxios.put(`/api/Reserva/${reservaId}`, payload);
 
         const cambioDeEstado = Number(Id_Estado) !== Number(Id_EstadoActual);
         const nombreEstadoSeleccionado = obtenerNombreEstado(Id_Estado);
@@ -552,7 +630,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
         <div className="col-md-6 mb-3">
           <label className="form-label">Tipo de reserva:</label>
           <select
-            className="form-control"
+            className="form-select rounded-pill shadow-sm"
             value={Tip_Reserva}
             onChange={(e) => setTip_Reserva(e.target.value)}
             required
@@ -567,7 +645,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
           <div className="col-md-6 mb-3">
             <label className="form-label">Estado:</label>
             <select
-              className="form-control"
+              className="form-select rounded-pill shadow-sm"
               value={Id_Estado || ""}
               onChange={(e) => {
                 setId_Estado(Number(e.target.value));
@@ -618,7 +696,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
               <label className="form-label">Motivo Rechazo o Cancelación:</label>
               <input
                 type="text"
-                className="form-control"
+                className="form-control rounded-pill shadow-sm px-3"
                 value={Mot_RecCan}
                 onChange={(e) => setMot_RecCan(e.target.value)}
                 required
@@ -680,7 +758,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
               <div className="col-md-4 mb-3">
                 <label className="form-label">Equipos requeridos por actividades:</label>
                 <select
-                  className="form-control"
+                  className="form-select rounded-pill shadow-sm"
                   onChange={(e) => {
                     agregarEquipo(e.target.value);
                     e.target.value = "";
@@ -710,7 +788,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
               <div className="col-md-4 mb-3">
                 <label className="form-label">Materiales requeridos por actividades:</label>
                 <select
-                  className="form-control"
+                  className="form-select rounded-pill shadow-sm"
                   onChange={(e) => {
                     agregarMaterial(e.target.value);
                     e.target.value = "";
@@ -740,7 +818,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
               <div className="col-md-4 mb-3">
                 <label className="form-label">Reactivos requeridos por actividades:</label>
                 <select
-                  className="form-control"
+                  className="form-select rounded-pill shadow-sm"
                   onChange={(e) => {
                     agregarReactivo(e.target.value);
                     e.target.value = "";
@@ -771,59 +849,103 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
                 <div className="col-md-4">
                   <h6>Equipos seleccionados</h6>
                   {equipos.length === 0 && <p className="text-muted">No hay equipos seleccionados</p>}
-                  {equipos.map((item) => (
-                    <div key={item.Id_Equipo} className="border rounded p-2 mb-2">
-                      <div className="d-flex justify-content-between align-items-center mb-2">
-                        <strong>{equiposDisponibles.find(e => Number(e.id_equipo) === Number(item.Id_Equipo))?.nombre || `Equipo ${item.Id_Equipo}`}</strong>
-                        {!isViewOnly && (
-                          <button
-                            type="button"
-                            className="btn btn-sm btn-danger"
-                            onClick={() => eliminarEquipo(item.Id_Equipo)}
-                          >
-                            Quitar
-                          </button>
-                        )}
+                  {equipos.map((item) => {
+                    const info = equiposDisponibles.find(e => Number(e.id_equipo) === Number(item.Id_Equipo));
+                    const imgs = parseImages(info?.img_equipo);
+                    
+                    return (
+                      <div key={item.Id_Equipo} className="border rounded p-2 mb-2 bg-light shadow-sm">
+                        <div className="d-flex align-items-center gap-3">
+                          <div className="flex-shrink-0">
+                            {imgs.length > 0 ? (
+                              <img 
+                                src={`http://localhost:8000/uploads/${imgs[0]}`} 
+                                alt={info?.nombre} 
+                                className="rounded" 
+                                style={{ width: '60px', height: '60px', objectFit: 'cover' }}
+                              />
+                            ) : (
+                              <div className="bg-white border rounded d-flex align-items-center justify-content-center" style={{ width: '60px', height: '60px' }}>
+                                <i className="fa-solid fa-microscope text-muted opacity-50"></i>
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex-grow-1 min-width-0">
+                            <div className="d-flex justify-content-between align-items-start">
+                              <strong className="small text-truncate d-block" title={info?.nombre || item.Nom_Equipo}>{info?.nombre || item.Nom_Equipo || `Equipo ${item.Id_Equipo}`}</strong>
+                              {!isViewOnly && (
+                                <button
+                                  type="button"
+                                  className="btn btn-sm btn-link text-danger p-0 text-decoration-none"
+                                  onClick={() => eliminarEquipo(item.Id_Equipo)}
+                                >
+                                  <i className="fa-solid fa-trash-can"></i>
+                                </button>
+                              )}
+                            </div>
+                            <span className="badge bg-primary-soft text-primary small mt-1">Solicitado</span>
+                          </div>
+                        </div>
                       </div>
-                      <input
-                        type="number"
-                        min="1"
-                        className="form-control"
-                        value={item.Can_Equipos}
-                        onChange={(e) => actualizarCantidadEquipo(item.Id_Equipo, e.target.value)}
-                        readOnly={isViewOnly}
-                      />
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 <div className="col-md-4">
                   <h6>Materiales seleccionados</h6>
                   {materiales.length === 0 && <p className="text-muted">No hay materiales seleccionados</p>}
-                  {materiales.map((item) => (
-                    <div key={item.Id_Material} className="border rounded p-2 mb-2">
-                      <div className="d-flex justify-content-between align-items-center mb-2">
-                        <strong>{materialesDisponibles.find(m => Number(m.Id_Material) === Number(item.Id_Material))?.Nom_Material || `Material ${item.Id_Material}`}</strong>
-                        {!isViewOnly && (
-                          <button
-                            type="button"
-                            className="btn btn-sm btn-danger"
-                            onClick={() => eliminarMaterial(item.Id_Material)}
-                          >
-                            Quitar
-                          </button>
-                        )}
+                  {materiales.map((item) => {
+                    const info = materialesDisponibles.find(m => Number(m.Id_Material) === Number(item.Id_Material));
+                    const maxStock = info ? Number(info.Can_Material) : 0;
+                    const imgs = parseImages(info?.img_material);
+                    
+                    return (
+                      <div key={item.Id_Material} className="border rounded p-2 mb-2 bg-light shadow-sm">
+                        <div className="d-flex align-items-center gap-3 mb-2">
+                          <div className="flex-shrink-0">
+                            {imgs.length > 0 ? (
+                              <img 
+                                src={`http://localhost:8000/uploads/${imgs[0]}`} 
+                                alt={info?.Nom_Material} 
+                                className="rounded" 
+                                style={{ width: '50px', height: '50px', objectFit: 'cover' }}
+                              />
+                            ) : (
+                              <div className="bg-white border rounded d-flex align-items-center justify-content-center" style={{ width: '50px', height: '50px' }}>
+                                <i className="fa-solid fa-flask text-muted opacity-50"></i>
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex-grow-1 min-width-0">
+                            <div className="d-flex justify-content-between align-items-start">
+                              <strong className="small text-truncate d-block" title={info?.Nom_Material || item.Nom_Material}>{info?.Nom_Material || item.Nom_Material || `Material ${item.Id_Material}`}</strong>
+                              {!isViewOnly && (
+                                <button
+                                  type="button"
+                                  className="btn btn-sm btn-link text-danger p-0 text-decoration-none"
+                                  onClick={() => eliminarMaterial(item.Id_Material)}
+                                >
+                                  <i className="fa-solid fa-trash-can"></i>
+                                </button>
+                              )}
+                            </div>
+                            <span className="badge bg-secondary-soft text-secondary small">Stock: {maxStock}</span>
+                          </div>
+                        </div>
+                        <div className="d-flex align-items-center gap-2">
+                          <input
+                            type="number"
+                            min="1"
+                            max={maxStock}
+                            className="form-control form-control-sm"
+                            value={item.Can_Materiales}
+                            onChange={(e) => actualizarCantidadMaterial(item.Id_Material, e.target.value)}
+                            readOnly={isViewOnly}
+                          />
+                        </div>
                       </div>
-                      <input
-                        type="number"
-                        min="1"
-                        className="form-control"
-                        value={item.Can_Materiales}
-                        onChange={(e) => actualizarCantidadMaterial(item.Id_Material, e.target.value)}
-                        readOnly={isViewOnly}
-                      />
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 <div className="col-md-4">
@@ -833,10 +955,10 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
                     <div key={item.Id_Reactivo} className="border rounded p-2 mb-2">
                       <div className="d-flex justify-content-between align-items-center mb-2">
                         <strong>
-                          {reactivosDisponibles.find(r => Number(r.Id_Reactivo) === Number(item.Id_Reactivo))?.Nom_reactivo || `Reactivo ${item.Id_Reactivo}`} 
+                          {reactivosDisponibles.find(r => Number(r.Id_Reactivo) === Number(item.Id_Reactivo))?.Nom_reactivo || item.Nom_Reactivo || `Reactivo ${item.Id_Reactivo}`} 
                           {' '}
-                          {reactivosDisponibles.find(r => Number(r.Id_Reactivo) === Number(item.Id_Reactivo))?.Presentacion 
-                            ? `(${reactivosDisponibles.find(r => Number(r.Id_Reactivo) === Number(item.Id_Reactivo)).Presentacion})` 
+                          {(reactivosDisponibles.find(r => Number(r.Id_Reactivo) === Number(item.Id_Reactivo))?.Presentacion || item.Presentacion) 
+                            ? `(${reactivosDisponibles.find(r => Number(r.Id_Reactivo) === Number(item.Id_Reactivo))?.Presentacion || item.Presentacion})` 
                             : ''}
                         </strong>
                         {!isViewOnly && (
@@ -869,7 +991,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
           <label className="form-label">Nombre del solicitante:</label>
           <input
             type="text"
-            className="form-control"
+            className="form-control rounded-pill shadow-sm px-3"
             value={Nom_Solicitante}
             onChange={(e) => setNom_Solicitante(e.target.value)}
             readOnly={isViewOnly || getLoggedUser()?.rol === 'solicitante'}
@@ -881,7 +1003,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
           <label className="form-label">Documento del solicitante:</label>
           <input
             type="text"
-            className="form-control"
+            className="form-control rounded-pill shadow-sm px-3"
             value={Doc_Solicitante}
             onChange={(e) => setDoc_Solicitante(e.target.value)}
             readOnly={isViewOnly || getLoggedUser()?.rol === 'solicitante'}
@@ -893,7 +1015,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
           <label className="form-label">Correo del solicitante:</label>
           <input
             type="email"
-            className="form-control"
+            className="form-control rounded-pill shadow-sm px-3"
             value={Cor_Solicitante}
             onChange={(e) => setCor_Solicitante(e.target.value)}
             readOnly={isViewOnly || getLoggedUser()?.rol === 'solicitante'}
@@ -905,7 +1027,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
           <label className="form-label">Teléfono del solicitante:</label>
           <input
             type="text"
-            className="form-control"
+            className="form-control rounded-pill shadow-sm px-3"
             value={Tel_Solicitante}
             onChange={(e) => setTel_Solicitante(e.target.value)}
             readOnly={isViewOnly}
@@ -916,7 +1038,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
           <label className="form-label">Cantidad de aprendices:</label>
           <input
             type="number"
-            className="form-control"
+            className="form-control rounded-pill shadow-sm px-3"
             value={Can_Aprendices}
             onChange={(e) => setCan_Aprendices(e.target.value)}
             min={0}
@@ -928,7 +1050,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
           <label className="form-label">Fecha de la reserva:</label>
           <input
             type="date"
-            className="form-control"
+            className="form-control rounded-pill shadow-sm px-3"
             value={Fec_Reserva}
             onChange={(e) => setFec_Reserva(e.target.value)}
             required
@@ -940,7 +1062,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
           <label className="form-label">Hora de la reserva:</label>
           <input
             type="time"
-            className="form-control"
+            className="form-control rounded-pill shadow-sm px-3"
             value={Hor_Reserva}
             onChange={(e) => setHor_Reserva(e.target.value)}
             required
@@ -952,7 +1074,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
           <label className="form-label">Número de ficha:</label>
           <input
             type="text"
-            className="form-control"
+            className="form-control rounded-pill shadow-sm px-3"
             value={Num_Ficha}
             onChange={(e) => setNum_Ficha(e.target.value)}
             readOnly={isViewOnly}
@@ -960,11 +1082,16 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
         </div>
 
         
-        {!isViewOnly && (
-          <div className="col-md-12 mt-2">
-            <input type="submit" className="btn btn-primary w-25" value={textFormButton} />
-          </div>
-        )}
+        <div className="col-12 text-center mt-4">
+          <button
+            type="submit"
+            className="btn btn-primary rounded-pill px-5 shadow-sm fw-bold"
+            disabled={loadingRecursos}
+          >
+            <i className="fa-solid fa-paper-plane me-2"></i>
+            {isEditing ? "Actualizar Reserva" : "Crear Reserva"}
+          </button>
+        </div>
       </div>
     </form>
   );

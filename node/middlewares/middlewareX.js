@@ -6,12 +6,16 @@ export const checkMiddlewareX = (req, res, next) => {
         }
 
         const allowedRoles = ['pasante', 'gestor', 'instructor', 'administrador'];
-        const isSolicitante = req.user.rol.toLowerCase() === 'solicitante';
+        const userRol = req.user.rol.toLowerCase();
+        const isSolicitante = userRol === 'solicitante';
         const isGetRequest = req.method === 'GET';
+        
+        // El endpoint /recursos es una consulta (POST) que el solicitante necesita para ver qué insumos pedir
+        const isRecursosQuery = req.method === 'POST' && req.path.includes('/recursos');
 
-        if (!allowedRoles.includes(req.user.rol.toLowerCase())) {
-            // Permitir GET a solicitantes para catálogos, otros métodos prohibidos
-            if (isSolicitante && isGetRequest) {
+        if (!allowedRoles.includes(userRol)) {
+            // Permitir GET a solicitantes para catálogos, y POST a /recursos para ver insumos
+            if (isSolicitante && (isGetRequest || isRecursosQuery)) {
                 return next();
             }
             return res.status(403).json({ message: 'Este rol no permite acceso a este módulo' });

@@ -121,87 +121,86 @@ const ProduccionForm = ({ hideModal, refreshList, rowToEdit, isViewOnly }) => {
     }
 
     return (
-        <form onSubmit={gestionarForm} className="col-12 col-md-6">
-
-            {/* Lote Produccion */}
-            <div className="mb-3">
-                <label htmlFor="Lote" className="form-label">
-                    Lote:
-                </label>
-                <input
-                    type="text"
-                    id="Lote"
-                    className="form-control"
-                    value={Lote}
-                    onChange={(e) => setLote_Produccion(e.target.value)}
-                    readOnly={isViewOnly}
-                />
-            </div>
-
-
-            {/* Tipo Producción */}
-            <div className="mb-3">
-                <label htmlFor="Tip_produccion" className="form-label">
-                    Tipo de Producción:
-                </label>
-                <select
-                    id="Tip_produccion"
-                    className="form-control"
-                    value={Tip_produccion}
-                    onChange={(e) => setTip_produccion(e.target.value)}
-                    disabled={isViewOnly}
-                >
-                    <option value="">Selecciona uno</option>
-                    <option value="Practica">Practica</option>
-                    <option value="Propia">Propia</option>
-                    <option value="Externa">Externa</option>
-                </select>
-            </div>
-
-            {/* Fecha Produccion */}
-            <div className="mb-3">
-                <label htmlFor="Fec_produccion" className="form-label">
-                    Fecha Produccion:
-                </label>
-                <input
-                    type="date"
-                    id="Fec_produccion"
-                    className="form-control"
-                    value={Fec_produccion}
-                    onChange={(e) => setFec_produccion(e.target.value)}
-                    readOnly={isViewOnly}
-                />
-            </div>
-
-            {/* Especie */}
-            <div className="mb-3">
-                <label>Especie:</label>
-                <select
-                    className="form-control"
-                    value={Id_especie}
-                    onChange={(e) => setId_especie(Number(e.target.value))}
-                    disabled={isViewOnly}
-                >
-                    <option value="">Selecciona</option>
-                    {Especies.map(e => (
-                        <option key={e.Id_especie} value={e.Id_especie}>
-                            {e.Nom_especie}
-                        </option>
-                    ))}
-                </select>
-            </div>
-
-            {/* Botón */}
-            {!isViewOnly && (
-                <div className="mb-3">
+        <form onSubmit={gestionarForm} className="container-fluid">
+            <div className="row g-3">
+                {/* Lote Produccion */}
+                <div className="col-md-6">
+                    <label htmlFor="Lote" className="form-label fw-bold">
+                        Lote:
+                    </label>
                     <input
-                        type="submit"
-                        className="btn btn-primary w-50"
-                        value={textFormButton}
+                        type="text"
+                        id="Lote"
+                        className="form-control rounded-pill shadow-sm"
+                        value={Lote}
+                        onChange={(e) => setLote_Produccion(e.target.value)}
+                        readOnly={isViewOnly}
+                        placeholder="Ingrese el lote"
                     />
                 </div>
-            )}
 
+                {/* Tipo Producción */}
+                <div className="col-md-6">
+                    <label htmlFor="Tip_produccion" className="form-label fw-bold">
+                        Tipo de Producción:
+                    </label>
+                    <select
+                        id="Tip_produccion"
+                        className="form-select rounded-pill shadow-sm"
+                        value={Tip_produccion}
+                        onChange={(e) => setTip_produccion(e.target.value)}
+                        disabled={isViewOnly}
+                    >
+                        <option value="">Selecciona uno</option>
+                        <option value="Practica">Practica</option>
+                        <option value="Propia">Propia</option>
+                        <option value="Externa">Externa</option>
+                    </select>
+                </div>
+
+                {/* Fecha Produccion */}
+                <div className="col-md-6">
+                    <label htmlFor="Fec_produccion" className="form-label fw-bold">
+                        Fecha Produccion:
+                    </label>
+                    <input
+                        type="date"
+                        id="Fec_produccion"
+                        className="form-control rounded-pill shadow-sm"
+                        value={Fec_produccion}
+                        onChange={(e) => setFec_produccion(e.target.value)}
+                        readOnly={isViewOnly}
+                    />
+                </div>
+
+                {/* Especie */}
+                <div className="col-md-6">
+                    <label className="form-label fw-bold">Especie:</label>
+                    <select
+                        className="form-select rounded-pill shadow-sm"
+                        value={Id_especie}
+                        onChange={(e) => setId_especie(Number(e.target.value))}
+                        disabled={isViewOnly}
+                    >
+                        <option value="">Selecciona una especie</option>
+                        {Especies.map(e => (
+                            <option key={e.Id_especie} value={e.Id_especie}>
+                                {e.Nom_especie}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+
+                {/* Botón */}
+                {!isViewOnly && (
+                    <div className="col-12 text-center mt-4">
+                        <button type="submit" className="btn btn-primary rounded-pill px-5 shadow-sm fw-bold">
+                            <i className="fa-solid fa-paper-plane me-2"></i>
+                            {textFormButton}
+                        </button>
+                    </div>
+                )}
+            </div>
         </form>
     )
 }
