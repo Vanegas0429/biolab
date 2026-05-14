@@ -62,19 +62,24 @@ class ReservaService {
       const equipos = json.ReservaEquipos?.map(re => ({
         ...re,
         Nom_Equipo: re.Equipo?.nombre,
-        Uni_Medida: 'Unidades'
+        Uni_Medida: 'Unidades',
+        ficha_tecnica: re.Equipo?.ficha_tecnica,
+        marca: re.Equipo?.marca,
+        img_equipo: re.Equipo?.img_equipo
       })) || [];
 
       const materiales = json.ReservaMateriales?.map(rm => ({
         ...rm,
         Nom_Material: rm.Material?.Nom_Material,
-        Uni_Medida: rm.Material?.Uni_Medida || 'Unidades'
+        Uni_Medida: rm.Material?.Uni_Medida || 'Unidades',
+        img_material: rm.Material?.img_material
       })) || [];
 
       const reactivos = json.ReservaReactivos?.map(rr => ({
         ...rr,
         Nom_Reactivo: rr.Reactivo?.Nom_reactivo,
-        Uni_Medida: rr.Reactivo?.Uni_Medida || 'ml/g'
+        Uni_Medida: rr.Reactivo?.Uni_Medida || 'ml/g',
+        Ficha_tecnica: rr.Reactivo?.Ficha_tecnica
       })) || [];
 
       return {
@@ -133,7 +138,10 @@ class ReservaService {
     const equipos = json.ReservaEquipos?.map(re => ({
       ...re,
       Nom_Equipo: re.Equipo?.nombre,
-      Uni_Medida: 'Unidades'
+      Uni_Medida: 'Unidades',
+      ficha_tecnica: re.Equipo?.ficha_tecnica,
+      marca: re.Equipo?.marca,
+      img_equipo: re.Equipo?.img_equipo
     })) || [];
 
     const materiales = json.ReservaMateriales?.map(rm => ({
@@ -146,7 +154,8 @@ class ReservaService {
       ...rr,
       Nom_Reactivo: rr.Reactivo?.Nom_reactivo,
       Uni_Medida: rr.Reactivo?.Uni_Medida || 'ml/g',
-      Presentacion: rr.Reactivo?.Presentacion
+      Presentacion: rr.Reactivo?.Presentacion,
+      Ficha_tecnica: rr.Reactivo?.Ficha_tecnica
     })) || [];
 
     return {
