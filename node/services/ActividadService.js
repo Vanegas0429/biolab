@@ -86,7 +86,7 @@ class ActividadService {
 
         const equiposDetalle = await EquipoModel.findAll({
             where: { id_equipo: { [Op.in]: equiposUnicos }, estado: 'Activo' },
-            attributes: ['id_equipo', 'nombre', 'img_equipo']
+            attributes: ['id_equipo', 'nombre', 'img_equipo', 'ficha_tecnica', 'marca']
         });
 
         const materialesDetalle = await MaterialModel.findAll({
@@ -96,7 +96,7 @@ class ActividadService {
 
         const reactivosDetalle = await ReactivosModel.findAll({
             where: { Id_Reactivo: { [Op.in]: reactivosUnicos }, Estado: 'Activo' },
-            attributes: ['Id_Reactivo', 'Nom_reactivo', 'Presentacion']
+            attributes: ['Id_Reactivo', 'Nom_reactivo', 'Presentacion', 'Ficha_tecnica']
         });
 
         // Filter the allowed IDs based on active items

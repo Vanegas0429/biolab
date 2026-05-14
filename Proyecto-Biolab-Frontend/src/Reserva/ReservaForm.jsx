@@ -22,6 +22,15 @@ const parseImages = (imgField) => {
   }
 };
 
+const abrirFicha = (ficha) => {
+  if (!ficha) {
+    Swal.fire("Aviso", "No hay ficha técnica disponible para este recurso.", "info");
+    return;
+  }
+  const url = `http://localhost:8000/uploads/${ficha}`;
+  window.open(url, "_blank");
+};
+
 const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = false }) => {
   const reservaId = rowToEdit?.Id_Reserva;
   const isEditing = Boolean(reservaId);
@@ -155,34 +164,34 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
         const actividadesIds = reserva.actividades?.map((a) => Number(a.Id_Actividad || a.id_actividad)) || [];
         setActividadesSeleccionadas(actividadesIds);
 
-        setEquipos(reserva.equipos?.map((item) => ({ 
-          Id_Equipo: Number(item.Id_Equipo), 
+        setEquipos(reserva.equipos?.map((item) => ({
+          Id_Equipo: Number(item.Id_Equipo),
           Can_Equipos: Number(item.Can_Equipos),
-          Nom_Equipo: item.Nom_Equipo || item.nombre
+          Nom_Equipo: item.Nom_Equipo || item.nombre,
+          ficha_tecnica: item.ficha_tecnica || item.Equipo?.ficha_tecnica,
+          marca: item.marca || item.Equipo?.marca,
+          img_equipo: item.img_equipo || item.Equipo?.img_equipo
         })) || []);
-        setMateriales(reserva.materiales?.map((item) => ({ 
-          Id_Material: Number(item.Id_Material), 
+        setMateriales(reserva.materiales?.map((item) => ({
+          Id_Material: Number(item.Id_Material),
           Can_Materiales: Number(item.Can_Materiales),
-          Nom_Material: item.Nom_Material
+          Nom_Material: item.Nom_Material,
+          img_material: item.img_material || item.Material?.img_material
         })) || []);
-        setReactivos(reserva.reactivos?.map((item) => ({ 
-          Id_Reactivo: Number(item.Id_Reactivo), 
+        setReactivos(reserva.reactivos?.map((item) => ({
+          Id_Reactivo: Number(item.Id_Reactivo),
           Can_Reactivo: Number(item.Can_Reactivo),
           Nom_Reactivo: item.Nom_Reactivo || item.Nom_reactivo,
-          Presentacion: item.Presentacion
+          Presentacion: item.Presentacion,
+          Ficha_tecnica: item.Ficha_tecnica || item.Reactivo?.Ficha_tecnica
         })) || []);
 
-        // Si es modo vista, no necesitamos consultar recursos adicionales ya que vienen en el rowToEdit
-        if (isViewOnly) {
-          // Pero si necesitamos cargar actividades para ver los nombres si no los tenemos
-          await loadActividades();
-          return;
-        }
-
+        // En modo vista también cargamos actividades y recursos para ver imágenes y detalles
+        await loadActividades();
         if (actividadesIds.length > 0) {
           await consultarRecursos(actividadesIds);
         }
-        return;
+        if (isViewOnly) return;
       }
 
       // De lo contrario, fetch normal
@@ -221,7 +230,10 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
         equiposData.map((item) => ({
           Id_Equipo: Number(item.Id_Equipo),
           Can_Equipos: Number(item.Can_Equipos),
-          Nom_Equipo: item.Nom_Equipo || item.nombre
+          Nom_Equipo: item.Nom_Equipo || item.nombre,
+          ficha_tecnica: item.ficha_tecnica || item.Equipo?.ficha_tecnica,
+          marca: item.marca || item.Equipo?.marca,
+          img_equipo: item.img_equipo || item.Equipo?.img_equipo
         }))
       );
 
@@ -229,7 +241,8 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
         materialesData.map((item) => ({
           Id_Material: Number(item.Id_Material),
           Can_Materiales: Number(item.Can_Materiales),
-          Nom_Material: item.Nom_Material
+          Nom_Material: item.Nom_Material,
+          img_material: item.Material?.img_material
         }))
       );
 
@@ -238,7 +251,8 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
           Id_Reactivo: Number(item.Id_Reactivo),
           Can_Reactivo: Number(item.Can_Reactivo),
           Nom_Reactivo: item.Nom_Reactivo || item.Nom_reactivo,
-          Presentacion: item.Presentacion
+          Presentacion: item.Presentacion,
+          Ficha_tecnica: item.Ficha_tecnica || item.Reactivo?.Ficha_tecnica
         }))
       );
 
@@ -361,28 +375,64 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
     }
   };
 
-  const agregarEquipo = (idEquipo) => {
-    const id = Number(idEquipo);
-    if (!id) return;
+  const agregarEquipoPorNombre = (nombre) => {
+    if (!nombre) return;
+    const grupo = equiposAgrupados.find((g) => g.nombre === nombre);
+    if (!grupo) return;
 
-    const existe = equipos.some((e) => Number(e.Id_Equipo) === id);
-    if (existe) return;
+    // Verificar cuántos ya tenemos seleccionados de este nombre
+    const yaSeleccionados = equipos.filter((e) => {
+      const info = equiposDisponibles.find((ed) => Number(ed.id_equipo) === Number(e.Id_Equipo));
+      return info?.nombre === nombre;
+    });
 
-    setEquipos((prev) => [...prev, { Id_Equipo: id, Can_Equipos: 1 }]);
+    if (yaSeleccionados.length < grupo.items.length) {
+      // Buscar el siguiente ID disponible en el grupo que no esté ya seleccionado
+      const nextItem = grupo.items.find(
+        (item) => !equipos.some((e) => Number(e.Id_Equipo) === Number(item.id_equipo))
+      );
+      if (nextItem) {
+        setEquipos((prev) => [...prev, { Id_Equipo: Number(nextItem.id_equipo), Can_Equipos: 1 }]);
+      }
+    }
   };
 
-  const actualizarCantidadEquipo = (idEquipo, cantidad) => {
+  const actualizarCantidadEquipoPorNombre = (nombre, nuevaCantidad) => {
+    const cant = Number(nuevaCantidad) || 0;
+    const grupo = equiposAgrupados.find((g) => g.nombre === nombre);
+    if (!grupo) return;
+
+    if (cant > grupo.items.length) {
+      Swal.fire(
+        "Atención",
+        `Solo hay ${grupo.items.length} equipos de este tipo disponibles.`,
+        "warning"
+      );
+      return;
+    }
+
+    // Filtrar los que NO son de este nombre para mantenerlos
+    const otrosEquipos = equipos.filter((e) => {
+      const info = equiposDisponibles.find((ed) => Number(ed.id_equipo) === Number(e.Id_Equipo));
+      return info?.nombre !== nombre;
+    });
+
+    // Tomar los primeros N items del grupo disponible
+    const nuevosItems = grupo.items.slice(0, cant).map((item) => ({
+      Id_Equipo: Number(item.id_equipo),
+      Can_Equipos: 1,
+    }));
+
+    setEquipos([...otrosEquipos, ...nuevosItems]);
+  };
+
+  const eliminarEquipoPorNombre = (nombre) => {
     setEquipos((prev) =>
-      prev.map((item) =>
-        Number(item.Id_Equipo) === Number(idEquipo)
-          ? { ...item, Can_Equipos: Number(cantidad) || 0 }
-          : item
-      )
+      prev.filter((e) => {
+        const info = equiposDisponibles.find((ed) => Number(ed.id_equipo) === Number(e.Id_Equipo));
+        return info?.nombre !== nombre;
+      })
     );
-  };
-
-  const eliminarEquipo = (idEquipo) => {
-    setEquipos((prev) => prev.filter((item) => Number(item.Id_Equipo) !== Number(idEquipo)));
   };
 
   const agregarMaterial = (idMaterial) => {
@@ -398,7 +448,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
   const actualizarCantidadMaterial = (idMaterial, cantidad) => {
     const id = Number(idMaterial);
     const cant = Number(cantidad) || 0;
-    
+
     // Buscar el material en los detalles de recursos para saber el stock real
     const materialInfo = materialesDisponibles.find(m => Number(m.Id_Material) === id);
     const stockDisponible = materialInfo ? Number(materialInfo.Can_Material) : 99999;
@@ -493,6 +543,41 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
   }, [nombreEstadoActual]);
 
   const equiposDisponibles = useMemo(() => recursosActividad?.resumen?.equiposDetalle ?? [], [recursosActividad]);
+
+  const equiposAgrupados = useMemo(() => {
+    const groups = {};
+    equiposDisponibles.forEach((eq) => {
+      if (!groups[eq.nombre]) {
+        groups[eq.nombre] = { nombre: eq.nombre, items: [] };
+      }
+      groups[eq.nombre].items.push(eq);
+    });
+    return Object.values(groups);
+  }, [equiposDisponibles]);
+
+  const selectedEquiposAgrupados = useMemo(() => {
+    const groups = {};
+    equipos.forEach((e) => {
+      const dbInfo = equiposDisponibles.find(
+        (ed) => Number(ed.id_equipo) === Number(e.Id_Equipo)
+      );
+
+      const info = dbInfo || {
+        nombre: e.Nom_Equipo || `Equipo ${e.Id_Equipo}`,
+        img_equipo: e.img_equipo,
+        ficha_tecnica: e.ficha_tecnica,
+        marca: e.marca
+      };
+
+      const name = info.nombre;
+      if (!groups[name]) {
+        groups[name] = { nombre: name, items: [] };
+      }
+      groups[name].items.push({ ...e, info });
+    });
+    return Object.values(groups);
+  }, [equipos, equiposDisponibles]);
+
   const materialesDisponibles = useMemo(() => recursosActividad?.resumen?.materialesDetalle ?? [], [recursosActividad]);
   const reactivosDisponibles = useMemo(() => recursosActividad?.resumen?.reactivosDetalle ?? [], [recursosActividad]);
 
@@ -641,52 +726,6 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
           </select>
         </div>
 
-        {isEditing && (
-          <div className="col-md-6 mb-3">
-            <label className="form-label">Estado:</label>
-            <select
-              className="form-select rounded-pill shadow-sm"
-              value={Id_Estado || ""}
-              onChange={(e) => {
-                setId_Estado(Number(e.target.value));
-                setMot_RecCan("");
-              }}
-              disabled={esEstadoFinal || isViewOnly}
-            >
-              {!nombreEstadoActual && <option value="">Selecciona uno</option>}
-
-              {nombreEstadoActual && (
-                <option value={obtenerIdEstadoPorNombre(nombreEstadoActual) || Id_EstadoActual || ""}>
-                  {nombreEstadoActual}
-                </option>
-              )}
-
-              {estadosPermitidos.map((estado) => (
-                <option key={estado.Id_Estado} value={estado.Id_Estado}>
-                  {estado.Tip_Estado}
-                </option>
-              ))}
-            </select>
-
-            {!esEstadoFinal && estadosPermitidos.length > 0 && (
-              <small className="text-muted">
-                Solo se muestran los estados permitidos según el flujo actual.
-              </small>
-            )}
-
-            {!esEstadoFinal && nombreEstadoActual && estadosPermitidos.length === 0 && (
-              <small className="text-muted">
-                No hay más transiciones disponibles para este estado.
-              </small>
-            )}
-
-            {esEstadoFinal && (
-              <small className="text-muted">
-                Esta reserva ya terminó su flujo y no admite más cambios de estado.
-              </small>
-            )}
-          </div>
-        )}
 
         {isEditing &&
           ["Rechazado", "Cancelado"].includes(
@@ -760,15 +799,15 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
                 <select
                   className="form-select rounded-pill shadow-sm"
                   onChange={(e) => {
-                    agregarEquipo(e.target.value);
+                    agregarEquipoPorNombre(e.target.value);
                     e.target.value = "";
                   }}
-                  disabled={loadingRecursos || equiposDisponibles.length === 0}
+                  disabled={loadingRecursos || equiposAgrupados.length === 0}
                 >
                   <option value="">Selecciona un equipo</option>
-                  {equiposDisponibles.map((eq) => (
-                    <option key={eq.id_equipo} value={eq.id_equipo}>
-                      {eq.nombre}
+                  {equiposAgrupados.map((g) => (
+                    <option key={g.nombre} value={g.nombre}>
+                      {g.nombre}
                     </option>
                   ))}
                 </select>
@@ -848,43 +887,84 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
               <div className="row">
                 <div className="col-md-4">
                   <h6>Equipos seleccionados</h6>
-                  {equipos.length === 0 && <p className="text-muted">No hay equipos seleccionados</p>}
-                  {equipos.map((item) => {
-                    const info = equiposDisponibles.find(e => Number(e.id_equipo) === Number(item.Id_Equipo));
-                    const imgs = parseImages(info?.img_equipo);
-                    
+                  {selectedEquiposAgrupados.length === 0 && <p className="text-muted">No hay equipos seleccionados</p>}
+                  {selectedEquiposAgrupados.map((group) => {
+                    const availableGroup = equiposAgrupados.find(g => g.nombre === group.nombre);
+                    const maxStock = availableGroup ? availableGroup.items.length : group.items.length;
+
                     return (
-                      <div key={item.Id_Equipo} className="border rounded p-2 mb-2 bg-light shadow-sm">
-                        <div className="d-flex align-items-center gap-3">
-                          <div className="flex-shrink-0">
-                            {imgs.length > 0 ? (
-                              <img 
-                                src={`http://localhost:8000/uploads/${imgs[0]}`} 
-                                alt={info?.nombre} 
-                                className="rounded" 
-                                style={{ width: '60px', height: '60px', objectFit: 'cover' }}
-                              />
-                            ) : (
-                              <div className="bg-white border rounded d-flex align-items-center justify-content-center" style={{ width: '60px', height: '60px' }}>
-                                <i className="fa-solid fa-microscope text-muted opacity-50"></i>
-                              </div>
-                            )}
-                          </div>
+                      <div key={group.nombre} className="border rounded p-2 mb-2 bg-light shadow-sm">
+                        <div className="d-flex align-items-center gap-3 mb-2">
                           <div className="flex-grow-1 min-width-0">
                             <div className="d-flex justify-content-between align-items-start">
-                              <strong className="small text-truncate d-block" title={info?.nombre || item.Nom_Equipo}>{info?.nombre || item.Nom_Equipo || `Equipo ${item.Id_Equipo}`}</strong>
+                              <strong className="small text-truncate d-block" title={group.nombre}>
+                                {group.nombre}
+                              </strong>
                               {!isViewOnly && (
                                 <button
                                   type="button"
                                   className="btn btn-sm btn-link text-danger p-0 text-decoration-none"
-                                  onClick={() => eliminarEquipo(item.Id_Equipo)}
+                                  onClick={() => eliminarEquipoPorNombre(group.nombre)}
                                 >
                                   <i className="fa-solid fa-trash-can"></i>
                                 </button>
                               )}
                             </div>
-                            <span className="badge bg-primary-soft text-primary small mt-1">Solicitado</span>
+                            <span className="badge bg-primary-soft text-primary small mt-1">Disponibles: {maxStock}</span>
                           </div>
+                        </div>
+
+                        {/* Contenedor de imágenes */}
+                        <div className="d-flex flex-wrap gap-2 mb-2">
+                          {group.items.map((item, idx) => {
+                            const imgs = parseImages(item.info?.img_equipo);
+                            return (
+                              <div key={`${item.Id_Equipo}-${idx}`} className="flex-shrink-0 text-center">
+                                {imgs.length > 0 ? (
+                                  <img
+                                    src={`http://localhost:8000/uploads/${imgs[0]}`}
+                                    alt={group.nombre}
+                                    className="rounded border"
+                                    style={{ width: '50px', height: '50px', objectFit: 'cover' }}
+                                    title={`Equipo ID: ${item.Id_Equipo}`}
+                                  />
+                                ) : (
+                                  <div className="bg-white border rounded d-flex align-items-center justify-content-center" style={{ width: '50px', height: '50px' }}>
+                                    <i className="fa-solid fa-microscope text-muted opacity-50"></i>
+                                  </div>
+                                )}
+                                <div className="mt-1">
+                                  <button
+                                    type="button"
+                                    className="btn btn-xs btn-outline-info p-0 px-1"
+                                    style={{ fontSize: '10px' }}
+                                    onClick={() => abrirFicha(item.info?.ficha_tecnica)}
+                                    title={`Ver ficha técnica`}
+                                  >
+                                    <i className="fa-solid fa-file-pdf"></i> Ficha
+                                  </button>
+                                  {item.info?.marca && (
+                                    <div className="text-muted" style={{ fontSize: '9px' }}></div>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        {/* Selector de cantidad */}
+                        <div className="d-flex align-items-center gap-2">
+                          <label className="small text-muted">Cantidad:</label>
+                          <input
+                            type="number"
+                            min="1"
+                            max={maxStock}
+                            className="form-control form-control-sm"
+                            style={{ width: '70px' }}
+                            value={group.items.length}
+                            onChange={(e) => actualizarCantidadEquipoPorNombre(group.nombre, e.target.value)}
+                            readOnly={isViewOnly}
+                          />
                         </div>
                       </div>
                     );
@@ -897,17 +977,17 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
                   {materiales.map((item) => {
                     const info = materialesDisponibles.find(m => Number(m.Id_Material) === Number(item.Id_Material));
                     const maxStock = info ? Number(info.Can_Material) : 0;
-                    const imgs = parseImages(info?.img_material);
-                    
+                    const imgs = parseImages(info?.img_material || item.img_material);
+
                     return (
                       <div key={item.Id_Material} className="border rounded p-2 mb-2 bg-light shadow-sm">
                         <div className="d-flex align-items-center gap-3 mb-2">
                           <div className="flex-shrink-0">
                             {imgs.length > 0 ? (
-                              <img 
-                                src={`http://localhost:8000/uploads/${imgs[0]}`} 
-                                alt={info?.Nom_Material} 
-                                className="rounded" 
+                              <img
+                                src={`http://localhost:8000/uploads/${imgs[0]}`}
+                                alt={info?.Nom_Material}
+                                className="rounded"
                                 style={{ width: '50px', height: '50px', objectFit: 'cover' }}
                               />
                             ) : (
@@ -929,7 +1009,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
                                 </button>
                               )}
                             </div>
-                            <span className="badge bg-secondary-soft text-secondary small">Stock: {maxStock}</span>
+                            <span className="badge bg-primary-soft text-primary small mt-1">Stock: {maxStock}</span>
                           </div>
                         </div>
                         <div className="d-flex align-items-center gap-2">
@@ -955,21 +1035,34 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
                     <div key={item.Id_Reactivo} className="border rounded p-2 mb-2">
                       <div className="d-flex justify-content-between align-items-center mb-2">
                         <strong>
-                          {reactivosDisponibles.find(r => Number(r.Id_Reactivo) === Number(item.Id_Reactivo))?.Nom_reactivo || item.Nom_Reactivo || `Reactivo ${item.Id_Reactivo}`} 
+                          {reactivosDisponibles.find(r => Number(r.Id_Reactivo) === Number(item.Id_Reactivo))?.Nom_reactivo || item.Nom_Reactivo || `Reactivo ${item.Id_Reactivo}`}
                           {' '}
-                          {(reactivosDisponibles.find(r => Number(r.Id_Reactivo) === Number(item.Id_Reactivo))?.Presentacion || item.Presentacion) 
-                            ? `(${reactivosDisponibles.find(r => Number(r.Id_Reactivo) === Number(item.Id_Reactivo))?.Presentacion || item.Presentacion})` 
+                          {(reactivosDisponibles.find(r => Number(r.Id_Reactivo) === Number(item.Id_Reactivo))?.Presentacion || item.Presentacion)
+                            ? `(${reactivosDisponibles.find(r => Number(r.Id_Reactivo) === Number(item.Id_Reactivo))?.Presentacion || item.Presentacion})`
                             : ''}
                         </strong>
-                        {!isViewOnly && (
+                        <div className="d-flex gap-1 align-items-center">
                           <button
                             type="button"
-                            className="btn btn-sm btn-danger"
-                            onClick={() => eliminarReactivo(item.Id_Reactivo)}
+                            className="btn btn-sm btn-outline-info"
+                            onClick={() => {
+                              const info = reactivosDisponibles.find(r => Number(r.Id_Reactivo) === Number(item.Id_Reactivo));
+                              abrirFicha(info?.Ficha_tecnica || item.Ficha_tecnica);
+                            }}
+                            title="Ver ficha técnica"
                           >
-                            Quitar
+                            <i className="fa-solid fa-file-pdf"></i>
                           </button>
-                        )}
+                          {!isViewOnly && (
+                            <button
+                              type="button"
+                              className="btn btn-sm btn-danger"
+                              onClick={() => eliminarReactivo(item.Id_Reactivo)}
+                            >
+                              Quitar
+                            </button>
+                          )}
+                        </div>
                       </div>
                       <input
                         type="number"
@@ -1081,17 +1174,19 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
           />
         </div>
 
-        
-        <div className="col-12 text-center mt-4">
-          <button
-            type="submit"
-            className="btn btn-primary rounded-pill px-5 shadow-sm fw-bold"
-            disabled={loadingRecursos}
-          >
-            <i className="fa-solid fa-paper-plane me-2"></i>
-            {isEditing ? "Actualizar Reserva" : "Crear Reserva"}
-          </button>
-        </div>
+
+        {!isViewOnly && (
+          <div className="col-12 text-center mt-4">
+            <button
+              type="submit"
+              className="btn btn-primary rounded-pill px-5 shadow-sm fw-bold"
+              disabled={loadingRecursos}
+            >
+              <i className="fa-solid fa-paper-plane me-2"></i>
+              {isEditing ? "Actualizar Reserva" : "Crear Reserva"}
+            </button>
+          </div>
+        )}
       </div>
     </form>
   );

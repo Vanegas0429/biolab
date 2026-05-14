@@ -233,10 +233,6 @@ const CrudReserva = () => {
             },
             { name: "MOTIVO R/C", selector: (row) => row?.Mot_RecCan ?? "", sortable: true, width: '150px' },
             { name: "SOLICITANTE", selector: (row) => row?.Nom_Solicitante ?? "", sortable: true, width: '180px' },
-            { name: "DOCUMENTO", selector: (row) => row?.Doc_Solicitante ?? "", sortable: true, width: '140px' },
-            { name: "CORREO", selector: (row) => row?.Cor_Solicitante ?? "", sortable: true, width: '200px' },
-            { name: "TELÉFONO", selector: (row) => row?.Tel_Solicitante ?? "", sortable: true, width: '140px' },
-            { name: "APRENDICES", selector: (row) => row?.Can_Aprendices ?? "", sortable: true, width: '120px' },
             { name: "FECHA", selector: (row) => row?.Fec_Reserva ?? "", sortable: true, width: '120px' },
             { name: "HORA", selector: (row) => row?.Hor_Reserva ?? "", sortable: true, width: '120px' },
             { name: "FICHA", selector: (row) => row?.Num_Ficha ?? "", sortable: true, width: '120px' },
@@ -300,12 +296,7 @@ const CrudReserva = () => {
             </div>
 
             <div className="modal-body position-relative p-4">
-              {isViewOnly && (
-                <div
-                  className="position-absolute w-100 h-100 start-0 top-0"
-                  style={{ zIndex: 10, backgroundColor: 'rgba(255,255,255,0.1)' }}
-                ></div>
-              )}
+
               <ReservaForm
                 key={`${rowToEdit?.Id_Reserva ?? "new"}-${formOpenToken}`}
                 hideModal={async () => {
