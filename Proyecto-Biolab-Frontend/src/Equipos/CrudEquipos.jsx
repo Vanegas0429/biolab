@@ -193,9 +193,9 @@ const CrudEquipos = ({ userRol }) => {
   };
 
   const equiposFiltrados = equipos.filter((e) =>
-    e.nombre?.toLowerCase().includes(filterText.toLowerCase()) ||
-    e.grupo?.toLowerCase().includes(filterText.toLowerCase()) ||
-    e.centro_costos?.toLowerCase().includes(filterText.toLowerCase())
+    (e.nombre || '').toLowerCase().includes(filterText.toLowerCase()) ||
+    (e.grupo || '').toLowerCase().includes(filterText.toLowerCase()) ||
+    (e.centro_costos || '').toLowerCase().includes(filterText.toLowerCase())
   );
 
   if (loading) return (

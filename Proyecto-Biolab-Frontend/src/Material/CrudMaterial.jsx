@@ -136,7 +136,7 @@ const CrudMaterial = () => {
 
   const newListMaterial = Material.filter((uso) => {
     const textToSearch = filterText.toLowerCase();
-    return uso.Nom_Material?.toLowerCase().includes(textToSearch);
+    return (uso.Nom_Material || '').toLowerCase().includes(textToSearch);
   });
 
   const hideModal = () => {

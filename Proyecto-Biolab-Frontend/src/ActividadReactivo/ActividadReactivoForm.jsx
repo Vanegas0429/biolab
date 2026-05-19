@@ -148,60 +148,58 @@ const ActividadReactivoForm = ({ hideModal, refreshList, rowToEdit }) => {
     }
 
     return (
-        <form onSubmit={gestionarForm} className="col-12 col-md-12">
-            <div className="row">
-                {/* Actividad */}
-                <div className="col-md-6 mb-3">
-                    <label className="fw-bold mb-1">Actividad:</label>
-                    <select
-                        className="form-control"
-                        value={Id_Actividad}
-                        onChange={(e) => setId_Actividad(Number(e.target.value))}
-                        disabled={!!rowToEdit}
-                    >
-                        <option value="">Selecciona</option>
-                        {Actividades.filter(a => a.Estado === 'Activo').map(e => (
-                            <option key={e.Id_Actividad} value={e.Id_Actividad}>
-                                {e.Nom_Actividad}
-                            </option>
-                        ))}
-                    </select>
-                </div>
+        <form onSubmit={gestionarForm} className="row g-3">
+            {/* Actividad */}
+            <div className="col-md-6">
+                <label className="form-label fw-bold">Actividad:</label>
+                <select
+                    className="form-select rounded-pill px-3 shadow-sm"
+                    value={Id_Actividad}
+                    onChange={(e) => setId_Actividad(Number(e.target.value))}
+                    disabled={!!rowToEdit}
+                >
+                    <option value="">Selecciona una actividad</option>
+                    {Actividades.filter(a => a.Estado === 'Activo').map(e => (
+                        <option key={e.Id_Actividad} value={e.Id_Actividad}>
+                            {e.Nom_Actividad}
+                        </option>
+                    ))}
+                </select>
+            </div>
 
-                {/* Reactivos con Checkboxes */}
-                <div className="col-md-6 mb-3">
-                    <label className="fw-bold mb-1">Reactivos (Múltiple):</label>
-                    <div className="border rounded p-2" style={{ maxHeight: '200px', overflowY: 'auto', backgroundColor: '#f8f9fa' }}>
-                        {Reactivos.filter(r => r.Estado === 'Activo').map(r => (
-                            <div className="form-check" key={r.Id_Reactivo}>
-                                <input 
-                                    className="form-check-input" 
-                                    type="checkbox" 
-                                    value={r.Id_Reactivo} 
-                                    id={`react-${r.Id_Reactivo}`}
-                                    checked={reactivosSeleccionados.includes(r.Id_Reactivo)}
-                                    onChange={() => handleCheckboxChange(r.Id_Reactivo)}
-                                />
-                                <label className="form-check-label" htmlFor={`react-${r.Id_Reactivo}`}>
-                                    {r.Nom_reactivo}
-                                </label>
-                            </div>
-                        ))}
-                        {Reactivos.filter(r => r.Estado === 'Activo').length === 0 && (
-                            <small className="text-muted">No hay reactivos activos disponibles.</small>
-                        )}
-                    </div>
-                    <small className="text-muted">{reactivosSeleccionados.length} seleccionado(s)</small>
+            {/* Reactivos con Checkboxes */}
+            <div className="col-md-6">
+                <label className="form-label fw-bold">Reactivos (Múltiple):</label>
+                <div className="border rounded-4 p-3 bg-light shadow-sm custom-scroll" style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                    {Reactivos.filter(r => r.Estado === 'Activo').map(r => (
+                        <div className="form-check" key={r.Id_Reactivo}>
+                            <input 
+                                className="form-check-input" 
+                                type="checkbox" 
+                                value={r.Id_Reactivo} 
+                                id={`react-${r.Id_Reactivo}`}
+                                checked={reactivosSeleccionados.includes(r.Id_Reactivo)}
+                                onChange={() => handleCheckboxChange(r.Id_Reactivo)}
+                            />
+                            <label className="form-check-label" htmlFor={`react-${r.Id_Reactivo}`}>
+                                {r.Nom_reactivo}
+                            </label>
+                        </div>
+                    ))}
+                    {Reactivos.filter(r => r.Estado === 'Activo').length === 0 && (
+                        <small className="text-muted">No hay reactivos activos disponibles.</small>
+                    )}
                 </div>
+                <small className="text-muted d-block mt-1 ps-2">{reactivosSeleccionados.length} seleccionado(s)</small>
             </div>
 
             {/* Botón */}
-            <div className="mb-3 text-end">
+            <div className="col-12 mt-4 text-center">
                 <button
                     type="submit"
-                    className="btn btn-primary px-4 fw-bold shadow-sm"
+                    className="btn btn-primary rounded-pill px-5 shadow-sm fw-bold"
                 >
-                    <i className="fa-solid fa-floppy-disk me-2"></i>
+                    <i className={`fa-solid ${rowToEdit ? 'fa-rotate' : 'fa-paper-plane'} me-2`}></i>
                     {textFormButton}
                 </button>
             </div>

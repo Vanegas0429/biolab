@@ -65,7 +65,7 @@ const CrudActividadReactivo = () => {
     const activityName = (item.actividades?.Nom_Actividad || item.Actividad?.Nom_Actividad || "").toLowerCase();
     return (
       activityName.includes(text) ||
-      item.reactivosList.some(r => r.nombre?.toLowerCase().includes(text))
+      item.reactivosList.some(r => (r.nombre || '').toLowerCase().includes(text))
     );
   });
 
@@ -86,7 +86,7 @@ const CrudActividadReactivo = () => {
     {
       name: 'REACTIVOS',
       center: true,
-      width: '600px',
+      width: '300px',
       cell: row => (
         <button
           className="btn btn-sm btn-outline-primary fw-bold rounded-pill px-3 shadow-none"
@@ -198,15 +198,15 @@ const CrudActividadReactivo = () => {
 
         {/* Modal Formulario (Agregar/Editar) */}
         <div className="modal fade" id="exampleModal" tabIndex="-1" aria-hidden="true">
-          <div className="modal-dialog">
-            <div className="modal-content border-0 shadow">
-              <div className="modal-header bg-light">
-                <h1 className="modal-title fs-5 fw-bold">
+          <div className="modal-dialog modal-lg">
+            <div className="modal-content border-0 shadow" style={{ borderRadius: '20px', overflow: 'hidden' }}>
+              <div className="modal-header bg-primary text-white border-0">
+                <h1 className="modal-title fs-5 fw-bold text-white">
                   {rowToEdit ? "Editar Actividad-Reactivo" : "Agregar Actividad-Reactivo"}
                 </h1>
                 <button
                   type="button"
-                  className="btn-close"
+                  className="btn-close btn-close-white"
                   data-bs-dismiss="modal"
                   id="closeModal"
                   aria-label="Close"

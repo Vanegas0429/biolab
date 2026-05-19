@@ -59,12 +59,12 @@ const CrudActividadEquipo = () => {
     return Object.values(groups);
   }, [ActividadEquipo]);
 
-  // 🔹 Buscador sobre datos agrupados
   const filteredData = groupedData.filter((item) => {
     const text = filterText.toLowerCase();
+    const actName = item.Actividad?.Nom_Actividad || '';
     return (
-      item.Actividad?.Nom_Actividad.toLowerCase().includes(text) ||
-      item.equiposList.some(e => e.nombre?.toLowerCase().includes(text))
+      actName.toLowerCase().includes(text) ||
+      item.equiposList.some(e => (e.nombre || '').toLowerCase().includes(text))
     );
   });
 
@@ -85,18 +85,21 @@ const CrudActividadEquipo = () => {
     {
       name: 'EQUIPOS',
       center: true,
-      width: '600px',
-      cell: row => (
-        <button
-          className="btn btn-sm btn-outline-primary fw-bold rounded-pill px-3 shadow-none"
-          data-bs-toggle="modal"
-          data-bs-target="#equiposListModal"
-          onClick={() => setSelectedActivity(row)}
-        >
-          <i className="fa-solid fa-microscope me-2"></i>
-          {row.equiposList.length}
-        </button>
-      )
+      width: '300px',
+      cell: row => {
+        const uniqueNamesCount = new Set(row.equiposList.map(e => e.nombre?.trim().toLowerCase()).filter(Boolean)).size;
+        return (
+          <button
+            className="btn btn-sm btn-outline-primary fw-bold rounded-pill px-3 shadow-none"
+            data-bs-toggle="modal"
+            data-bs-target="#equiposListModal"
+            onClick={() => setSelectedActivity(row)}
+          >
+            <i className="fa-solid fa-microscope me-2"></i>
+            {uniqueNamesCount}
+          </button>
+        );
+      }
     },
     {
       name: 'ESTADO',
@@ -202,15 +205,15 @@ const CrudActividadEquipo = () => {
 
         {/* Modal Formulario (Agregar/Editar) */}
         <div className="modal fade" id="exampleModal" tabIndex="-1" aria-hidden="true">
-          <div className="modal-dialog">
-            <div className="modal-content border-0 shadow">
-              <div className="modal-header bg-light">
-                <h1 className="modal-title fs-5 fw-bold">
+          <div className="modal-dialog modal-lg">
+            <div className="modal-content border-0 shadow" style={{ borderRadius: '20px', overflow: 'hidden' }}>
+              <div className="modal-header bg-primary text-white border-0">
+                <h1 className="modal-title fs-5 fw-bold text-white">
                   {rowToEdit ? "Editar Actividad-Equipo" : "Agregar Actividad-Equipo"}
                 </h1>
                 <button
                   type="button"
-                  className="btn-close"
+                  className="btn-close btn-close-white"
                   data-bs-dismiss="modal"
                   id="closeModal"
                   aria-label="Close"
@@ -245,20 +248,31 @@ const CrudActividadEquipo = () => {
               </div>
               <div className="modal-body p-0">
                 <div className="list-group list-group-flush">
-                  {selectedActivity?.equiposList.map((eq, index) => (
-                    <div key={index} className="list-group-item d-flex justify-content-between align-items-center p-3">
-                      <div className="d-flex align-items-center">
-                        <div className="bg-light rounded-circle p-2 me-3">
-                          <i className="fa-solid fa-microscope text-primary"></i>
+                  {(() => {
+                    const uniqueList = [];
+                    const seenNames = new Set();
+                    selectedActivity?.equiposList.forEach((eq) => {
+                      const nameKey = eq.nombre?.trim().toLowerCase();
+                      if (nameKey && !seenNames.has(nameKey)) {
+                        seenNames.add(nameKey);
+                        uniqueList.push(eq);
+                      }
+                    });
+                    return uniqueList.map((eq, index) => (
+                      <div key={index} className="list-group-item d-flex justify-content-between align-items-center p-3">
+                        <div className="d-flex align-items-center">
+                          <div className="bg-light rounded-circle p-2 me-3">
+                            <i className="fa-solid fa-microscope text-primary"></i>
+                          </div>
+                          <span className="fw-semibold text-dark">{eq.nombre}</span>
                         </div>
-                        <span className="fw-semibold text-dark">{eq.nombre}</span>
+                        <span className={`badge rounded-pill ${eq.Estado === 'Activo' ? 'bg-success' : 'bg-danger'}`}>
+                          {eq.Estado}
+                        </span>
                       </div>
-                      <span className={`badge rounded-pill ${eq.Estado === 'Activo' ? 'bg-success' : 'bg-danger'}`}>
-                        {eq.Estado}
-                      </span>
-                    </div>
-                  ))}
-                  {selectedActivity?.equiposList.length === 0 && (
+                    ));
+                  })()}
+                  {(!selectedActivity?.equiposList || selectedActivity.equiposList.length === 0) && (
                     <div className="p-4 text-center text-muted">
                       No hay equipos vinculados a esta actividad.
                     </div>
