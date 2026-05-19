@@ -265,7 +265,7 @@ const CrudReserva = () => {
           noDataComponent="No hay registros"
           conditionalRowStyles={[
             {
-              when: (row) => row.Booleano === "Inactivo",
+              when: (row) => row.Booleano === "Inactivo" || ["Rechazado", "Cancelado", "Finalizado"].includes(row.Des_Estado),
               style: {
                 backgroundColor: "#f8fafc",
                 color: "#94a3b8",

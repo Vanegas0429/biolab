@@ -72,6 +72,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
 
   const [textFormButton, setTextFormButton] = useState("Enviar");
   const [loadingRecursos, setLoadingRecursos] = useState(false);
+  const [historialEstados, setHistorialEstados] = useState([]);
 
   const resetForm = () => {
     const user = getLoggedUser();
@@ -88,6 +89,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
     setBooleano("Activo");
     setId_Estado("");
     setId_EstadoActual("");
+    setHistorialEstados([]);
     setActividadesSeleccionadas([]);
     setRecursosActividad({
       actividades: [],
@@ -160,6 +162,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
         setId_EstadoActual(obtenerIdEstadoPorNombre(ultimoEstado));
         setId_Estado(obtenerIdEstadoPorNombre(ultimoEstado));
         setMot_RecCan(reserva.Mot_RecCan ?? "");
+        setHistorialEstados(reserva.ReservaEstados || []);
 
         const actividadesIds = reserva.actividades?.map((a) => Number(a.Id_Actividad || a.id_actividad)) || [];
         setActividadesSeleccionadas(actividadesIds);
@@ -216,6 +219,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
       setHor_Reserva(reserva.Hor_Reserva ?? "");
       setNum_Ficha(reserva.Num_Ficha ?? "");
       setBooleano(reserva.Booleano ?? "Activo");
+      setHistorialEstados(estadosData || []);
 
       const ultimoEstadoObj = estadosData?.[0] ?? {};
       const ultimoEstado = ultimoEstadoObj?.Id_Estado ?? "";
@@ -1174,6 +1178,61 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
           />
         </div>
 
+
+        {isViewOnly && (
+          <div className="col-12 mt-4">
+            <h5 className="fw-bold mb-3 text-primary">
+              <i className="fa-solid fa-clock-rotate-left me-2"></i>Historial de Cambios de Estado
+            </h5>
+            <div className="card border shadow-sm p-3 bg-light rounded-4">
+              {historialEstados && historialEstados.length > 0 ? (
+                <div className="list-group list-group-flush">
+                  {[...historialEstados]
+                    .sort((a, b) => (a.Id_ReservaEstado || 0) - (b.Id_ReservaEstado || 0))
+                    .map((item, idx) => {
+                      const fechaStr = item.updatedAt || item.updatedat
+                        ? new Date(item.updatedAt || item.updatedat).toLocaleString("es-CO", {
+                            dateStyle: "medium",
+                            timeStyle: "short",
+                          })
+                        : "Fecha no disponible";
+
+                      const status = item.Estado?.Tip_Estado || "Estado Desconocido";
+                      
+                      let badgeClass = 'bg-secondary';
+                      if (status === 'Aprobado') badgeClass = 'bg-success';
+                      else if (status === 'Rechazado' || status === 'Cancelado') badgeClass = 'bg-danger';
+                      else if (status === 'En proceso') badgeClass = 'bg-warning text-dark';
+                      else if (status === 'Solicitado') badgeClass = 'bg-info text-dark';
+
+                      return (
+                        <div key={item.Id_ReservaEstado || idx} className="list-group-item bg-transparent d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center py-3 px-0 border-bottom">
+                          <div className="d-flex align-items-center gap-3">
+                            <div className="bg-white rounded-circle shadow-sm d-flex justify-content-center align-items-center" style={{ width: '40px', height: '40px' }}>
+                              <i className="fa-solid fa-circle-dot text-primary fs-5"></i>
+                            </div>
+                            <div>
+                              <div className="d-flex align-items-center gap-2">
+                                <span className={`badge ${badgeClass} rounded-pill`}>{status}</span>
+                                <span className="text-muted small">{fechaStr}</span>
+                              </div>
+                              {item.Mot_RecCan && (
+                                <p className="mb-0 mt-2 text-danger small bg-danger-soft p-2 rounded-3 border border-danger-subtle">
+                                  <strong>Motivo:</strong> {item.Mot_RecCan}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+              ) : (
+                <p className="text-muted mb-0 small">No hay historial de cambios de estado disponible.</p>
+              )}
+            </div>
+          </div>
+        )}
 
         {!isViewOnly && (
           <div className="col-12 text-center mt-4">

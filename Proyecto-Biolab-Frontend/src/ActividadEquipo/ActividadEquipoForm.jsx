@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import apiAxios from "../api/axiosConfig.js";
 import Swal from 'sweetalert2'
 import withReactContent from 'sweetalert2-react-content'
@@ -39,26 +39,68 @@ const ActividadEquipoForm = ({ hideModal, refreshList, rowToEdit }) => {
         }
     }
 
+    // Filter active equipment to get unique names
+    const uniqueEquipos = useMemo(() => {
+        const list = [];
+        const seenNames = new Set();
+        Equipos.filter(e => e.estado === 'Activo').forEach(e => {
+            const nameKey = e.nombre.trim().toLowerCase();
+            if (!seenNames.has(nameKey)) {
+                seenNames.add(nameKey);
+                list.push(e);
+            }
+        });
+        return list;
+    }, [Equipos]);
+
     // 🔹 Cargar datos si es edición
     useEffect(() => {
-        if (rowToEdit) {
+        if (rowToEdit && Equipos.length > 0) {
             setId_Actividad(rowToEdit.Id_Actividad || '')
-            const selectedEq = rowToEdit.equiposList ? rowToEdit.equiposList.map(e => e.Id_Equipo || e.id_equipo) : [];
-            setEquiposSeleccionados(selectedEq)
+            const initialSelectedIds = rowToEdit.equiposList ? rowToEdit.equiposList.map(e => e.Id_Equipo || e.id_equipo) : [];
+            
+            // Expand to all active equipment sharing the same name as any of the initial selected equipment
+            const selectedNames = new Set();
+            initialSelectedIds.forEach(id => {
+                const eqObj = Equipos.find(eq => (eq.Id_Equipo || eq.id_equipo) === id);
+                if (eqObj) {
+                    selectedNames.add(eqObj.nombre.trim().toLowerCase());
+                }
+            });
+
+            const expandedEq = Equipos.filter(eq => eq.estado === 'Activo' && selectedNames.has(eq.nombre.trim().toLowerCase()))
+                                      .map(eq => eq.Id_Equipo || eq.id_equipo);
+
+            setEquiposSeleccionados(expandedEq)
             setEstado(rowToEdit.Estado || 'Activo')
             setTextFormButton('Actualizar')
-        } else {
+        } else if (!rowToEdit) {
             setId_Actividad('')
             setEquiposSeleccionados([])
             setEstado('Activo')
             setTextFormButton('Enviar')
         }
-    }, [rowToEdit])
+    }, [rowToEdit, Equipos])
 
-    const handleCheckboxChange = (id) => {
-        setEquiposSeleccionados(prev => 
-            prev.includes(id) ? prev.filter(e => e !== id) : [...prev, id]
-        );
+    const handleCheckboxChangeByName = (nombre) => {
+        const matchingIds = Equipos.filter(e => e.nombre.trim().toLowerCase() === nombre.trim().toLowerCase())
+                                   .map(e => e.Id_Equipo || e.id_equipo);
+        
+        const anySelected = matchingIds.some(id => equiposSeleccionados.includes(id));
+        
+        if (anySelected) {
+            setEquiposSeleccionados(prev => prev.filter(id => !matchingIds.includes(id)));
+        } else {
+            setEquiposSeleccionados(prev => {
+                const newSelection = [...prev];
+                matchingIds.forEach(id => {
+                    if (!newSelection.includes(id)) {
+                        newSelection.push(id);
+                    }
+                });
+                return newSelection;
+            });
+        }
     }
 
     // 🔹 CREAR
@@ -148,60 +190,65 @@ const ActividadEquipoForm = ({ hideModal, refreshList, rowToEdit }) => {
     }
 
     return (
-        <form onSubmit={gestionarForm} className="col-12 col-md-12">
-            <div className="row">
-                {/* Actividad */}
-                <div className="col-md-6 mb-3">
-                    <label className="fw-bold mb-1">Actividad:</label>
-                    <select
-                        className="form-control"
-                        value={Id_Actividad}
-                        onChange={(e) => setId_Actividad(Number(e.target.value))}
-                        disabled={!!rowToEdit} // Bloquear cambio de actividad si es edición
-                    >
-                        <option value="">Selecciona</option>
-                        {Actividades.filter(a => a.Estado === 'Activo').map(e => (
-                            <option key={e.Id_Actividad} value={e.Id_Actividad}>
-                                {e.Nom_Actividad}
-                            </option>
-                        ))}
-                    </select>
-                </div>
+        <form onSubmit={gestionarForm} className="row g-3">
+            {/* Actividad */}
+            <div className="col-md-6">
+                <label className="form-label fw-bold">Actividad:</label>
+                <select
+                    className="form-select rounded-pill px-3 shadow-sm"
+                    value={Id_Actividad}
+                    onChange={(e) => setId_Actividad(Number(e.target.value))}
+                    disabled={!!rowToEdit} // Bloquear cambio de actividad si es edición
+                >
+                    <option value="">Selecciona una actividad</option>
+                    {Actividades.filter(a => a.Estado === 'Activo').map(e => (
+                        <option key={e.Id_Actividad} value={e.Id_Actividad}>
+                            {e.Nom_Actividad}
+                        </option>
+                    ))}
+                </select>
+            </div>
 
-                {/* Equipos con Checkboxes */}
-                <div className="col-md-6 mb-3">
-                    <label className="fw-bold mb-1">Equipos (Múltiple):</label>
-                    <div className="border rounded p-2" style={{ maxHeight: '200px', overflowY: 'auto', backgroundColor: '#f8f9fa' }}>
-                        {Equipos.filter(e => e.estado === 'Activo').map(e => (
+            {/* Equipos con Checkboxes */}
+            <div className="col-md-6">
+                <label className="form-label fw-bold">Equipos (Múltiple):</label>
+                <div className="border rounded-4 p-3 bg-light shadow-sm custom-scroll" style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                    {uniqueEquipos.map(e => {
+                        const name = e.nombre;
+                        const isChecked = Equipos.filter(eq => eq.nombre.trim().toLowerCase() === name.trim().toLowerCase())
+                                                 .some(eq => equiposSeleccionados.includes(eq.Id_Equipo || eq.id_equipo));
+                        return (
                             <div className="form-check" key={e.Id_Equipo || e.id_equipo}>
                                 <input 
                                     className="form-check-input" 
                                     type="checkbox" 
-                                    value={e.Id_Equipo || e.id_equipo} 
+                                    value={name} 
                                     id={`equipo-${e.Id_Equipo || e.id_equipo}`}
-                                    checked={equiposSeleccionados.includes(e.Id_Equipo || e.id_equipo)}
-                                    onChange={() => handleCheckboxChange(e.Id_Equipo || e.id_equipo)}
+                                    checked={isChecked}
+                                    onChange={() => handleCheckboxChangeByName(name)}
                                 />
                                 <label className="form-check-label" htmlFor={`equipo-${e.Id_Equipo || e.id_equipo}`}>
-                                    {e.nombre}
+                                    {name}
                                 </label>
                             </div>
-                        ))}
-                        {Equipos.filter(e => e.estado === 'Activo').length === 0 && (
-                            <small className="text-muted">No hay equipos activos disponibles.</small>
-                        )}
-                    </div>
-                    <small className="text-muted">{equiposSeleccionados.length} seleccionado(s)</small>
+                        );
+                    })}
+                    {uniqueEquipos.length === 0 && (
+                        <small className="text-muted">No hay equipos activos disponibles.</small>
+                    )}
                 </div>
+                <small className="text-muted d-block mt-1 ps-2">
+                    {uniqueEquipos.filter(e => Equipos.filter(eq => eq.nombre.trim().toLowerCase() === e.nombre.trim().toLowerCase()).some(eq => equiposSeleccionados.includes(eq.Id_Equipo || eq.id_equipo))).length} tipo(s) de equipo seleccionado(s) ({equiposSeleccionados.length} en total)
+                </small>
             </div>
 
             {/* Botón */}
-            <div className="mb-3 text-end">
+            <div className="col-12 mt-4 text-center">
                 <button
                     type="submit"
-                    className="btn btn-primary px-4 fw-bold shadow-sm"
+                    className="btn btn-primary rounded-pill px-5 shadow-sm fw-bold"
                 >
-                    <i className="fa-solid fa-floppy-disk me-2"></i>
+                    <i className={`fa-solid ${rowToEdit ? 'fa-rotate' : 'fa-paper-plane'} me-2`}></i>
                     {textFormButton}
                 </button>
             </div>

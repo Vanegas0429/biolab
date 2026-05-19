@@ -92,8 +92,8 @@ const CrudReactivos = ({ userRol }) => {
 
   const newListReactivo = Reactivo.filter((uso) => {
     const textToSearch = filterText.toLowerCase();
-    return uso.Nom_reactivo?.toLowerCase().includes(textToSearch) ||
-      uso.Nomenclatura?.toLowerCase().includes(textToSearch);
+    return (uso.Nom_reactivo || '').toLowerCase().includes(textToSearch) ||
+      (uso.Nomenclatura || '').toLowerCase().includes(textToSearch);
   });
 
   const hideModal = () => {
