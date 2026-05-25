@@ -640,6 +640,15 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
           return;
         }
       }
+
+      // Validar cantidades de reactivos contra stock
+      for (const reac of reactivos) {
+        const info = reactivosDisponibles.find(r => Number(r.Id_Reactivo) === Number(reac.Id_Reactivo));
+        if (info && Number(reac.Can_Reactivo) > Number(info.cantidad_existente)) {
+          Swal.fire("Error de Stock", `El reactivo '${info.Nom_reactivo || info.Nom_Reactivo}' solo tiene ${info.cantidad_existente} ${info.Uni_Medida || ''} disponibles.`, "error");
+          return;
+        }
+      }
     }
 
     const payload = {
@@ -871,7 +880,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
                   <option value="">Selecciona un reactivo</option>
                   {reactivosDisponibles.map((reac) => (
                     <option key={reac.Id_Reactivo} value={reac.Id_Reactivo}>
-                      {reac.Nom_reactivo} {reac.Presentacion ? `(${reac.Presentacion})` : ''}
+                      {reac.Nom_reactivo} {reac.Presentacion ? `(${reac.Presentacion})` : ''} - {(reac.cantidad_existente !== undefined ? reac.cantidad_existente : 0)} {reac.Uni_Medida || ''} disponibles
                     </option>
                   ))}
                 </select>
@@ -1035,49 +1044,58 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
                 <div className="col-md-4">
                   <h6>Reactivos seleccionados</h6>
                   {reactivos.length === 0 && <p className="text-muted">No hay reactivos seleccionados</p>}
-                  {reactivos.map((item) => (
-                    <div key={item.Id_Reactivo} className="border rounded p-2 mb-2">
-                      <div className="d-flex justify-content-between align-items-center mb-2">
-                        <strong>
-                          {reactivosDisponibles.find(r => Number(r.Id_Reactivo) === Number(item.Id_Reactivo))?.Nom_reactivo || item.Nom_Reactivo || `Reactivo ${item.Id_Reactivo}`}
-                          {' '}
-                          {(reactivosDisponibles.find(r => Number(r.Id_Reactivo) === Number(item.Id_Reactivo))?.Presentacion || item.Presentacion)
-                            ? `(${reactivosDisponibles.find(r => Number(r.Id_Reactivo) === Number(item.Id_Reactivo))?.Presentacion || item.Presentacion})`
-                            : ''}
-                        </strong>
-                        <div className="d-flex gap-1 align-items-center">
-                          <button
-                            type="button"
-                            className="btn btn-sm btn-outline-info"
-                            onClick={() => {
-                              const info = reactivosDisponibles.find(r => Number(r.Id_Reactivo) === Number(item.Id_Reactivo));
-                              abrirFicha(info?.Ficha_tecnica || item.Ficha_tecnica);
-                            }}
-                            title="Ver ficha técnica"
-                          >
-                            <i className="fa-solid fa-file-pdf"></i>
-                          </button>
-                          {!isViewOnly && (
+                  {reactivos.map((item) => {
+                    const info = reactivosDisponibles.find(r => Number(r.Id_Reactivo) === Number(item.Id_Reactivo)) || {};
+                    const stockDisponible = info.cantidad_existente !== undefined ? info.cantidad_existente : 0;
+                    const uniMedida = info.Uni_Medida || item.Uni_Medida || '';
+
+                    return (
+                      <div key={item.Id_Reactivo} className="border rounded p-2 mb-2 bg-light shadow-sm">
+                        <div className="d-flex justify-content-between align-items-center mb-2">
+                          <div className="flex-grow-1 min-width-0">
+                            <strong className="small text-truncate d-block" title={info.Nom_reactivo || item.Nom_Reactivo || `Reactivo ${item.Id_Reactivo}`}>
+                              {info.Nom_reactivo || item.Nom_Reactivo || `Reactivo ${item.Id_Reactivo}`}
+                              {' '}
+                              {(info.Presentacion || item.Presentacion) ? `(${info.Presentacion || item.Presentacion})` : ''}
+                            </strong>
+                            <span className="badge bg-primary-soft text-primary small mt-1">Stock: {stockDisponible} {uniMedida}</span>
+                          </div>
+                          <div className="d-flex gap-1 align-items-center">
                             <button
                               type="button"
-                              className="btn btn-sm btn-danger"
-                              onClick={() => eliminarReactivo(item.Id_Reactivo)}
+                              className="btn btn-sm btn-outline-info"
+                              onClick={() => {
+                                abrirFicha(info.Ficha_tecnica || item.Ficha_tecnica);
+                              }}
+                              title="Ver ficha técnica"
                             >
-                              Quitar
+                              <i className="fa-solid fa-file-pdf"></i>
                             </button>
-                          )}
+                            {!isViewOnly && (
+                              <button
+                                type="button"
+                                className="btn btn-sm btn-link text-danger p-0 text-decoration-none"
+                                onClick={() => eliminarReactivo(item.Id_Reactivo)}
+                              >
+                                <i className="fa-solid fa-trash-can"></i>
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                        <div className="d-flex align-items-center gap-2">
+                          <input
+                            type="number"
+                            min="1"
+                            max={stockDisponible}
+                            className="form-control form-control-sm"
+                            value={item.Can_Reactivo}
+                            onChange={(e) => actualizarCantidadReactivo(item.Id_Reactivo, e.target.value)}
+                            readOnly={isViewOnly}
+                          />
                         </div>
                       </div>
-                      <input
-                        type="number"
-                        min="1"
-                        className="form-control"
-                        value={item.Can_Reactivo}
-                        onChange={(e) => actualizarCantidadReactivo(item.Id_Reactivo, e.target.value)}
-                        readOnly={isViewOnly}
-                      />
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             </div>
@@ -1139,6 +1157,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
             value={Can_Aprendices}
             onChange={(e) => setCan_Aprendices(e.target.value)}
             min={0}
+            max={20}
             readOnly={isViewOnly}
           />
         </div>
@@ -1192,13 +1211,13 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
                     .map((item, idx) => {
                       const fechaStr = item.updatedAt || item.updatedat
                         ? new Date(item.updatedAt || item.updatedat).toLocaleString("es-CO", {
-                            dateStyle: "medium",
-                            timeStyle: "short",
-                          })
+                          dateStyle: "medium",
+                          timeStyle: "short",
+                        })
                         : "Fecha no disponible";
 
                       const status = item.Estado?.Tip_Estado || "Estado Desconocido";
-                      
+
                       let badgeClass = 'bg-secondary';
                       if (status === 'Aprobado') badgeClass = 'bg-success';
                       else if (status === 'Rechazado' || status === 'Cancelado') badgeClass = 'bg-danger';

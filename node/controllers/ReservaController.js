@@ -33,8 +33,8 @@ export const createReserva = async (req, res) => {
 // cambiar estado de una reserva
 export const cambiarEstadoReserva = async (req, res) => {
     try {
-        const { Id_Estado, Mot_RecCan } = req.body;
-        await ReservaService.cambiarEstado(req.params.id, Id_Estado, Mot_RecCan);
+        const { Id_Estado, Mot_RecCan, reactivosUtilizados } = req.body;
+        await ReservaService.cambiarEstado(req.params.id, Id_Estado, Mot_RecCan, reactivosUtilizados);
         res.status(200).json({ message: "Estado actualizado correctamente" });
     } catch (error) {
         res.status(400).json({ message: error.message });

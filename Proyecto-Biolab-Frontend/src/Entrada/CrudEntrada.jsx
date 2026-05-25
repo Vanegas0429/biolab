@@ -9,6 +9,25 @@ const CrudEntrada = () => {
   const [Entrada, setEntrada] = useState([]);
   const [filterText, setFilterText] = useState("");
 
+  const [selectedRowForHistory, setSelectedRowForHistory] = useState(null);
+  const [historyLogs, setHistoryLogs] = useState([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+
+  const openHistoryModal = async (row) => {
+    setSelectedRowForHistory(row);
+    setHistoryLogs([]);
+    setLoadingHistory(true);
+    try {
+      const response = await apiAxios.get(`/api/MovimientoReactivo/entrada/${row.Id_Entrada}`);
+      setHistoryLogs(response.data ?? []);
+    } catch (error) {
+      console.error("Error cargando historial de movimientos:", error);
+      Swal.fire("Error", "No se pudo cargar el historial de movimientos", "error");
+    } finally {
+      setLoadingHistory(false);
+    }
+  };
+
   const toggleEstado = async (row) => {
     const estadoNuevo = row.Estado === 'Activo' ? 'Inactivo' : 'Activo';
 
@@ -106,7 +125,7 @@ const CrudEntrada = () => {
               { name: 'REACTIVO', selector: row => row?.Reactivo?.Nom_reactivo ?? 'N/A', sortable: true, grow: 2 },
               { name: 'LOTE', selector: row => row?.Lote ?? 'N/A', sortable: true, width: '120px' },
               { name: 'CANT. INICIAL', selector: row => row?.Can_Inicial ?? 0, sortable: true, width: '130px', center: "true" },
-              { name: 'CANT. SALIDA', selector: row => row?.Can_Salida ?? 0, sortable: true, width: '130px', center: "true" },
+              { name: 'CANT. EXISTENTE', selector: row => row?.Can_Existente ?? 0, sortable: true, width: '150px', center: "true" },
               { name: 'UND. MEDIDA', selector: row => row?.Uni_Medida ?? 'N/A', sortable: true, width: '130px' },
               { name: 'F. VENCIMIENTO', selector: row => row?.Fec_Vencimiento ?? 'N/A', sortable: true, width: '150px' },
               {
@@ -127,17 +146,28 @@ const CrudEntrada = () => {
               {
                 name: 'ACCIONES',
                 center: "true",
-                width: '100px',
+                width: '140px',
                 cell: row => (
-                  <button
-                    className="btn-action btn-action-edit"
-                    onClick={() => setRowToEdit(row)}
-                    data-bs-toggle="modal"
-                    data-bs-target="#modalEntrada"
-                    title="Editar"
-                  >
-                    <i className="fa-solid fa-pencil"></i>
-                  </button>
+                  <div className="d-flex gap-1 justify-content-center">
+                    <button
+                      className="btn-action btn-action-edit"
+                      onClick={() => setRowToEdit(row)}
+                      data-bs-toggle="modal"
+                      data-bs-target="#modalEntrada"
+                      title="Editar"
+                    >
+                      <i className="fa-solid fa-pencil"></i>
+                    </button>
+                    <button
+                      className="btn-action btn-action-view"
+                      onClick={() => openHistoryModal(row)}
+                      data-bs-toggle="modal"
+                      data-bs-target="#modalHistorial"
+                      title="Ver Historial"
+                    >
+                      <i className="fa-solid fa-clock-rotate-left"></i>
+                    </button>
+                  </div>
                 )
               }
             ]}
@@ -180,6 +210,96 @@ const CrudEntrada = () => {
                 refreshList={getAllEntradas}
                 rowToEdit={rowToEdit}
               />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* MODAL DE HISTORIAL */}
+      <div className="modal fade" id="modalHistorial" tabIndex="-1">
+        <div className="modal-dialog modal-lg">
+          <div className="modal-content border-0 shadow-lg" style={{ borderRadius: '20px', overflow: 'hidden' }}>
+            <div className="modal-header bg-primary text-white py-3 px-4">
+              <h5 className="modal-title fw-bold">
+                <i className="fa-solid fa-clock-rotate-left me-2"></i>
+                Historial de Movimientos - Lote: {selectedRowForHistory?.Lote ?? 'N/A'}
+              </h5>
+              <button
+                type="button"
+                className="btn-close btn-close-white"
+                data-bs-dismiss="modal"
+                id="closeHistoryModalBtn"
+              ></button>
+            </div>
+            <div className="modal-body p-4">
+              <div className="mb-3">
+                <p className="mb-1"><strong>Reactivo:</strong> {selectedRowForHistory?.Reactivo?.Nom_reactivo ?? 'N/A'}</p>
+                <p className="mb-1"><strong>Cantidad Inicial:</strong> {selectedRowForHistory?.Can_Inicial ?? 0} {selectedRowForHistory?.Uni_Medida ?? ''}</p>
+                <p className="mb-0"><strong>Cantidad Existente:</strong> <span className="badge bg-primary">{selectedRowForHistory?.Can_Existente ?? 0} {selectedRowForHistory?.Uni_Medida ?? ''}</span></p>
+              </div>
+
+              {loadingHistory ? (
+                <div className="text-center py-4">
+                  <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Cargando...</span>
+                  </div>
+                </div>
+              ) : historyLogs.length === 0 ? (
+                <div className="text-center py-4 text-muted">
+                  <i className="fa-solid fa-folder-open fs-2 mb-2 d-block opacity-25"></i>
+                  No se encontraron movimientos registrados para esta entrada.
+                </div>
+              ) : (
+                <div className="table-responsive">
+                  <table className="table table-hover align-middle">
+                    <thead className="table-dark">
+                      <tr>
+                        <th>Fecha / Hora</th>
+                        <th>Tipo</th>
+                        <th>Cantidad</th>
+                        <th>Detalle</th>
+                        <th>Reserva</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {historyLogs.map((log) => {
+                        let badgeClass = "bg-secondary";
+                        if (log.Tipo === 'Entrada') badgeClass = "bg-success";
+                        else if (log.Tipo === 'Salida') badgeClass = "bg-danger";
+                        else if (log.Tipo === 'Devolución') badgeClass = "bg-info";
+                        else if (log.Tipo === 'Ajuste') badgeClass = "bg-warning";
+
+                        return (
+                          <tr key={log.Id_Movimiento}>
+                            <td className="small">{new Date(log.Fecha).toLocaleString()}</td>
+                            <td>
+                              <span className={`badge ${badgeClass}`}>{log.Tipo}</span>
+                            </td>
+                            <td className="fw-bold text-nowrap">
+                              {log.Tipo === 'Salida' ? '-' : '+'}{log.Cantidad} {selectedRowForHistory?.Uni_Medida ?? ''}
+                            </td>
+                            <td>{log.Detalle}</td>
+                            <td>
+                              {log.Reserva ? (
+                                <span className="text-primary small fw-semibold">
+                                  Reserva #{log.Reserva.Id_Reserva} ({log.Reserva.Nom_Solicitante})
+                                </span>
+                              ) : (
+                                <span className="text-muted small">-</span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+            <div className="modal-footer border-0 p-3 bg-light text-end">
+              <button type="button" className="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">
+                Cerrar
+              </button>
             </div>
           </div>
         </div>

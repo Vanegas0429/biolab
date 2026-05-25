@@ -13,7 +13,7 @@ const EntradaForm = ({ hideModal, refreshList, rowToEdit }) => {
   const [Lote, setLote] = useState('');
   const [Uni_Medida, setUni_Medida] = useState('');
   const [Can_Inicial, setCan_Inicial] = useState('');
-  const [Can_Salida, setCan_Salida] = useState('');
+  const [Can_Existente, setCan_Existente] = useState('');
   const [Fec_Vencimiento, setFec_Vencimiento] = useState('');
 
   const [Reactivos, setReactivos] = useState([]);
@@ -26,7 +26,7 @@ const EntradaForm = ({ hideModal, refreshList, rowToEdit }) => {
       setLote(rowToEdit.Lote ?? '');
       setUni_Medida(rowToEdit.Uni_Medida ?? '');
       setCan_Inicial(rowToEdit.Can_Inicial ?? '');
-      setCan_Salida(rowToEdit.Can_Salida ?? '');
+      setCan_Existente(rowToEdit.Can_Existente ?? '');
       setFec_Vencimiento(rowToEdit.Fec_Vencimiento ?? '');
       setId_Reactivo(rowToEdit.Id_reactivo ?? rowToEdit.Id_Reactivo ?? '');
       setEstado(rowToEdit.Estado ?? "Activo");
@@ -36,7 +36,7 @@ const EntradaForm = ({ hideModal, refreshList, rowToEdit }) => {
       setLote('');
       setUni_Medida('');
       setCan_Inicial('');
-      setCan_Salida('');
+      setCan_Existente('');
       setFec_Vencimiento('');
       setId_Reactivo('');
     }
@@ -68,7 +68,7 @@ const EntradaForm = ({ hideModal, refreshList, rowToEdit }) => {
       Lote,
       Uni_Medida,
       Can_Inicial,
-      Can_Salida,
+      Can_Existente: Number(Can_Inicial),
       Fec_Vencimiento,
       Id_reactivo: Number(Id_Reactivo),
       Estado: "Activo"
@@ -83,7 +83,7 @@ const EntradaForm = ({ hideModal, refreshList, rowToEdit }) => {
         Lote,
         Uni_Medida,
         Can_Inicial,
-        Can_Salida,
+        Can_Existente: Number(Can_Existente),
         Fec_Vencimiento,
         Id_reactivo: Number(Id_Reactivo),
         Estado: rowToEdit?.Estado || "Activo"
@@ -94,7 +94,7 @@ const EntradaForm = ({ hideModal, refreshList, rowToEdit }) => {
   const gestionarForm = async (e) => {
     e.preventDefault();
 
-    if (!Lote || !Can_Inicial || !Can_Salida || !Id_Reactivo) {
+    if (!Lote || !Can_Inicial || !Id_Reactivo) {
       MySwal.fire({
         title: "Error",
         text: "Por favor completa todos los campos obligatorios",
