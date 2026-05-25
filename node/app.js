@@ -24,6 +24,7 @@ import PracticaRoutes from './routes/PracticaRoutes.js';
 import EntradaRoutes from './routes/EntradaRoutes.js'
 import UsuarioRouter from './routes/UsuarioRoutes.js';
 import MaterialRoutes from './routes/MaterialRoutes.js'
+import MovimientoReactivoRoutes from './routes/MovimientoReactivoRoutes.js';
 
 // Modelos
 import PracticaModel from './models/PracticaModel.js';
@@ -45,6 +46,7 @@ import ReservaActividadModel from './models/ReservaActividadModel.js';
 import ReservaEquipoModel from './models/ReservaEquipoModel.js';
 import ReservaMaterialModel from './models/ReservaMaterialModel.js';
 import ReservaReactivoModel from './models/ReservaReactivoModel.js';
+import MovimientoReactivoModel from './models/MovimientoReactivoModel.js';
 
 // Configuración
 dotenv.config();
@@ -76,6 +78,7 @@ app.use('/api/ReservaMaterial', ReservaMaterialRoutes)
 app.use('/api/ReservaReactivo', ReservaReactivoRoutes)
 app.use('/api/Estado', EstadoRoutes);
 app.use('/api/auth', UsuarioRouter);
+app.use('/api/MovimientoReactivo', MovimientoReactivoRoutes);
 app.use('/uploads', express.static('public/uploads'));
 
 // Conexión a BD
@@ -163,6 +166,14 @@ EstadoModel.hasMany(ReservaEstadoModel, { foreignKey: 'Id_Estado', as: 'ReservaE
 // Practica -> Reserva
 PracticaModel.belongsTo(ReservaModel, { foreignKey: 'Id_Reserva', as: 'Reserva' });
 ReservaModel.hasMany(PracticaModel, { foreignKey: 'Id_Reserva', as: 'Practicas' });
+
+// MovimientoReactivo -> Entrada
+MovimientoReactivoModel.belongsTo(EntradaModel, { foreignKey: 'Id_Entrada', as: 'Entrada' });
+EntradaModel.hasMany(MovimientoReactivoModel, { foreignKey: 'Id_Entrada', as: 'Movimientos' });
+
+// MovimientoReactivo -> Reserva
+MovimientoReactivoModel.belongsTo(ReservaModel, { foreignKey: 'Id_Reserva', as: 'Reserva' });
+ReservaModel.hasMany(MovimientoReactivoModel, { foreignKey: 'Id_Reserva', as: 'Movimientos' });
 
 // Sincronización de la base de datos (aplica las relaciones físicamente)
 try {

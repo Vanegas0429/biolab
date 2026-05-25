@@ -16,6 +16,105 @@ import ActividadReactivoModel from "../models/ActividadReactivoModel.js";
 import EquipoModel from "../models/EquipoModel.js";
 import MaterialModel from "../models/MaterialModel.js";
 import ReactivosModel from "../models/ReactivosModel.js";
+import EntradaModel from "../models/EntradaModel.js";
+import MovimientoReactivoModel from "../models/MovimientoReactivoModel.js";
+
+async function discountReactivoStock(idReactivo, quantity, idReserva, transaction) {
+  let remainingToDiscount = Number(quantity);
+  if (remainingToDiscount <= 0) return;
+
+  const entries = await EntradaModel.findAll({
+    where: {
+      Id_reactivo: idReactivo,
+      Estado: 'Activo',
+      Can_Existente: { [Op.gt]: 0 }
+    },
+    order: [
+      ['Fec_Vencimiento', 'ASC'],
+      ['Id_Entrada', 'ASC']
+    ],
+    transaction
+  });
+
+  const totalAvailable = entries.reduce((sum, entry) => sum + Number(entry.Can_Existente || 0), 0);
+  if (totalAvailable < remainingToDiscount) {
+    throw new Error(`Stock insuficiente para el reactivo con ID ${idReactivo}. Solicitado: ${remainingToDiscount}, Disponible: ${totalAvailable}`);
+  }
+
+  for (const entry of entries) {
+    if (remainingToDiscount <= 0) break;
+
+    const available = Number(entry.Can_Existente || 0);
+    const toSubtract = Math.min(available, remainingToDiscount);
+    entry.Can_Existente = available - toSubtract;
+    await entry.save({ transaction });
+
+    // Log movement
+    await MovimientoReactivoModel.create({
+      Id_Entrada: entry.Id_Entrada,
+      Id_Reserva: idReserva,
+      Tipo: 'Salida',
+      Cantidad: toSubtract,
+      Detalle: `Descuento por Reserva #${idReserva}`
+    }, { transaction });
+
+    remainingToDiscount -= toSubtract;
+  }
+}
+
+async function restoreReactivoStock(idReactivo, quantity, idReserva, detalle, transaction) {
+  let remainingToRestore = Number(quantity);
+  if (remainingToRestore <= 0) return;
+
+  const entries = await EntradaModel.findAll({
+    where: {
+      Id_reactivo: idReactivo,
+      Estado: 'Activo'
+    },
+    order: [
+      ['Fec_Vencimiento', 'DESC'],
+      ['Id_Entrada', 'DESC']
+    ],
+    transaction
+  });
+
+  for (const entry of entries) {
+    if (remainingToRestore <= 0) break;
+
+    const spaceAvailable = Number(entry.Can_Inicial || 0) - Number(entry.Can_Existente || 0);
+    if (spaceAvailable > 0) {
+      const toAdd = Math.min(spaceAvailable, remainingToRestore);
+      entry.Can_Existente = Number(entry.Can_Existente || 0) + toAdd;
+      await entry.save({ transaction });
+
+      // Log movement
+      await MovimientoReactivoModel.create({
+        Id_Entrada: entry.Id_Entrada,
+        Id_Reserva: idReserva,
+        Tipo: 'Devolución',
+        Cantidad: toAdd,
+        Detalle: detalle || `Devolución por Reserva #${idReserva}`
+      }, { transaction });
+
+      remainingToRestore -= toAdd;
+    }
+  }
+
+  if (remainingToRestore > 0 && entries.length > 0) {
+    const oldVal = Number(entries[0].Can_Existente || 0);
+    entries[0].Can_Existente = oldVal + remainingToRestore;
+    await entries[0].save({ transaction });
+
+    // Log movement for fallback
+    await MovimientoReactivoModel.create({
+      Id_Entrada: entries[0].Id_Entrada,
+      Id_Reserva: idReserva,
+      Tipo: 'Devolución',
+      Cantidad: remainingToRestore,
+      Detalle: (detalle || `Devolución por Reserva #${idReserva}`) + ' (Excedente restaurado en primer lote)'
+    }, { transaction });
+  }
+}
 
 class ReservaService {
   async getAll() {
@@ -408,6 +507,7 @@ class ReservaService {
       }
 
       for (const item of reactivosBody) {
+        await discountReactivoStock(Number(item.Id_Reactivo), Number(item.Can_Reactivo), reserva.Id_Reserva, transaction);
         await ReservaReactivoModel.create(
           {
             Id_Reserva: reserva.Id_Reserva,
@@ -436,7 +536,7 @@ class ReservaService {
     }
   }
 
-  async cambiarEstado(idReserva, Id_Estado, Mot_RecCan = null) {
+  async cambiarEstado(idReserva, Id_Estado, Mot_RecCan = null, reactivosUtilizados = []) {
     const transaction = await db_store.transaction();
 
     try {
@@ -483,7 +583,7 @@ class ReservaService {
 
       if (!permitidos.includes(nuevoEstado.Tip_Estado)) {
         throw new Error(
-          `No se puede pasar de '${estadoActual.Tip_Estado}' a '${nuevoEstado.Tip_Estado}'`
+            `No se puede pasar de '${estadoActual.Tip_Estado}' a '${nuevoEstado.Tip_Estado}'`
         );
       }
 
@@ -508,6 +608,65 @@ class ReservaService {
           { Booleano: "Inactivo" },
           { where: { Id_Reserva: idReserva }, transaction }
         );
+
+        // Fetch reagents requested
+        const oldReactivos = await ReservaReactivoModel.findAll({
+          where: { Id_Reserva: idReserva },
+          transaction
+        });
+
+        if (["Rechazado", "Cancelado"].includes(nuevoEstado.Tip_Estado)) {
+          // Restore 100% of the requested reagents to stock
+          for (const item of oldReactivos) {
+            await restoreReactivoStock(
+              Number(item.Id_Reactivo),
+              Number(item.Can_Reactivo),
+              idReserva,
+              `Devolución por reserva ${nuevoEstado.Tip_Estado.toLowerCase()}`,
+              transaction
+            );
+            // Registrar devolución de todos los reactivos solicitados
+            await ReservaReactivoModel.update(
+              { 
+                Reac_Utilizados: 0,
+                Reac_Devueltos: item.Can_Reactivo
+              },
+              { where: { Id_ReservaReactivo: item.Id_ReservaReactivo }, transaction }
+            );
+          }
+        } else if (nuevoEstado.Tip_Estado === "Finalizado") {
+          // Restore the unused difference to stock
+          for (const item of oldReactivos) {
+            const util = (reactivosUtilizados || []).find(
+              (ru) => Number(ru.Id_Reactivo) === Number(item.Id_Reactivo)
+            );
+            const cantUtilizada = util ? Number(util.CantidadUtilizada) : Number(item.Can_Reactivo);
+
+            if (cantUtilizada > Number(item.Can_Reactivo)) {
+              throw new Error(`La cantidad utilizada del reactivo con ID ${item.Id_Reactivo} (${cantUtilizada}) no puede superar la cantidad pedida (${item.Can_Reactivo}).`);
+            }
+
+            const unused = Number(item.Can_Reactivo) - cantUtilizada;
+            if (unused > 0) {
+              await restoreReactivoStock(
+                Number(item.Id_Reactivo),
+                unused,
+                idReserva,
+                `Devolución de reactivo no utilizado por finalización de reserva`,
+                transaction
+              );
+            }
+
+            // Registrar cantidades reales utilizadas y devueltas, manteniendo Can_Reactivo
+            await ReservaReactivoModel.update(
+              { 
+                Reac_Utilizados: cantUtilizada,
+                Reac_Devueltos: unused
+              },
+              { where: { Id_ReservaReactivo: item.Id_ReservaReactivo }, transaction }
+            );
+          }
+        }
       }
 
       await transaction.commit();
@@ -558,6 +717,18 @@ class ReservaService {
 
       // Si vienen recursos (edición completa), actualizar tablas intermedias
       if (actividades || equipos || materiales || reactivos) {
+        // Find old reactivos and restore stock before destroying
+        const oldReactivos = await ReservaReactivoModel.findAll({ where: { Id_Reserva: id }, transaction });
+        for (const old of oldReactivos) {
+          await restoreReactivoStock(
+            Number(old.Id_Reactivo),
+            Number(old.Can_Reactivo),
+            id,
+            `Devolución por edición de reserva`,
+            transaction
+          );
+        }
+
         // 1. Eliminar asociaciones actuales
         await ReservaActividadModel.destroy({ where: { Id_Reserva: id }, transaction });
         await ReservaEquipoModel.destroy({ where: { Id_Reserva: id }, transaction });
@@ -593,6 +764,7 @@ class ReservaService {
 
         if (Array.isArray(reactivos)) {
           for (const reac of reactivos) {
+            await discountReactivoStock(Number(reac.Id_Reactivo), Number(reac.Can_Reactivo), id, transaction);
             await ReservaReactivoModel.create({ 
               Id_Reserva: id, 
               Id_Reactivo: reac.Id_Reactivo, 
@@ -611,9 +783,34 @@ class ReservaService {
   }
 
   async delete(id) {
-    const deleted = await ReservaModel.destroy({ where: { Id_Reserva: id } });
-    if (deleted === 0) throw new Error("Reserva no encontrada");
-    return true;
+    const transaction = await db_store.transaction();
+    try {
+      const oldReactivos = await ReservaReactivoModel.findAll({ where: { Id_Reserva: id }, transaction });
+      for (const old of oldReactivos) {
+        await restoreReactivoStock(
+          Number(old.Id_Reactivo),
+          Number(old.Can_Reactivo),
+          id,
+          `Devolución por eliminación de reserva`,
+          transaction
+        );
+      }
+
+      await ReservaActividadModel.destroy({ where: { Id_Reserva: id }, transaction });
+      await ReservaEquipoModel.destroy({ where: { Id_Reserva: id }, transaction });
+      await ReservaMaterialModel.destroy({ where: { Id_Reserva: id }, transaction });
+      await ReservaReactivoModel.destroy({ where: { Id_Reserva: id }, transaction });
+      await ReservaEstadoModel.destroy({ where: { Id_Reserva: id }, transaction });
+
+      const deleted = await ReservaModel.destroy({ where: { Id_Reserva: id }, transaction });
+      if (deleted === 0) throw new Error("Reserva no encontrada");
+
+      await transaction.commit();
+      return true;
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
   }
 }
 

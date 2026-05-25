@@ -99,6 +99,91 @@ const GestionReservas = () => {
           Swal.fire('Error', error.response?.data?.message || 'No se pudo actualizar el estado', 'error');
         }
       }
+    } else if (nuevoEstadoNombre === "Finalizado" && Array.isArray(reserva.reactivos) && reserva.reactivos.length > 0) {
+      let htmlContent = `<div style="text-align: left;">
+        <p class="text-muted small mb-3">Registre la cantidad real utilizada para cada reactivo. Los reactivos sobrantes se devolverán automáticamente al stock.</p>
+      `;
+
+      reserva.reactivos.forEach((reac) => {
+        htmlContent += `
+          <div class="mb-3">
+            <label class="form-label fw-bold small mb-1">${reac.Nom_Reactivo} (Pedido: ${reac.Can_Reactivo} ${reac.Uni_Medida || ''})</label>
+            <div class="input-group input-group-sm">
+              <input 
+                type="number" 
+                class="form-control swal-reac-input" 
+                data-id="${reac.Id_Reactivo}" 
+                data-max="${reac.Can_Reactivo}" 
+                data-name="${reac.Nom_Reactivo}"
+                value="${reac.Can_Reactivo}" 
+                min="0" 
+                max="${reac.Can_Reactivo}" 
+                step="any"
+                required
+              />
+              <span class="input-group-text">${reac.Uni_Medida || ''}</span>
+            </div>
+          </div>
+        `;
+      });
+      htmlContent += `</div>`;
+
+      const result = await Swal.fire({
+        title: 'Finalizar Reserva - Consumo de Reactivos',
+        html: htmlContent,
+        icon: 'info',
+        showCancelButton: true,
+        confirmButtonText: 'Confirmar y Finalizar',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: 'var(--primary-color)',
+        preConfirm: () => {
+          const inputs = document.querySelectorAll('.swal-reac-input');
+          const reactivosUtilizados = [];
+
+          for (let input of inputs) {
+            const id = Number(input.getAttribute('data-id'));
+            const name = input.getAttribute('data-name');
+            const max = Number(input.getAttribute('data-max'));
+            const valStr = input.value;
+
+            if (valStr === '') {
+              Swal.showValidationMessage(`Por favor ingrese la cantidad utilizada para ${name}`);
+              return false;
+            }
+
+            const val = Number(valStr);
+            if (isNaN(val) || val < 0) {
+              Swal.showValidationMessage(`La cantidad para ${name} debe ser un número mayor o igual a 0`);
+              return false;
+            }
+
+            if (val > max) {
+              Swal.showValidationMessage(`La cantidad utilizada para ${name} (${val}) no puede ser mayor que la cantidad pedida (${max})`);
+              return false;
+            }
+
+            reactivosUtilizados.push({
+              Id_Reactivo: id,
+              CantidadUtilizada: val
+            });
+          }
+
+          return reactivosUtilizados;
+        }
+      });
+
+      if (result.isConfirmed && result.value) {
+        try {
+          await apiAxios.put(`/api/Reserva/${reserva.Id_Reserva}/estado`, {
+            Id_Estado: estado.Id_Estado,
+            reactivosUtilizados: result.value
+          });
+          Swal.fire('Finalizado', 'La reserva ha sido finalizada y los reactivos sobrantes se devolvieron al stock.', 'success');
+          fetchReservas();
+        } catch (error) {
+          Swal.fire('Error', error.response?.data?.message || 'No se pudo finalizar la reserva', 'error');
+        }
+      }
     } else {
       const result = await Swal.fire({
         title: `¿Cambiar a ${nuevoEstadoNombre}?`,
@@ -310,11 +395,19 @@ const GestionReservas = () => {
                             {reserva.reactivos?.length > 0 ? (
                               <div className="list-group list-group-flush">
                                 {reserva.reactivos.map((r, idx) => (
-                                  <div key={idx} className="list-group-item bg-transparent border-0 px-0 py-1 d-flex justify-content-between align-items-center">
-                                    <span className="small text-truncate me-2" title={r.Nom_Reactivo}>{r.Nom_Reactivo}</span>
-                                    <span className="badge bg-info-soft text-info rounded-pill small">
-                                      {r.Can_Reactivo} {r.Uni_Medida || 'ml/g'}
-                                    </span>
+                                  <div key={idx} className="list-group-item bg-transparent border-0 px-0 py-1">
+                                    <div className="d-flex justify-content-between align-items-center">
+                                      <span className="small text-truncate me-2" title={r.Nom_Reactivo}>{r.Nom_Reactivo}</span>
+                                      <span className="badge bg-info-soft text-info rounded-pill small">
+                                        {r.Can_Reactivo} {r.Uni_Medida || 'ml/g'}
+                                      </span>
+                                    </div>
+                                    {((r.Reac_Utilizados !== undefined && r.Reac_Utilizados > 0) || (r.Reac_Devueltos !== undefined && r.Reac_Devueltos > 0) || ['Finalizado', 'Cancelado', 'Rechazado'].includes(reserva.Des_Estado)) && (
+                                      <div className="mt-1 ps-2 border-start border-2 border-info-subtle small text-muted text-start" style={{ fontSize: '0.85rem' }}>
+                                        <div><span className="fw-semibold text-success">Utilizado:</span> {r.Reac_Utilizados ?? 0} {r.Uni_Medida || 'ml/g'}</div>
+                                        <div><span className="fw-semibold text-warning">Devuelto:</span> {r.Reac_Devueltos ?? 0} {r.Uni_Medida || 'ml/g'}</div>
+                                      </div>
+                                    )}
                                   </div>
                                 ))}
                               </div>

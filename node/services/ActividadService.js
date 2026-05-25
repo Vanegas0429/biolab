@@ -6,6 +6,7 @@ import ActividadReactivoModel from "../models/ActividadReactivoModel.js";
 import EquipoModel from "../models/EquipoModel.js";
 import MaterialModel from "../models/MaterialModel.js";
 import ReactivosModel from "../models/ReactivosModel.js";
+import EntradaModel from "../models/EntradaModel.js";
 
 class ActividadService {
 
@@ -99,6 +100,33 @@ class ActividadService {
             attributes: ['Id_Reactivo', 'Nom_reactivo', 'Presentacion', 'Ficha_tecnica']
         });
 
+        // Get stock details from Entrada table for these reagents
+        const entradas = await EntradaModel.findAll({
+            where: {
+                Id_reactivo: { [Op.in]: reactivosUnicos },
+                Estado: 'Activo'
+            },
+            attributes: ['Id_reactivo', 'Can_Existente', 'Uni_Medida']
+        });
+
+        const stockMap = {};
+        entradas.forEach(ent => {
+            const id = ent.Id_reactivo;
+            if (!stockMap[id]) {
+                stockMap[id] = { stock: 0, uni: ent.Uni_Medida || '' };
+            }
+            stockMap[id].stock += Number(ent.Can_Existente || 0);
+        });
+
+        const reactivosDetalleConStock = reactivosDetalle.map(reac => {
+            const stockInfo = stockMap[reac.Id_Reactivo] || { stock: 0, uni: '' };
+            return {
+                ...reac.get({ plain: true }),
+                cantidad_existente: stockInfo.stock,
+                Uni_Medida: stockInfo.uni
+            };
+        });
+
         // Filter the allowed IDs based on active items
         const equiposActivosUnicos = equiposDetalle.map(e => e.id_equipo);
         const materialesActivosUnicos = materialesDetalle.map(m => m.Id_Material);
@@ -115,7 +143,7 @@ class ActividadService {
                 reactivos: reactivosActivosUnicos,
                 equiposDetalle, // Full objects
                 materialesDetalle,
-                reactivosDetalle
+                reactivosDetalle: reactivosDetalleConStock
             }
         };
     }
