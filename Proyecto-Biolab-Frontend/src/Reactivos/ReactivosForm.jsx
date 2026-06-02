@@ -59,7 +59,7 @@ const ReactivosForm = ({ hideModal, rowToEdit, refreshList }) => {
                 });
                 MySwal.fire({ 
                     title: "Actualizado", 
-                    text: "Reactivo actualizado correctamente", 
+                    text: "Reactivo actualizado", 
                     icon: "success",
                     timer: 2000,
                     showConfirmButton: false 
@@ -69,8 +69,7 @@ const ReactivosForm = ({ hideModal, rowToEdit, refreshList }) => {
                     headers: { "Content-Type": "multipart/form-data" }
                 });
                 MySwal.fire({ 
-                    title: "Creación", 
-                    text: "Reactivo creado correctamente", 
+                    title: "Registrado", text: "Reactivo registrado", 
                     icon: "success",
                     timer: 2000,
                     showConfirmButton: false 

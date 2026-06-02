@@ -108,7 +108,7 @@ const EntradaForm = ({ hideModal, refreshList, rowToEdit }) => {
         await actualizarEntrada(); // ✏️ EDITAR
         MySwal.fire({
           title: "Actualizado",
-          text: "Entrada actualizada correctamente",
+          text: "Entrada actualizada",
           icon: "success",
           timer: 2000,
           showConfirmButton: false
@@ -116,8 +116,7 @@ const EntradaForm = ({ hideModal, refreshList, rowToEdit }) => {
       } else {
         await crearEntrada(); // ➕ NUEVO
         MySwal.fire({
-          title: "Creación",
-          text: "Entrada creada correctamente",
+          title: "Registrado", text: "Entrada registrada",
           icon: "success",
           timer: 2000,
           showConfirmButton: false

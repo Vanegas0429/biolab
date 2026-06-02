@@ -54,7 +54,7 @@ const ActividadForm = ({ hideModal, refreshList, rowToEdit }) => {
                 await actualizarActividad();
                 MySwal.fire({
                     title: "Actualizado",
-                    text: "Actividad actualizada correctamente",
+                    text: "Actividad actualizada",
                     icon: "success",
                     timer: 2000,
                     showConfirmButton: false
@@ -62,8 +62,7 @@ const ActividadForm = ({ hideModal, refreshList, rowToEdit }) => {
             } else {
                 await crearActividad();
                 MySwal.fire({
-                    title: "Creación",
-                    text: "Actividad creada correctamente",
+                    title: "Registrado", text: "Actividad registrada",
                     icon: "success",
                     timer: 2000,
                     showConfirmButton: false

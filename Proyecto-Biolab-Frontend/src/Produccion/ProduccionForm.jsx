@@ -89,8 +89,7 @@ const ProduccionForm = ({ hideModal, refreshList, rowToEdit, isViewOnly }) => {
                 await actualizarProduccion()
 
                 MySwal.fire({
-                    title: "Actualización",
-                    text: "Producción actualizada correctamente",
+                    title: "Actualizado", text: "Producción actualizada",
                     icon: "success"
                 })
 
@@ -99,8 +98,7 @@ const ProduccionForm = ({ hideModal, refreshList, rowToEdit, isViewOnly }) => {
                 await crearProduccion()
 
                 MySwal.fire({
-                    title: "Creación",
-                    text: "Producción creada correctamente",
+                    title: "Registrado", text: "Producción registrada",
                     icon: "success"
                 })
             }

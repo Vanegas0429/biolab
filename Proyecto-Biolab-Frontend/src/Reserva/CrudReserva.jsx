@@ -204,7 +204,7 @@ const CrudReserva = () => {
             data-bs-target="#modalReserva"
             onClick={onCreate}
           >
-            <i className="fa-solid fa-plus me-2"></i>Nueva Solicitud
+            <i className="fa-solid fa-plus me-2"></i>Nueva Reserva
           </button>
         </div>
       </div>

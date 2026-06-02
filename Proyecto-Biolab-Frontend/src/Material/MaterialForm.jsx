@@ -62,7 +62,7 @@ const MaterialForm = ({ hideModal, refreshList, rowToEdit }) => {
                 });
                 MySwal.fire({
                     title: "Actualizado",
-                    text: "Material actualizado correctamente",
+                    text: "Material actualizado",
                     icon: "success",
                     timer: 2000,
                     showConfirmButton: false
@@ -72,8 +72,7 @@ const MaterialForm = ({ hideModal, refreshList, rowToEdit }) => {
                     headers: { "Content-Type": "multipart/form-data" }
                 });
                 MySwal.fire({
-                    title: "Creación",
-                    text: "Material creado correctamente",
+                    title: "Registrado", text: "Material registrado",
                     icon: "success",
                     timer: 2000,
                     showConfirmButton: false

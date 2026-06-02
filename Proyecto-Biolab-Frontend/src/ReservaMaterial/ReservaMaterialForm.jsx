@@ -27,7 +27,7 @@ const ReservaMaterialForm = () => {
                 // Axios devuelve el cuerpo de la respuesta en response.date
                 const data = response.data;
 
-                alert('ReservaMaterial creado correctamente')
+                alert('ReservaMaterial registrado')
 
             } catch (error) {
 

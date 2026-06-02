@@ -49,10 +49,10 @@ const PracticaForm = ({ hideModal, rowToEdit, refreshList }) => {
                 Id_Reserva: Id_Reserva,
             })
 
-            // alert('Práctica creada correctamente')
+            // alert('Práctica registrada')
             Myswal.fire({
                 title: "Exito",
-                text: "Practica creada correctamente",
+                text: "Practica registrada",
                 icon: "success",
                 timer: 2000,
                 showConfirmButton: false
@@ -79,10 +79,9 @@ const PracticaForm = ({ hideModal, rowToEdit, refreshList }) => {
 
                 const data = response.data
 
-                // alert('Práctica actualizada correctamente')
+                // alert('Práctica actualizada')
                 Myswal.fire({
-                title: "Actualizacion",
-                text: "Practica actualizada correctamente",
+                title: "Actualizado", text: "Practica actualizada",
                 icon: "success",
                 timer: 2000,
                 showConfirmButton: false

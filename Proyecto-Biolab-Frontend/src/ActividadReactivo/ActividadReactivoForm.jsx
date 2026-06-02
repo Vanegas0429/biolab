@@ -116,8 +116,7 @@ const ActividadReactivoForm = ({ hideModal, refreshList, rowToEdit }) => {
                 await actualizarActividadReactivo()
 
                 MySwal.fire({
-                    title: "Actualización",
-                    text: "Actividad Reactivo actualizada correctamente",
+                    title: "Actualizado", text: "Actividad Reactivo actualizada",
                     icon: "success"
                 })
 
@@ -126,7 +125,7 @@ const ActividadReactivoForm = ({ hideModal, refreshList, rowToEdit }) => {
                 await crearActividadReactivo()
 
                 MySwal.fire({
-                    title: "Creación",
+                    title: "Registrado",
                     text: "Actividad Reactivos creados correctamente",
                     icon: "success"
                 })

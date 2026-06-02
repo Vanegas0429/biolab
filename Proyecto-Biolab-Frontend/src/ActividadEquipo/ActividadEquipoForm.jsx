@@ -158,8 +158,7 @@ const ActividadEquipoForm = ({ hideModal, refreshList, rowToEdit }) => {
                 await actualizarActividadEquipo()
 
                 MySwal.fire({
-                    title: "Actualización",
-                    text: "Actividad Equipo actualizada correctamente",
+                    title: "Actualizado", text: "Actividad Equipo actualizada",
                     icon: "success"
                 })
 
@@ -168,7 +167,7 @@ const ActividadEquipoForm = ({ hideModal, refreshList, rowToEdit }) => {
                 await crearActividadEquipo()
 
                 MySwal.fire({
-                    title: "Creación",
+                    title: "Registrado",
                     text: "Actividad Equipos creados correctamente",
                     icon: "success"
                 })

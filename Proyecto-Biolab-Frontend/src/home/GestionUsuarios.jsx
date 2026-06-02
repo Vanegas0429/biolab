@@ -8,7 +8,7 @@ const GestionUsuarios = () => {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
 
-    const rolesDisponibles = ['administrador', 'solicitante', 'pasante', 'gestor'];
+    const rolesDisponibles = ['administrador', 'solicitante', 'pasante', 'gestor', 'instructor'];
 
     const fetchUsuarios = async () => {
         try {
@@ -43,7 +43,7 @@ const GestionUsuarios = () => {
     };
 
     const filteredUsuarios = useMemo(() => {
-        return usuarios.filter(u => 
+        return usuarios.filter(u =>
             u.nombre?.toLowerCase().includes(searchTerm.toLowerCase()) ||
             u.correo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
             u.documento?.toString().includes(searchTerm) ||
@@ -79,10 +79,10 @@ const GestionUsuarios = () => {
                         <span className="input-group-text border-0 bg-transparent ps-3">
                             <i className="fa-solid fa-magnifying-glass text-muted"></i>
                         </span>
-                        <input 
-                            type="text" 
-                            className="form-control border-0 py-2 shadow-none bg-transparent" 
-                            placeholder="Buscar por nombre, correo, tel..." 
+                        <input
+                            type="text"
+                            className="form-control border-0 py-2 shadow-none bg-transparent"
+                            placeholder="Buscar por nombre, correo, tel..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
@@ -117,7 +117,7 @@ const GestionUsuarios = () => {
                             sortable: true,
                             width: '250px',
                             cell: row => (
-                                <select 
+                                <select
                                     className="form-select form-select-sm border-0 bg-light rounded-pill px-3 shadow-none"
                                     value={row.rol}
                                     onChange={(e) => handleRolChange(row.uuid, e.target.value)}

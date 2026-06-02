@@ -269,7 +269,7 @@ const GestionReservas = () => {
           {[
             { id: 'Solicitado', label: 'Solicitadas', icon: 'fa-paper-plane' },
             { id: 'En proceso', label: 'En Proceso', icon: 'fa-spinner' },
-            { id: 'Finalizado', label: 'Despachadas', icon: 'fa-check-double' },
+            { id: 'Finalizado', label: 'Finalizadas', icon: 'fa-check-double' },
             { id: 'Cancelado', label: 'Canceladas', icon: 'fa-ban' }
           ].map(tab => (
             <div key={tab.id} className="col-6 col-md-3">
@@ -480,8 +480,12 @@ const GestionReservas = () => {
               <ReservaForm
                 key={`${rowToEdit?.Id_Reserva || 'new'}-${formOpenToken}`}
                 hideModal={() => {
-                  const modal = window.bootstrap.Modal.getInstance(document.getElementById('modalGestionReserva'));
-                  modal.hide();
+                  try {
+                    const closeBtn = document.querySelector('#modalGestionReserva .btn-close');
+                    if (closeBtn) closeBtn.click();
+                  } catch (e) {
+                    console.error("Error al cerrar modal:", e);
+                  }
                   fetchReservas();
                 }}
                 rowToEdit={rowToEdit}

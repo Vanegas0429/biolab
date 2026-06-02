@@ -58,7 +58,7 @@ const EspeciesForm = ({ hideModal, refreshList, rowToEdit }) => {
                 });
                 MySwal.fire({
                     title: "Actualizado",
-                    text: "Especie actualizada correctamente",
+                    text: "Especie actualizada",
                     icon: "success",
                     timer: 2000,
                     showConfirmButton: false
@@ -68,8 +68,7 @@ const EspeciesForm = ({ hideModal, refreshList, rowToEdit }) => {
                     headers: { "Content-Type": "multipart/form-data" }
                 });
                 MySwal.fire({
-                    title: "Creación",
-                    text: "Especie creada correctamente",
+                    title: "Registrado", text: "Especie registrada",
                     icon: "success",
                     timer: 2000,
                     showConfirmButton: false

@@ -27,7 +27,7 @@ const ReservaEquipoForm = () => {
                 // Axios devuelve el cuerpo de la respuesta en response.date
                 const data = response.data;
 
-                alert('ReservaEquipo creado correctamente')
+                alert('ReservaEquipo registrado')
 
             } catch (error) {
 

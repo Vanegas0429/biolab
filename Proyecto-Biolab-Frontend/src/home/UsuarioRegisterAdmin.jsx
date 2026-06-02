@@ -44,7 +44,7 @@ const UsuarioRegistroAdmin = () => {
       >
 
         {/* HEADER */}
-        <div className="text-center mb-3"> 
+        <div className="text-center mb-3">
           <h2 className="text-muted">Registrarse</h2>
           <img src={logo} alt="logo" style={{ width: "100px" }} />
           <p className="text-muted small">
@@ -55,7 +55,7 @@ const UsuarioRegistroAdmin = () => {
         {/* ALERTAS */}
         {success && (
           <div className="alert alert-success text-center">
-            ✅Usuario creado correctamente
+            ✅Usuario registrado
           </div>
         )}
 
@@ -87,41 +87,49 @@ const UsuarioRegistroAdmin = () => {
                   type="text"
                   className="form-control"
                   value={documento}
-                  onChange={(e) => setDocumento(e.target.value)}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/[^0-9]/g, '');
+                    if (val.length <= 10) setDocumento(val);
+                  }}
+                  maxLength="10"
                   required
                 />
               </div>
             </div>
 
-            <div className="mb-3"> 
+            <div className="mb-3">
               <label className="form-label">Teléfono</label>
-              <input 
+              <input
                 type="text"
                 className="form-control"
-                value={telefono} 
-                onChange={(e) => setTelefono(e.target.value)}
-                placeholder="Ingrese el número de teléfono" 
-                required 
-              /> 
+                value={telefono}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/[^0-9]/g, '');
+                  if (val.length <= 10) setTelefono(val);
+                }}
+                maxLength="10"
+                placeholder="Ingrese el número de teléfono"
+                required
+              />
             </div>
 
             <div className="mb-3"> <label className="form-label">Correo electrónico</label>
-            <input 
-            type="email"
-             className="form-control"
-              value={correo} onChange={(e) => setCorreo(e.target.value)}
-              placeholder="Ingrese su correo" 
-              required 
-              /> 
-              </div> 
-              
-              <div className="mb-3"> <label className="form-label">Contraseña</label> 
-              <input type="password" 
-              className="form-control" value={contraseña} onChange={(e) => setContraseña(e.target.value)} 
-              placeholder="Mínimo 8 caracteres" 
-              required 
-              /> 
-              </div>
+              <input
+                type="email"
+                className="form-control"
+                value={correo} onChange={(e) => setCorreo(e.target.value)}
+                placeholder="Ingrese su correo"
+                required
+              />
+            </div>
+
+            <div className="mb-3"> <label className="form-label">Contraseña</label>
+              <input type="password"
+                className="form-control" value={contraseña} onChange={(e) => setContraseña(e.target.value)}
+                placeholder="Mínimo 8 caracteres"
+                required
+              />
+            </div>
 
             {/* ROL */}
             <div className="mb-2">
@@ -135,6 +143,7 @@ const UsuarioRegistroAdmin = () => {
                 <option value="">Selecciona uno</option>
                 <option value="pasante">Pasante</option>
                 <option value="gestor">Gestor</option>
+                <option value="instructor">Instructor</option>
               </select>
             </div>
 

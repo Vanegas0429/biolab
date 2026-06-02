@@ -27,7 +27,7 @@ const ReservaReactivoForm = () => {
                 // Axios devuelve el cuerpo de la respuesta en response.date
                 const data = response.data;
 
-                alert('ReservaReactivo creado correctamente')
+                alert('ReservaReactivo registrado')
 
             } catch (error) {
 
