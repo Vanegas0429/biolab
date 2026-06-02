@@ -23,7 +23,7 @@ const EstadoForm = () => {
                 // Axios devuelve el cuerpo de la respuesta en response.date
                 const data = response.data;
 
-                alert('Estado creado correctamente')
+                alert('Estado registrado')
 
             } catch (error) {
 

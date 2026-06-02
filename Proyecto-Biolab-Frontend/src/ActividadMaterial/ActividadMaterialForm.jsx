@@ -116,8 +116,7 @@ const ActividadMaterialForm = ({ hideModal, refreshList, rowToEdit }) => {
                 await actualizarActividadMaterial()
 
                 MySwal.fire({
-                    title: "Actualización",
-                    text: "Actividad Material actualizada correctamente",
+                    title: "Actualizado", text: "Actividad Material actualizada",
                     icon: "success"
                 })
 
@@ -126,7 +125,7 @@ const ActividadMaterialForm = ({ hideModal, refreshList, rowToEdit }) => {
                 await crearActividadMaterial()
 
                 MySwal.fire({
-                    title: "Creación",
+                    title: "Registrado",
                     text: "Actividad Materiales creados correctamente",
                     icon: "success"
                 })

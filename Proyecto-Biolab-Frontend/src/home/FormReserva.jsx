@@ -458,7 +458,7 @@ const FormReserva = ({ hideModal, rowToEdit = {}, estados = [] }) => {
     try {
       if (!isEditing) {
         await apiAxios.post("/api/Reserva", payload);
-        await Swal.fire("OK", "Reserva creada correctamente", "success");
+        await Swal.fire("Registrado", "Reserva registrada", "success");
         resetForm();
         hideModal?.();
       } else {
@@ -498,7 +498,7 @@ const FormReserva = ({ hideModal, rowToEdit = {}, estados = [] }) => {
           });
         }
 
-        await Swal.fire("OK", "Reserva actualizada correctamente", "success");
+        await Swal.fire("Actualizado", "Reserva actualizada", "success");
         hideModal?.();
       }
     } catch (error) {

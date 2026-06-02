@@ -680,7 +680,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
     try {
       if (!isEditing) {
         await apiAxios.post("/api/Reserva", payload);
-        await Swal.fire("OK", "Reserva creada correctamente", "success");
+        await Swal.fire("Registrado", "Reserva registrada", "success");
         resetForm();
         hideModal?.();
       } else {
@@ -709,7 +709,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
           });
         }
 
-        await Swal.fire("OK", "Reserva actualizada correctamente", "success");
+        await Swal.fire("Actualizado", "Reserva actualizada", "success");
         hideModal?.();
       }
     } catch (error) {
@@ -1152,12 +1152,14 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
         <div className="col-md-4 mb-3">
           <label className="form-label">Cantidad de aprendices:</label>
           <input
-            type="number"
+            type="text"
             className="form-control rounded-pill shadow-sm px-3"
             value={Can_Aprendices}
-            onChange={(e) => setCan_Aprendices(e.target.value)}
-            min={0}
-            max={20}
+            onChange={(e) => {
+              const val = e.target.value.replace(/[^0-9]/g, '');
+              if (val.length <= 2) setCan_Aprendices(val);
+            }}
+            maxLength="2"
             readOnly={isViewOnly}
           />
         </div>
@@ -1169,6 +1171,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
             className="form-control rounded-pill shadow-sm px-3"
             value={Fec_Reserva}
             onChange={(e) => setFec_Reserva(e.target.value)}
+            min={new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0]}
             required
             readOnly={isViewOnly}
           />

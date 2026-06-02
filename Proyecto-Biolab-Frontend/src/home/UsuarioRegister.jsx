@@ -56,7 +56,7 @@ const UsuarioRegistro = () => {
         {/* ALERTAS */}
         {success && (
           <div className="alert alert-success text-center">
-            <strong>Usuario creado correctamente</strong>
+            <strong>Usuario registrado</strong>
             <br />
             <button
               className="btn btn-success mt-2 w-100"
@@ -96,7 +96,11 @@ const UsuarioRegistro = () => {
                   type="text"
                   className="form-control"
                   value={documento}
-                  onChange={(e) => setDocumento(e.target.value)}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/[^0-9]/g, '');
+                    if (val.length <= 10) setDocumento(val);
+                  }}
+                  maxLength="10"
                   required
                 />
               </div>
@@ -108,7 +112,11 @@ const UsuarioRegistro = () => {
                 type="text"
                 className="form-control"
                 value={telefono} 
-                onChange={(e) => setTelefono(e.target.value)}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/[^0-9]/g, '');
+                  if (val.length <= 10) setTelefono(val);
+                }}
+                maxLength="10"
                 placeholder="Ingrese su número de teléfono" 
                 required 
               /> 

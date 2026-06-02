@@ -200,14 +200,13 @@ const Sup_PlantasForm = ({ hideModal, refreshList, rowToEdit }) => {
         await actualizarSup_Planta(); // ✏️ EDITAR
         MySwal.fire({
           title: "Actualizado",
-          text: "Supervisión actualizada correctamente",
+          text: "Supervisión actualizada",
           icon: "success"
         });
       } else {
         await crearSup_Planta(); // ➕ NUEVO
         MySwal.fire({
-          title: "Creación",
-          text: "Supervisión creada correctamente",
+          title: "Registrado", text: "Supervisión registrada",
           icon: "success"
         });
       }

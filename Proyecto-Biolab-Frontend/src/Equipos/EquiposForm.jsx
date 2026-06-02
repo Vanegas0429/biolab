@@ -12,6 +12,7 @@ const EquiposForm = ({ hideModal, rowToEdit, refreshList }) => {
     const [grupo, setGrupo] = useState("");
     const [linea, setLinea] = useState("");
     const [centro_costos, setCentroCostos] = useState("");
+    const [no_chapeta, setNo_Chapeta] = useState("");
     const [imagenes, setImagenes] = useState([]);        // Archivos nuevos seleccionados
     const [fichaTecnica, setFichaTecnica] = useState(null); // PDF seleccionado
 
@@ -32,6 +33,7 @@ const EquiposForm = ({ hideModal, rowToEdit, refreshList }) => {
         setGrupo(rowToEdit.grupo || "");
         setLinea(rowToEdit.linea || "");
         setCentroCostos(rowToEdit.centro_costos || "");
+        setNo_Chapeta(rowToEdit.no_chapeta || "");
 
         setTextFormButton("Actualizar");
     };
@@ -42,6 +44,7 @@ const EquiposForm = ({ hideModal, rowToEdit, refreshList }) => {
         setGrupo("");
         setLinea("");
         setCentroCostos("");
+        setNo_Chapeta("");
         setImagenes([]);
         setFichaTecnica(null);
 
@@ -57,6 +60,7 @@ const EquiposForm = ({ hideModal, rowToEdit, refreshList }) => {
         formData.append("grupo", grupo);
         formData.append("linea", linea);
         formData.append("centro_costos", centro_costos);
+        formData.append("no_chapeta", no_chapeta);
 
         // Agregar múltiples imágenes
         if (imagenes.length > 0) {
@@ -82,8 +86,7 @@ const EquiposForm = ({ hideModal, rowToEdit, refreshList }) => {
                 );
 
                 Myswal.fire({
-                    title: "Actualización",
-                    text: "Equipo actualizado correctamente",
+                    title: "Actualizado", text: "Equipo actualizado",
                     icon: "success",
                 });
 
@@ -98,8 +101,7 @@ const EquiposForm = ({ hideModal, rowToEdit, refreshList }) => {
                 );
 
                 Myswal.fire({
-                    title: "Registro",
-                    text: "Equipo creado correctamente",
+                    title: "Registrado", text: "Equipo registrado",
                     icon: "success",
                 });
             }
@@ -145,6 +147,18 @@ const EquiposForm = ({ hideModal, rowToEdit, refreshList }) => {
                     />
                 </div>
 
+                 {/* No. Chapeta */}
+                <div className="col-md-6">
+                    <label className="form-label fw-bold">No. Chapeta:</label>
+                    <input
+                        type="text"
+                        className="form-control rounded-pill shadow-sm px-3"
+                        value={no_chapeta}
+                        onChange={(e) => setNo_Chapeta(e.target.value)}
+                        placeholder="Ingrese No. Chapeta"
+                    />
+                </div>
+
                 {/* Marca */}
                 <div className="col-md-6">
                     <label className="form-label fw-bold">Marca:</label>
@@ -182,7 +196,7 @@ const EquiposForm = ({ hideModal, rowToEdit, refreshList }) => {
                 </div>
 
                 {/* Centro de costos */}
-                <div className="col-md-12">
+                <div className="col-md-6">
                     <label className="form-label fw-bold">Centro de Costos:</label>
                     <input
                         type="text"

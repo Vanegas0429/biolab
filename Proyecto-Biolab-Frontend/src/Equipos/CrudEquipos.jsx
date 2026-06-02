@@ -161,7 +161,7 @@ const CrudEquipos = ({ userRol }) => {
         const response = await apiAxios.put(`/api/Equipo/${row.id_equipo}`, formData, {
           headers: { "Content-Type": "multipart/form-data" }
         });
-        
+
         await getAllEquipos();
 
         // Abrir el modal automáticamente con el nuevo archivo
@@ -195,7 +195,8 @@ const CrudEquipos = ({ userRol }) => {
   const equiposFiltrados = equipos.filter((e) =>
     (e.nombre || '').toLowerCase().includes(filterText.toLowerCase()) ||
     (e.grupo || '').toLowerCase().includes(filterText.toLowerCase()) ||
-    (e.centro_costos || '').toLowerCase().includes(filterText.toLowerCase())
+    (e.centro_costos || '').toLowerCase().includes(filterText.toLowerCase()) ||
+    (e.no_chapeta || '').toLowerCase().includes(filterText.toLowerCase())
   );
 
   if (loading) return (
@@ -298,9 +299,15 @@ const CrudEquipos = ({ userRol }) => {
               }
             },
             {
+              name: 'NO. CHAPETA',
+              selector: row => row.no_chapeta || 'N/A',
+              sortable: true,
+              width: '140px'
+            },
+            {
               name: 'MARCA / GRUPO',
               sortable: true,
-              width: '250px',
+              width: '200px',
               cell: (row) => (
                 <div>
                   <div className="text-dark fw-medium">{row.marca || 'N/A'}</div>

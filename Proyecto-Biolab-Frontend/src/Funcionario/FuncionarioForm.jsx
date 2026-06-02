@@ -32,7 +32,7 @@ const FuncionariosForm = () => {
                 // Axios devuelve el cuerpo de la respuesta en response.date
                 const data = response.data;
 
-                alert('Funcionario creado correctamente')
+                alert('Funcionario registrado')
 
             } catch (error) {
 
