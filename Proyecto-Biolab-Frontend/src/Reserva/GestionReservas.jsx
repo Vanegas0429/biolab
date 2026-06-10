@@ -481,11 +481,24 @@ const GestionReservas = () => {
                 key={`${rowToEdit?.Id_Reserva || 'new'}-${formOpenToken}`}
                 hideModal={() => {
                   try {
-                    const closeBtn = document.querySelector('#modalGestionReserva .btn-close');
-                    if (closeBtn) closeBtn.click();
-                  } catch (e) {
-                    console.error("Error al cerrar modal:", e);
+                    const modalEl = document.getElementById("modalGestionReserva");
+                    const modal =
+                      modalEl &&
+                      window.bootstrap?.Modal?.getOrCreateInstance(modalEl);
+
+                    if (modal) {
+                      modal.hide();
+                    } else {
+                      const closeBtn = document.querySelector(
+                        "#modalGestionReserva .btn-close"
+                      );
+
+                      closeBtn?.click();
+                    }
+                  } catch (err) {
+                    console.warn("Error cerrando modal:", err);
                   }
+
                   fetchReservas();
                 }}
                 rowToEdit={rowToEdit}

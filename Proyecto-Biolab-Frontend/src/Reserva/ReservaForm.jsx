@@ -682,7 +682,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
         await apiAxios.post("/api/Reserva", payload);
         await Swal.fire("Registrado", "Reserva registrada", "success");
         resetForm();
-        hideModal?.();
+        try { hideModal?.(); } catch (modalErr) { console.warn("Error cerrando modal:", modalErr); }
       } else {
         await apiAxios.put(`/api/Reserva/${reservaId}`, payload);
 
@@ -709,8 +709,8 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
           });
         }
 
-        await Swal.fire("Actualizado", "Reserva actualizada", "success");
-        hideModal?.();
+        await Swal.fire("OK", "Reserva actualizada correctamente", "success");
+        try { hideModal?.(); } catch (modalErr) { console.warn("Error cerrando modal:", modalErr); }
       }
     } catch (error) {
       console.error("Error:", error.response ? error.response.data : error.message);
@@ -739,23 +739,89 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
           </select>
         </div>
 
+        {isViewOnly && historialEstados && historialEstados.length > 0 && (
+          <div className="col-12 mb-3 animate__animated animate__fadeIn">
+            <span className="text-muted fw-bold small mb-2 d-flex align-items-center gap-1">
+              <i className="fa-solid fa-clock-rotate-left"></i> Histórico:
+            </span>
+            <div className="row g-2 mt-1">
+              {[...historialEstados]
+                .sort((a, b) => (a.Id_ReservaEstado || 0) - (b.Id_ReservaEstado || 0))
+                .map((item, idx) => {
+                  const fechaStr = item.updatedAt || item.updatedat
+                    ? new Date(item.updatedAt || item.updatedat).toLocaleString("es-CO", {
+                      dateStyle: "short",
+                      timeStyle: "short",
+                    })
+                    : "";
 
-        {isEditing &&
-          ["Rechazado", "Cancelado"].includes(
-            obtenerNombreEstado(Id_Estado) || nombreEstadoActual
-          ) && (
-            <div className="col-md-12 mb-3">
-              <label className="form-label">Motivo Rechazo o Cancelación:</label>
-              <input
-                type="text"
-                className="form-control rounded-pill shadow-sm px-3"
-                value={Mot_RecCan}
-                onChange={(e) => setMot_RecCan(e.target.value)}
-                required
-                readOnly={isViewOnly}
-              />
+                  const status = item.Estado?.Tip_Estado || "Estado Desconocido";
+
+                  let badgeClass = 'bg-secondary';
+                  if (status === 'Aprobado') badgeClass = 'bg-success';
+                  else if (status === 'Rechazado' || status === 'Cancelado') badgeClass = 'bg-danger';
+                  else if (status === 'En proceso') badgeClass = 'bg-warning text-dark';
+                  else if (status === 'Solicitado') badgeClass = 'bg-info text-dark';
+
+                  let colClass = "col-12";
+                  const totalItems = historialEstados.length;
+                  if (totalItems === 2) {
+                    colClass = "col-6";
+                  } else if (totalItems === 3) {
+                    colClass = "col-6 col-md-4";
+                  } else if (totalItems === 4) {
+                    colClass = "col-6";
+                  } else if (totalItems > 4) {
+                    colClass = "col-6 col-md-3";
+                  }
+
+                  return (
+                    <div key={item.Id_ReservaEstado || idx} className={colClass}>
+                      <div className="d-flex align-items-center justify-content-between gap-2 bg-white border rounded-pill p-1 px-3 shadow-sm h-100 hover-scale" style={{ transition: 'all 0.2s' }}>
+                        <div className="d-flex align-items-center gap-2 text-truncate">
+                          <span className={`badge ${badgeClass} rounded-pill`} style={{ fontSize: '0.75rem', padding: '0.35em 0.65em' }}>
+                            {status}
+                          </span>
+                          <span className="text-muted fw-medium text-truncate" style={{ fontSize: '0.7rem' }}>
+                            {fechaStr}
+                          </span>
+                        </div>
+                        {item.Mot_RecCan && (
+                          <span 
+                            className="text-danger small ms-1 flex-shrink-0" 
+                            title={item.Mot_RecCan}
+                            style={{ fontSize: '0.7rem', fontWeight: '500' }}
+                          >
+                            <i className="fa-solid fa-circle-info"></i>
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
             </div>
-          )}
+          </div>
+        )}
+
+
+        {isEditing && (
+          ["Rechazado", "Cancelado"].includes(rowToEdit?.Des_Estado) ||
+          ["Rechazado", "Cancelado"].includes(obtenerNombreEstado(Id_Estado)) ||
+          ["Rechazado", "Cancelado"].includes(nombreEstadoActual) ||
+          (String(Mot_RecCan).trim() !== "")
+        ) && (
+          <div className="col-md-12 mb-3 animate__animated animate__fadeIn">
+            <label className="form-label fw-bold">Motivo Rechazo o Cancelación:</label>
+            <input
+              type="text"
+              className="form-control rounded-pill shadow-sm px-3"
+              value={Mot_RecCan}
+              onChange={(e) => setMot_RecCan(e.target.value)}
+              required
+              readOnly={isViewOnly}
+            />
+          </div>
+        )}
 
         {Tip_Reserva === "Practica" && (
           <div className="col-md-12 mb-3">
@@ -1201,60 +1267,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
         </div>
 
 
-        {isViewOnly && (
-          <div className="col-12 mt-4">
-            <h5 className="fw-bold mb-3 text-primary">
-              <i className="fa-solid fa-clock-rotate-left me-2"></i>Historial de Cambios de Estado
-            </h5>
-            <div className="card border shadow-sm p-3 bg-light rounded-4">
-              {historialEstados && historialEstados.length > 0 ? (
-                <div className="list-group list-group-flush">
-                  {[...historialEstados]
-                    .sort((a, b) => (a.Id_ReservaEstado || 0) - (b.Id_ReservaEstado || 0))
-                    .map((item, idx) => {
-                      const fechaStr = item.updatedAt || item.updatedat
-                        ? new Date(item.updatedAt || item.updatedat).toLocaleString("es-CO", {
-                          dateStyle: "medium",
-                          timeStyle: "short",
-                        })
-                        : "Fecha no disponible";
 
-                      const status = item.Estado?.Tip_Estado || "Estado Desconocido";
-
-                      let badgeClass = 'bg-secondary';
-                      if (status === 'Aprobado') badgeClass = 'bg-success';
-                      else if (status === 'Rechazado' || status === 'Cancelado') badgeClass = 'bg-danger';
-                      else if (status === 'En proceso') badgeClass = 'bg-warning text-dark';
-                      else if (status === 'Solicitado') badgeClass = 'bg-info text-dark';
-
-                      return (
-                        <div key={item.Id_ReservaEstado || idx} className="list-group-item bg-transparent d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center py-3 px-0 border-bottom">
-                          <div className="d-flex align-items-center gap-3">
-                            <div className="bg-white rounded-circle shadow-sm d-flex justify-content-center align-items-center" style={{ width: '40px', height: '40px' }}>
-                              <i className="fa-solid fa-circle-dot text-primary fs-5"></i>
-                            </div>
-                            <div>
-                              <div className="d-flex align-items-center gap-2">
-                                <span className={`badge ${badgeClass} rounded-pill`}>{status}</span>
-                                <span className="text-muted small">{fechaStr}</span>
-                              </div>
-                              {item.Mot_RecCan && (
-                                <p className="mb-0 mt-2 text-danger small bg-danger-soft p-2 rounded-3 border border-danger-subtle">
-                                  <strong>Motivo:</strong> {item.Mot_RecCan}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                </div>
-              ) : (
-                <p className="text-muted mb-0 small">No hay historial de cambios de estado disponible.</p>
-              )}
-            </div>
-          </div>
-        )}
 
         {!isViewOnly && (
           <div className="col-12 text-center mt-4">

@@ -460,7 +460,7 @@ const FormReserva = ({ hideModal, rowToEdit = {}, estados = [] }) => {
         await apiAxios.post("/api/Reserva", payload);
         await Swal.fire("Registrado", "Reserva registrada", "success");
         resetForm();
-        hideModal?.();
+        try { hideModal?.(); } catch (modalErr) { console.warn("Error cerrando modal:", modalErr); }
       } else {
         await apiAxios.put(`/api/Reserva/${reservaId}`, {
           Tip_Reserva,
@@ -498,8 +498,8 @@ const FormReserva = ({ hideModal, rowToEdit = {}, estados = [] }) => {
           });
         }
 
-        await Swal.fire("Actualizado", "Reserva actualizada", "success");
-        hideModal?.();
+        await Swal.fire("OK", "Reserva actualizada correctamente", "success");
+        try { hideModal?.(); } catch (modalErr) { console.warn("Error cerrando modal:", modalErr); }
       }
     } catch (error) {
       console.error("Error:", error.response ? error.response.data : error.message);
