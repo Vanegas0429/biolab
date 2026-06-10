@@ -33,8 +33,6 @@ const ReservaReactivoModel = db.define('ReservaReactivo', {
     tableName: 'reservareactivo',
     freezeTableName: true,
     timestamps: true,
-    createdAt: 'createdat',
-    updatedAt: 'updatedat'
 });
 
 export default ReservaReactivoModel;

@@ -19,8 +19,6 @@ const ReservaActividadModel = db.define('ReservaActividad', {
     tableName: 'reservaactividad',
     freezeTableName: true,
     timestamps: true,
-    createdAt: 'createdat',
-    updatedAt: 'updatedat'
 });
 
 export default ReservaActividadModel;

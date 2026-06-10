@@ -52,8 +52,6 @@ const ReservaModel = db.define('Reserva', {
     tableName: 'reserva',
     freezeTableName: true,
     timestamps: true,
-    createdAt: 'createdat',
-    updatedAt: 'updatedat'
 });
 
 export default ReservaModel;

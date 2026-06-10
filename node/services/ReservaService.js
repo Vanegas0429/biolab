@@ -18,6 +18,7 @@ import MaterialModel from "../models/MaterialModel.js";
 import ReactivosModel from "../models/ReactivosModel.js";
 import EntradaModel from "../models/EntradaModel.js";
 import MovimientoReactivoModel from "../models/MovimientoReactivoModel.js";
+import { enviarCorreoRechazo, enviarCorreoAprobacion } from "./EmailService.js";
 
 async function discountReactivoStock(idReactivo, quantity, idReserva, transaction) {
   let remainingToDiscount = Number(quantity);
@@ -322,20 +323,7 @@ class ReservaService {
         throw new Error("La reserva de visita no debe tener actividades");
       }
 
-      const reservaActivaMismoTipo = await ReservaModel.findOne({
-        where: {
-          Fec_Reserva,
-          Tip_Reserva,
-          Booleano: "Activo",
-        },
-        transaction,
-      });
 
-      if (reservaActivaMismoTipo) {
-        throw new Error(
-          `Ya existe una reserva activa de tipo ${Tip_Reserva} para la fecha ${Fec_Reserva}`
-        );
-      }
 
       let equiposPermitidos = new Set();
       let materialesPermitidos = new Set();
@@ -669,7 +657,138 @@ class ReservaService {
         }
       }
 
+      // ============================================================
+      // RECHAZO AUTOMÁTICO: Al aprobar, rechazar las demás del mismo día
+      // ============================================================
+      let reservasARechazar = [];
+      if (nuevoEstado.Tip_Estado === "Aprobado") {
+        const estadoRechazado = await EstadoModel.findOne({
+          where: { Tip_Estado: 'Rechazado' },
+          transaction
+        });
+
+        if (estadoRechazado) {
+          // Buscar todas las reservas activas del mismo día, excluyendo la actual
+          const otrasReservas = await ReservaModel.findAll({
+            where: {
+              Fec_Reserva: reserva.Fec_Reserva,
+              Booleano: 'Activo',
+              Id_Reserva: { [Op.ne]: idReserva }
+            },
+            transaction
+          });
+
+          const MOTIVO_AUTO = "Rechazada automáticamente: se aprobó otra reserva para la misma fecha. Por favor solicite una nueva reserva con otra fecha disponible.";
+
+          for (const otraReserva of otrasReservas) {
+            // Verificar que esté en estado Solicitado
+            const ultimoHist = await ReservaEstadoModel.findOne({
+              where: { Id_Reserva: otraReserva.Id_Reserva },
+              order: [["Id_ReservaEstado", "DESC"]],
+              transaction
+            });
+
+            if (!ultimoHist) continue;
+
+            const estActual = await EstadoModel.findByPk(ultimoHist.Id_Estado, { transaction });
+            if (!estActual || estActual.Tip_Estado !== 'Solicitado') continue;
+
+            // Crear historial de rechazo
+            await ReservaEstadoModel.create({
+              Id_Reserva: otraReserva.Id_Reserva,
+              Id_Estado: estadoRechazado.Id_Estado,
+              Mot_RecCan: MOTIVO_AUTO
+            }, { transaction });
+
+            // Marcar como inactiva
+            await ReservaModel.update(
+              { Booleano: 'Inactivo' },
+              { where: { Id_Reserva: otraReserva.Id_Reserva }, transaction }
+            );
+
+            // Restaurar reactivos de la reserva rechazada
+            const reactivosOtra = await ReservaReactivoModel.findAll({
+              where: { Id_Reserva: otraReserva.Id_Reserva },
+              transaction
+            });
+
+            for (const item of reactivosOtra) {
+              await restoreReactivoStock(
+                Number(item.Id_Reactivo),
+                Number(item.Can_Reactivo),
+                otraReserva.Id_Reserva,
+                `Devolución por rechazo automático de reserva`,
+                transaction
+              );
+              await ReservaReactivoModel.update(
+                { Reac_Utilizados: 0, Reac_Devueltos: item.Can_Reactivo },
+                { where: { Id_ReservaReactivo: item.Id_ReservaReactivo }, transaction }
+              );
+            }
+
+            // Guardar datos para enviar emails después del commit
+            reservasARechazar.push({
+              correo: otraReserva.Cor_Solicitante,
+              nombre: otraReserva.Nom_Solicitante,
+              idReserva: otraReserva.Id_Reserva,
+              fecha: otraReserva.Fec_Reserva,
+              motivo: MOTIVO_AUTO
+            });
+
+            console.log(`[AUTO-RECHAZO] Reserva #${otraReserva.Id_Reserva} rechazada automáticamente por aprobación de #${idReserva}`);
+          }
+        }
+      }
+
       await transaction.commit();
+
+      // ============================================================
+      // ENVÍO DE EMAILS (después del commit para no bloquear la BD)
+      // ============================================================
+
+      // Emails para reservas rechazadas automáticamente
+      for (const data of reservasARechazar) {
+        try {
+          await enviarCorreoRechazo(
+            data.correo,
+            data.nombre,
+            data.idReserva,
+            data.fecha,
+            data.motivo
+          );
+        } catch (emailError) {
+          console.error(`[EMAIL] Error enviando correo a ${data.correo}:`, emailError.message);
+        }
+      }
+
+      // Email al rechazar o cancelar manualmente
+      if (["Rechazado", "Cancelado"].includes(nuevoEstado.Tip_Estado)) {
+        try {
+          await enviarCorreoRechazo(
+            reserva.Cor_Solicitante,
+            reserva.Nom_Solicitante,
+            reserva.Id_Reserva,
+            reserva.Fec_Reserva,
+            String(Mot_RecCan).trim()
+          );
+        } catch (emailError) {
+          console.error(`[EMAIL] Error enviando correo de rechazo manual a ${reserva.Cor_Solicitante}:`, emailError.message);
+        }
+      }
+
+      // Email al aprobar la reserva manualmente
+      if (nuevoEstado.Tip_Estado === "Aprobado") {
+        try {
+          await enviarCorreoAprobacion(
+            reserva.Cor_Solicitante,
+            reserva.Nom_Solicitante,
+            reserva.Id_Reserva,
+            reserva.Fec_Reserva
+          );
+        } catch (emailError) {
+          console.error(`[EMAIL] Error enviando correo de aprobación a ${reserva.Cor_Solicitante}:`, emailError.message);
+        }
+      }
 
       return true;
     } catch (error) {

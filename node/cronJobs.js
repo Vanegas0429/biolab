@@ -3,6 +3,7 @@ import { Op } from 'sequelize';
 import ReservaModel from './models/ReservaModel.js';
 import ReservaService from './services/ReservaService.js';
 import EstadoModel from './models/EstadoModel.js';
+import { enviarCorreoRechazo } from './services/EmailService.js';
 
 export const startCronJobs = () => {
     // Ejecutar todos los días a la medianoche (00:00)
@@ -27,6 +28,8 @@ export const startCronJobs = () => {
                 console.log(`[CRON] Se encontraron ${reservasVencidas.length} reservas vencidas.`);
                 const estadoRechazado = await EstadoModel.findOne({ where: { Tip_Estado: 'Rechazado' }});
                 
+                const MOTIVO_VENCIMIENTO = "Reserva vencida automáticamente: no fue gestionada antes de la fecha solicitada. Por favor solicite una nueva reserva con otra fecha disponible.";
+
                 if(estadoRechazado) {
                     for(const reserva of reservasVencidas) {
                         try {
@@ -34,9 +37,22 @@ export const startCronJobs = () => {
                             await ReservaService.cambiarEstado(
                                 reserva.Id_Reserva, 
                                 estadoRechazado.Id_Estado, 
-                                "Reserva vencida automáticamente por el sistema"
+                                MOTIVO_VENCIMIENTO
                             );
                             console.log(`[CRON] Reserva ${reserva.Id_Reserva} rechazada automáticamente.`);
+
+                            // Enviar correo de notificación al solicitante
+                            try {
+                                await enviarCorreoRechazo(
+                                    reserva.Cor_Solicitante,
+                                    reserva.Nom_Solicitante,
+                                    reserva.Id_Reserva,
+                                    reserva.Fec_Reserva,
+                                    MOTIVO_VENCIMIENTO
+                                );
+                            } catch (emailError) {
+                                console.error(`[CRON-EMAIL] Error enviando correo a ${reserva.Cor_Solicitante}:`, emailError.message);
+                            }
                         } catch(e) {
                             console.error(`[CRON] Error al rechazar la reserva ${reserva.Id_Reserva}:`, e.message);
                         }
@@ -52,3 +68,4 @@ export const startCronJobs = () => {
         }
     });
 };
+

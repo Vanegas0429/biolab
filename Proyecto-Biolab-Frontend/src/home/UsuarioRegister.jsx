@@ -11,6 +11,7 @@ const UsuarioRegistro = () => {
   const [contraseña, setContraseña] = useState("");
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const navigate = useNavigate();
 
@@ -106,40 +107,53 @@ const UsuarioRegistro = () => {
               </div>
             </div>
 
-            <div className="mb-3"> 
+            <div className="mb-3">
               <label className="form-label">Teléfono</label>
-              <input 
+              <input
                 type="text"
                 className="form-control"
-                value={telefono} 
+                value={telefono}
                 onChange={(e) => {
                   const val = e.target.value.replace(/[^0-9]/g, '');
                   if (val.length <= 10) setTelefono(val);
                 }}
                 maxLength="10"
-                placeholder="Ingrese su número de teléfono" 
-                required 
-              /> 
+                placeholder="Ingrese su número de teléfono"
+                required
+              />
             </div>
 
-            <div className="mb-3"> <label className="form-label">Correo electrónico</label>
-            <input 
-            type="email"
-             className="form-control"
-              value={correo} onChange={(e) => setCorreo(e.target.value)}
-              placeholder="Ingrese su correo" 
-              required 
-              /> 
-              </div> 
-              
-              <div className="mb-3"> <label className="form-label">Contraseña</label> 
-              <input type="password" 
-              className="form-control" value={contraseña} onChange={(e) => setContraseña(e.target.value)} 
-              placeholder="Mínimo 8 caracteres" 
-              required 
-              /> 
-              </div>
+            <div className="mb-3">
+              <label className="form-label">Correo electrónico</label>
+              <input
+                type="email"
+                className="form-control"
+                value={correo}
+                onChange={(e) => setCorreo(e.target.value)}
+                placeholder="Ingrese su correo"
+                required
+              />
+            </div>
 
+            <div className="input-group">
+              <input
+                type={showPassword ? "text" : "password"}
+                className="form-control border-end-0"
+                value={contraseña}
+                onChange={(e) => setContraseña(e.target.value)}
+                placeholder="Ingrese su contraseña"
+                required
+              />
+              <button
+                type="button"
+                className="btn btn-outline-secondary border-start-0 bg-white"
+                onClick={() => setShowPassword(!showPassword)}
+                tabIndex={-1}
+                style={{ borderColor: "#dee2e6" }}
+              >
+                <i className={`fa-solid ${showPassword ? "fa-eye-slash" : "fa-eye"} text-muted`}></i>
+              </button>
+            </div>
             <button
               type="submit"
               className="btn btn-success w-100 mt-3"

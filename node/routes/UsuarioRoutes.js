@@ -1,5 +1,5 @@
 import express from "express";
-import { registerUsuario, loginUsuario, getAllUsuarios, updateUsuarioRol, forgotPassword } from "../controllers/UsuarioController.js";
+import { registerUsuario, loginUsuario, getAllUsuarios, updateUsuarioRol, forgotPassword, resetPassword } from "../controllers/UsuarioController.js";
 
 import { check } from "express-validator";
 import { verifyToken } from "../middlewares/authMiddlewares.js";
@@ -21,6 +21,7 @@ UsuarioRouter.post(
 
 UsuarioRouter.post("/login", loginUsuario);
 UsuarioRouter.post("/forgot-password", forgotPassword);
+UsuarioRouter.post("/reset-password", resetPassword);
 
 
 // Rutas de Administración (Protegidas)

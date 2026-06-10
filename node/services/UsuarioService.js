@@ -10,6 +10,9 @@ import jwt from "jsonwebtoken";
 // Librería para generar identificadores únicos (UUID)
 import { v4 as uuidv4 } from "uuid";
 
+// Servicio de correos
+import EmailService from "./EmailService.js";
+
 class UsuarioService {
 
   // =========================
@@ -101,6 +104,62 @@ class UsuarioService {
       // token,
       usuario: usuarioSinPassword
     };
+  }
+
+  // =========================
+  // RECUPERACIÓN DE CONTRASEÑA
+  // =========================
+  
+  async forgotPassword(correo) {
+    if (!correo) throw new Error("El correo es obligatorio");
+
+    const usuario = await UsuarioModel.findOne({ where: { correo } });
+    if (!usuario) {
+      // No revelar si el correo existe o no por seguridad, pero sí arrojar un error interno o simulado
+      throw new Error("Si el correo existe, recibirá instrucciones");
+    }
+
+    // Generar token único (UUID sin guiones)
+    const resetToken = uuidv4().replace(/-/g, '');
+
+    // Guardar token en el usuario
+    usuario.token = resetToken;
+    await usuario.save();
+
+    // Enviar correo
+    const emailEnviado = await EmailService.enviarCorreoRecuperacion(
+      usuario.correo,
+      usuario.nombre,
+      resetToken
+    );
+
+    if (!emailEnviado) {
+      throw new Error("Hubo un problema al enviar el correo de recuperación");
+    }
+
+    return true;
+  }
+
+  async resetPassword(token, nuevaContraseña) {
+    if (!token || !nuevaContraseña) {
+      throw new Error("Token y nueva contraseña son obligatorios");
+    }
+
+    const usuario = await UsuarioModel.findOne({ where: { token } });
+    
+    if (!usuario) {
+      throw new Error("El enlace de recuperación es inválido o ha expirado");
+    }
+
+    // Encriptar nueva contraseña
+    const hashedContraseña = await bcrypt.hash(nuevaContraseña, 10);
+
+    // Actualizar contraseña y limpiar token
+    usuario.contraseña = hashedContraseña;
+    usuario.token = null;
+    await usuario.save();
+
+    return true;
   }
 
   // =========================

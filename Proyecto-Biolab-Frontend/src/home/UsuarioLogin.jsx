@@ -8,6 +8,7 @@ const UsuarioLogin = ({ setIsAuth, setUserRol, setUserProfile }) => {
   const [correo, setCorreo] = useState("");
   const [contraseña, setContraseña] = useState("");
   const [error, setError] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const navigate = useNavigate();
 
@@ -80,14 +81,25 @@ const UsuarioLogin = ({ setIsAuth, setUserRol, setUserProfile }) => {
 
           <div className="mb-4">
             <label className="form-label text-secondary fw-semibold small">Contraseña</label>
-            <input
-              type="password"
-              className="form-control shadow-sm mb-2"
-              value={contraseña}
-              onChange={(e) => setContraseña(e.target.value)}
-              placeholder="••••••••"
-              required
-            />
+            <div className="input-group">
+              <input
+                type={showPassword ? "text" : "password"}
+                className="form-control shadow-sm border-end-0"
+                value={contraseña}
+                onChange={(e) => setContraseña(e.target.value)}
+                placeholder="Ingrese su contraseña"
+                required
+              />
+              <button
+                type="button"
+                className="btn btn-outline-secondary border-start-0 bg-white"
+                onClick={() => setShowPassword(!showPassword)}
+                tabIndex={-1}
+                style={{ borderColor: "#dee2e6" }}
+              >
+                <i className={`fa-solid ${showPassword ? "fa-eye-slash" : "fa-eye"} text-muted`}></i>
+              </button>
+            </div>
           </div>
           <div className="d-flex justify-content-between align-items-center mb-4">
 
