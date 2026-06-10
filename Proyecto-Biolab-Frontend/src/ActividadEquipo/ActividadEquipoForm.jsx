@@ -57,19 +57,19 @@ const ActividadEquipoForm = ({ hideModal, refreshList, rowToEdit }) => {
     useEffect(() => {
         if (rowToEdit && Equipos.length > 0) {
             setId_Actividad(rowToEdit.Id_Actividad || '')
-            const initialSelectedIds = rowToEdit.equiposList ? rowToEdit.equiposList.map(e => e.Id_Equipo || e.id_equipo) : [];
+            const initialSelectedIds = rowToEdit.equiposList ? rowToEdit.equiposList.map(e => e.Id_Equipo || e.Id_Equipo) : [];
             
             // Expand to all active equipment sharing the same name as any of the initial selected equipment
             const selectedNames = new Set();
             initialSelectedIds.forEach(id => {
-                const eqObj = Equipos.find(eq => (eq.Id_Equipo || eq.id_equipo) === id);
+                const eqObj = Equipos.find(eq => (eq.Id_Equipo || eq.Id_Equipo) === id);
                 if (eqObj) {
                     selectedNames.add(eqObj.nombre.trim().toLowerCase());
                 }
             });
 
             const expandedEq = Equipos.filter(eq => eq.estado === 'Activo' && selectedNames.has(eq.nombre.trim().toLowerCase()))
-                                      .map(eq => eq.Id_Equipo || eq.id_equipo);
+                                      .map(eq => eq.Id_Equipo || eq.Id_Equipo);
 
             setEquiposSeleccionados(expandedEq)
             setEstado(rowToEdit.Estado || 'Activo')
@@ -84,7 +84,7 @@ const ActividadEquipoForm = ({ hideModal, refreshList, rowToEdit }) => {
 
     const handleCheckboxChangeByName = (nombre) => {
         const matchingIds = Equipos.filter(e => e.nombre.trim().toLowerCase() === nombre.trim().toLowerCase())
-                                   .map(e => e.Id_Equipo || e.id_equipo);
+                                   .map(e => e.Id_Equipo || e.Id_Equipo);
         
         const anySelected = matchingIds.some(id => equiposSeleccionados.includes(id));
         
@@ -118,10 +118,10 @@ const ActividadEquipoForm = ({ hideModal, refreshList, rowToEdit }) => {
     // 🔹 ACTUALIZAR
     const actualizarActividadEquipo = async () => {
         const initialEq = rowToEdit.equiposList || [];
-        const initialIds = initialEq.map(e => e.Id_Equipo || e.id_equipo);
+        const initialIds = initialEq.map(e => e.Id_Equipo || e.Id_Equipo);
         
         const toCreate = equiposSeleccionados.filter(id => !initialIds.includes(id));
-        const toDelete = initialEq.filter(e => !equiposSeleccionados.includes(e.Id_Equipo || e.id_equipo));
+        const toDelete = initialEq.filter(e => !equiposSeleccionados.includes(e.Id_Equipo || e.Id_Equipo));
 
         const promises = [];
 
@@ -215,18 +215,18 @@ const ActividadEquipoForm = ({ hideModal, refreshList, rowToEdit }) => {
                     {uniqueEquipos.map(e => {
                         const name = e.nombre;
                         const isChecked = Equipos.filter(eq => eq.nombre.trim().toLowerCase() === name.trim().toLowerCase())
-                                                 .some(eq => equiposSeleccionados.includes(eq.Id_Equipo || eq.id_equipo));
+                                                 .some(eq => equiposSeleccionados.includes(eq.Id_Equipo || eq.Id_Equipo));
                         return (
-                            <div className="form-check" key={e.Id_Equipo || e.id_equipo}>
+                            <div className="form-check" key={e.Id_Equipo || e.Id_Equipo}>
                                 <input 
                                     className="form-check-input" 
                                     type="checkbox" 
                                     value={name} 
-                                    id={`equipo-${e.Id_Equipo || e.id_equipo}`}
+                                    id={`equipo-${e.Id_Equipo || e.Id_Equipo}`}
                                     checked={isChecked}
                                     onChange={() => handleCheckboxChangeByName(name)}
                                 />
-                                <label className="form-check-label" htmlFor={`equipo-${e.Id_Equipo || e.id_equipo}`}>
+                                <label className="form-check-label" htmlFor={`equipo-${e.Id_Equipo || e.Id_Equipo}`}>
                                     {name}
                                 </label>
                             </div>
@@ -237,7 +237,7 @@ const ActividadEquipoForm = ({ hideModal, refreshList, rowToEdit }) => {
                     )}
                 </div>
                 <small className="text-muted d-block mt-1 ps-2">
-                    {uniqueEquipos.filter(e => Equipos.filter(eq => eq.nombre.trim().toLowerCase() === e.nombre.trim().toLowerCase()).some(eq => equiposSeleccionados.includes(eq.Id_Equipo || eq.id_equipo))).length} tipo(s) de equipo seleccionado(s) ({equiposSeleccionados.length} en total)
+                    {uniqueEquipos.filter(e => Equipos.filter(eq => eq.nombre.trim().toLowerCase() === e.nombre.trim().toLowerCase()).some(eq => equiposSeleccionados.includes(eq.Id_Equipo || eq.Id_Equipo))).length} tipo(s) de equipo seleccionado(s) ({equiposSeleccionados.length} en total)
                 </small>
             </div>
 

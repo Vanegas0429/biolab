@@ -386,17 +386,17 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
 
     // Verificar cuántos ya tenemos seleccionados de este nombre
     const yaSeleccionados = equipos.filter((e) => {
-      const info = equiposDisponibles.find((ed) => Number(ed.id_equipo) === Number(e.Id_Equipo));
+      const info = equiposDisponibles.find((ed) => Number(ed.Id_Equipo) === Number(e.Id_Equipo));
       return info?.nombre === nombre;
     });
 
     if (yaSeleccionados.length < grupo.items.length) {
       // Buscar el siguiente ID disponible en el grupo que no esté ya seleccionado
       const nextItem = grupo.items.find(
-        (item) => !equipos.some((e) => Number(e.Id_Equipo) === Number(item.id_equipo))
+        (item) => !equipos.some((e) => Number(e.Id_Equipo) === Number(item.Id_Equipo))
       );
       if (nextItem) {
-        setEquipos((prev) => [...prev, { Id_Equipo: Number(nextItem.id_equipo), Can_Equipos: 1 }]);
+        setEquipos((prev) => [...prev, { Id_Equipo: Number(nextItem.Id_Equipo), Can_Equipos: 1 }]);
       }
     }
   };
@@ -417,13 +417,13 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
 
     // Filtrar los que NO son de este nombre para mantenerlos
     const otrosEquipos = equipos.filter((e) => {
-      const info = equiposDisponibles.find((ed) => Number(ed.id_equipo) === Number(e.Id_Equipo));
+      const info = equiposDisponibles.find((ed) => Number(ed.Id_Equipo) === Number(e.Id_Equipo));
       return info?.nombre !== nombre;
     });
 
     // Tomar los primeros N items del grupo disponible
     const nuevosItems = grupo.items.slice(0, cant).map((item) => ({
-      Id_Equipo: Number(item.id_equipo),
+      Id_Equipo: Number(item.Id_Equipo),
       Can_Equipos: 1,
     }));
 
@@ -433,7 +433,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
   const eliminarEquipoPorNombre = (nombre) => {
     setEquipos((prev) =>
       prev.filter((e) => {
-        const info = equiposDisponibles.find((ed) => Number(ed.id_equipo) === Number(e.Id_Equipo));
+        const info = equiposDisponibles.find((ed) => Number(ed.Id_Equipo) === Number(e.Id_Equipo));
         return info?.nombre !== nombre;
       })
     );
@@ -563,7 +563,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
     const groups = {};
     equipos.forEach((e) => {
       const dbInfo = equiposDisponibles.find(
-        (ed) => Number(ed.id_equipo) === Number(e.Id_Equipo)
+        (ed) => Number(ed.Id_Equipo) === Number(e.Id_Equipo)
       );
 
       const info = dbInfo || {
@@ -596,7 +596,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
 
   const seleccionarTodosEquipos = () => {
     const nuevosEquipos = equiposDisponibles.map(eq => ({
-      Id_Equipo: Number(eq.id_equipo),
+      Id_Equipo: Number(eq.Id_Equipo),
       Can_Equipos: 1
     }));
     setEquipos(nuevosEquipos);

@@ -20,8 +20,6 @@ const ActividadMaterialModel = db.define('ActividadMaterial', {
     tableName: 'actividadmaterial',
     freezeTableName: true,
     timestamps: true,
-    createdAt: 'createdat',
-    updatedAt: 'updatedat'
 });
 
 export default ActividadMaterialModel;

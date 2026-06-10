@@ -56,7 +56,7 @@ const CrudEquipos = ({ userRol }) => {
     if (!result.isConfirmed) return;
 
     try {
-      await apiAxios.put(`/api/Equipo/${row.id_equipo}`, {
+      await apiAxios.put(`/api/Equipo/${row.Id_Equipo}`, {
         ...row,
         estado: estadoNuevo
       });
@@ -100,7 +100,7 @@ const CrudEquipos = ({ userRol }) => {
     Array.from(files).forEach(f => formData.append('img_equipo', f));
     formData.append('nombre', row.nombre || '');
     try {
-      await apiAxios.put(`/api/Equipo/${row.id_equipo}`, formData, {
+      await apiAxios.put(`/api/Equipo/${row.Id_Equipo}`, formData, {
         headers: { "Content-Type": "multipart/form-data" }
       });
       await getAllEquipos();
@@ -158,7 +158,7 @@ const CrudEquipos = ({ userRol }) => {
       formData.append('ficha_tecnica', file);
       formData.append('nombre', row.nombre || '');
       try {
-        const response = await apiAxios.put(`/api/Equipo/${row.id_equipo}`, formData, {
+        const response = await apiAxios.put(`/api/Equipo/${row.Id_Equipo}`, formData, {
           headers: { "Content-Type": "multipart/form-data" }
         });
 
@@ -254,7 +254,7 @@ const CrudEquipos = ({ userRol }) => {
           columns={[
             {
               name: 'ID',
-              selector: row => row.id_equipo,
+              selector: row => row.Id_Equipo,
               sortable: true,
               width: '70px'
             },
@@ -444,7 +444,7 @@ const CrudEquipos = ({ userRol }) => {
             {userRol !== 'solicitante' && (
               <div className="carousel-actions">
                 <button className="carousel-action-btn add-btn" onClick={() => { const eq = findCarouselEquipo(); if (eq) triggerImageUpload(eq); }}><i className="fa-solid fa-plus me-2"></i>Agregar</button>
-                <button className="carousel-action-btn delete-btn" onClick={() => { const eq = findCarouselEquipo(); if (eq) deleteImage(eq.id_equipo, carouselImages[carouselIndex]); }}><i className="fa-solid fa-trash-can me-2"></i>Eliminar</button>
+                <button className="carousel-action-btn delete-btn" onClick={() => { const eq = findCarouselEquipo(); if (eq) deleteImage(eq.Id_Equipo, carouselImages[carouselIndex]); }}><i className="fa-solid fa-trash-can me-2"></i>Eliminar</button>
               </div>
             )}
           </div>

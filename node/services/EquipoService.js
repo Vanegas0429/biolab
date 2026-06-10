@@ -8,10 +8,10 @@ class EquipoService {
         return await EquipoModel.findAll();
     }
 
-    async getById(id_equipo) {
+    async getById(Id_Equipo) {
 
         const equipo = await EquipoModel.findOne({
-            where: { id_equipo: id_equipo }
+            where: { Id_Equipo: Id_Equipo }
         });
 
         if (!equipo) throw new Error("Equipo no encontrado");
@@ -23,11 +23,11 @@ class EquipoService {
         return await EquipoModel.create(data);
     }
 
-    async update(id_equipo, data) {
+    async update(Id_Equipo, data) {
 
         const result = await EquipoModel.update(
             data,
-            { where: { id_equipo: id_equipo } }
+            { where: { Id_Equipo: Id_Equipo } }
         );
 
         const updated = result[0];
@@ -39,10 +39,10 @@ class EquipoService {
         return true;
     }
 
-    async delete(id_equipo) {
+    async delete(Id_Equipo) {
 
         const deleted = await EquipoModel.destroy({
-            where: { id_equipo: id_equipo }
+            where: { Id_Equipo: Id_Equipo }
         });
 
         if (!deleted) throw new Error("Equipo no encontrado");
@@ -51,8 +51,8 @@ class EquipoService {
     }
 
     // Eliminar una imagen específica del array de imágenes de un equipo
-    async removeImage(id_equipo, filename) {
-        const equipo = await this.getById(id_equipo);
+    async removeImage(Id_Equipo, filename) {
+        const equipo = await this.getById(Id_Equipo);
 
         let imagenes = [];
         try {
@@ -69,7 +69,7 @@ class EquipoService {
         // Actualizar en BD
         await EquipoModel.update(
             { img_equipo: nuevasImagenes.length > 0 ? JSON.stringify(nuevasImagenes) : null },
-            { where: { id_equipo: id_equipo } }
+            { where: { Id_Equipo: Id_Equipo } }
         );
 
         // Eliminar archivo físico

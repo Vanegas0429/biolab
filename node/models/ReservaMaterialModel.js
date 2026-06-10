@@ -23,8 +23,6 @@ const ReservaMaterialModel = db.define('ReservaMaterial', {
     tableName: 'reservamaterial',
     freezeTableName: true,
     timestamps: true,
-    createdAt: 'createdat',
-    updatedAt: 'updatedat'
 });
 
 export default ReservaMaterialModel;

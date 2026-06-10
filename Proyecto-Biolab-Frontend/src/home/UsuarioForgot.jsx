@@ -2,35 +2,26 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import apiNode from "../api/axiosConfig.js";
 import logo from "../assets/logo.png";
-import Swal from 'sweetalert2';
 
 const UsuarioForgot = () => {
     const [correo, setCorreo] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+    const [showModal, setShowModal] = useState(false);
+    const [errorMsg, setErrorMsg] = useState("");
     const navigate = useNavigate();
 
     const gestionarReset = async (e) => {
         e.preventDefault();
         setIsLoading(true);
+        setErrorMsg("");
 
         try {
             await apiNode.post("/api/auth/forgot-password", { correo });
-            
-            Swal.fire({
-                title: 'Correo Enviado',
-                text: 'Se han enviado las instrucciones de recuperación a su correo electrónico.',
-                icon: 'success',
-                confirmButtonColor: 'var(--primary-color)'
-            });
             setIsLoading(false);
-            navigate("/Login");
+            setShowModal(true);
 
         } catch (error) {
-            Swal.fire({
-                title: 'Error',
-                text: error.response?.data?.message || 'No se pudo procesar la solicitud',
-                icon: 'error'
-            });
+            setErrorMsg(error.response?.data?.message || 'No se pudo procesar la solicitud');
             setIsLoading(false);
         }
     };
@@ -56,6 +47,12 @@ const UsuarioForgot = () => {
                         Ingrese su correo electrónico para recibir las instrucciones de restablecimiento.
                     </p>
                 </div>
+
+                {errorMsg && (
+                    <div className="alert alert-danger text-center py-2 mb-3">
+                        <small>{errorMsg}</small>
+                    </div>
+                )}
 
                 <form onSubmit={gestionarReset}>
                     <div className="mb-4">
@@ -96,6 +93,56 @@ const UsuarioForgot = () => {
                     </div>
                 </form>
             </div>
+
+            {/* MODAL DE ÉXITO - Revisar correo */}
+            {showModal && (
+                <>
+                    <div 
+                        className="modal-backdrop fade show"
+                        style={{ zIndex: 1040 }}
+                    ></div>
+                    <div 
+                        className="modal fade show d-block" 
+                        tabIndex="-1"
+                        style={{ zIndex: 1050 }}
+                    >
+                        <div className="modal-dialog modal-dialog-centered">
+                            <div className="modal-content border-0 shadow-lg" style={{ borderRadius: '20px' }}>
+                                <div className="modal-body text-center p-5">
+                                    <div 
+                                        className="d-inline-flex align-items-center justify-content-center mb-4"
+                                        style={{
+                                            width: "80px",
+                                            height: "80px",
+                                            borderRadius: "50%",
+                                            background: "linear-gradient(135deg, #d4edda, #c3e6cb)"
+                                        }}
+                                    >
+                                        <i className="fa-solid fa-envelope-circle-check fa-2x" style={{ color: "#28a745" }}></i>
+                                    </div>
+                                    <h4 className="fw-bold mb-3" style={{ color: "var(--primary-color)" }}>
+                                        ¡Revisa tu correo!
+                                    </h4>
+                                    <p className="text-muted mb-4">
+                                        Hemos enviado las instrucciones de recuperación a <strong>{correo}</strong>. 
+                                        Revisa tu bandeja de entrada y sigue los pasos indicados.
+                                    </p>
+                                    <button 
+                                        className="btn btn-primary w-100 py-2 rounded-pill shadow-sm"
+                                        onClick={() => {
+                                            setShowModal(false);
+                                            navigate("/Login");
+                                        }}
+                                    >
+                                        <i className="fa-solid fa-right-to-bracket me-2"></i>
+                                        Iniciar Sesión
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </>
+            )}
         </div>
     );
 };

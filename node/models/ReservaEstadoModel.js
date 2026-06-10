@@ -23,8 +23,6 @@ const ReservaEstadoModel = db.define('ReservaEstado', {
     tableName: 'reservaestado',
     freezeTableName: true,
     timestamps: true,
-    createdAt: 'createdat',
-    updatedAt: 'updatedat'
 });
 
 export default ReservaEstadoModel;

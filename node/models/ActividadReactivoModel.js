@@ -20,8 +20,6 @@ const ActividadReactivoModel = db.define('ActividadReactivo', {
     tableName: 'actividadreactivo',
     freezeTableName: true,
     timestamps: true,
-    createdAt: 'createdat',
-    updatedAt: 'updatedat'
 });
 
 export default ActividadReactivoModel;

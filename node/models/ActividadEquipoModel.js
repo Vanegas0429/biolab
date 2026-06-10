@@ -19,9 +19,7 @@ const ActividadEquipoModel = db.define('ActividadEquipo', {
 }, {
     tableName: 'actividadequipo',
     freezeTableName: true,
-    timestamps: true,
-    createdAt: 'createdat',
-    updatedAt: 'updatedat'
+    timestamps: true
 });
 
 export default ActividadEquipoModel;

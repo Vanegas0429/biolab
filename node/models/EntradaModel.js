@@ -13,8 +13,6 @@ const EntradaModel = db.define('entrada', {
 }, {
     freezeTableName: true,
     timestamps: true,
-    createdAt: 'createdat',
-    updatedAt: 'updatedat'
 })
 
 export default EntradaModel;

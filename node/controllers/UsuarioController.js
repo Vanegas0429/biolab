@@ -47,13 +47,29 @@ export const updateUsuarioRol = async (req, res) => {
 export const forgotPassword = async (req, res) => {
   try {
     const { correo } = req.body;
-    if (!correo) return res.status(400).json({ message: "El correo es obligatorio" });
-
-    // Aquí llamaríamos al servicio para verificar y/o enviar email
-    // await UsuarioService.forgotPassword(correo);
+    console.log(`[FORGOT] Solicitud de recuperación para: ${correo}`);
     
-    // Por ahora simulamos éxito si el correo es enviado
-    res.status(200).json({ message: "Instrucciones enviadas al correo" });
+    // Llamar al servicio para generar token y enviar email
+    await UsuarioService.forgotPassword(correo);
+    
+    console.log(`[FORGOT] ✅ Correo de recuperación enviado exitosamente a: ${correo}`);
+    // Siempre respondemos éxito para no revelar si el correo existe o no
+    res.status(200).json({ message: "Si el correo está registrado, hemos enviado las instrucciones." });
+  } catch (error) {
+    console.error(`[FORGOT] ❌ Error para ${req.body?.correo}:`, error.message);
+    // Si el error es controlado (ej. correo no existe) igual enviamos un 200 por seguridad
+    res.status(200).json({ message: "Si el correo está registrado, hemos enviado las instrucciones." });
+  }
+};
+
+// RESTABLECER CONTRASEÑA
+export const resetPassword = async (req, res) => {
+  try {
+    const { token, nuevaContraseña } = req.body;
+    
+    await UsuarioService.resetPassword(token, nuevaContraseña);
+    
+    res.status(200).json({ message: "Contraseña actualizada exitosamente" });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }

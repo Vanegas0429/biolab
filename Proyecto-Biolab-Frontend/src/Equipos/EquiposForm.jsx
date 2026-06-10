@@ -20,7 +20,7 @@ const EquiposForm = ({ hideModal, rowToEdit, refreshList }) => {
 
     // Detectar cuando es edición
     useEffect(() => {
-        if (rowToEdit?.id_equipo) {
+        if (rowToEdit?.Id_Equipo) {
             loadDataInForm();
         } else {
             resetForm();
@@ -77,10 +77,10 @@ const EquiposForm = ({ hideModal, rowToEdit, refreshList }) => {
         try {
 
             // 🔵 SI EXISTE ID → ACTUALIZAR
-            if (rowToEdit?.id_equipo) {
+            if (rowToEdit?.Id_Equipo) {
 
                 await apiAxios.put(
-                    "/api/Equipo/" + rowToEdit.id_equipo,
+                    "/api/Equipo/" + rowToEdit.Id_Equipo,
                     formData,
                     { headers: { "Content-Type": "multipart/form-data" } }
                 );
@@ -271,7 +271,7 @@ const EquiposForm = ({ hideModal, rowToEdit, refreshList }) => {
 
                 <div className="col-12 text-center mt-4">
                     <button type="submit" className="btn btn-primary rounded-pill px-5 shadow-sm fw-bold">
-                        <i className={`fa-solid ${rowToEdit?.id_equipo ? 'fa-rotate' : 'fa-paper-plane'} me-2`}></i>
+                        <i className={`fa-solid ${rowToEdit?.Id_Equipo ? 'fa-rotate' : 'fa-paper-plane'} me-2`}></i>
                         {textFormButton}
                     </button>
                 </div>

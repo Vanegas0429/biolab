@@ -86,8 +86,8 @@ class ActividadService {
         const reactivosUnicos = [...new Set(reactivos.map(item => item.Id_Reactivo))];
 
         const equiposDetalle = await EquipoModel.findAll({
-            where: { id_equipo: { [Op.in]: equiposUnicos }, estado: 'Activo' },
-            attributes: ['id_equipo', 'nombre', 'img_equipo', 'ficha_tecnica', 'marca']
+            where: { Id_Equipo: { [Op.in]: equiposUnicos }, estado: 'Activo' },
+            attributes: ['Id_Equipo', 'nombre', 'img_equipo', 'ficha_tecnica', 'marca']
         });
 
         const materialesDetalle = await MaterialModel.findAll({
@@ -128,7 +128,7 @@ class ActividadService {
         });
 
         // Filter the allowed IDs based on active items
-        const equiposActivosUnicos = equiposDetalle.map(e => e.id_equipo);
+        const equiposActivosUnicos = equiposDetalle.map(e => e.Id_Equipo);
         const materialesActivosUnicos = materialesDetalle.map(m => m.Id_Material);
         const reactivosActivosUnicos = reactivosDetalle.map(r => r.Id_Reactivo);
 
