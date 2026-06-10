@@ -575,4 +575,14 @@ body.modal-open .main-header {
 .carousel-action-btn.add-btn { background: var(--primary-color); color: white; }
 .carousel-action-btn.delete-btn { background: #ef4444; color: white; }
 
-
+/* ==========================================
+   READ-ONLY INPUTS - Sin resaltado de foco
+   ========================================== */
+.form-control[readonly]:focus,
+.form-select:disabled:focus,
+.form-control[readonly] {
+  box-shadow: none !important;
+  border-color: #dee2e6 !important;
+  outline: none !important;
+  cursor: default;
+}
