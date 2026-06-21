@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import apiAxios from "../api/axiosConfig.js";
 import Swal from "sweetalert2";
 
+const API_URL = import.meta.env.VITE_API_URL || "";
+
 // Función auxiliar para obtener usuario
 const getLoggedUser = () => {
   try {
@@ -27,7 +29,7 @@ const abrirFicha = (ficha) => {
     Swal.fire("Aviso", "No hay ficha técnica disponible para este recurso.", "info");
     return;
   }
-  const url = `http://localhost:8000/uploads/${ficha}`;
+  const url = `${API_URL}/uploads/${ficha}`;
   window.open(url, "_blank");
 };
 
@@ -1001,7 +1003,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
                               <div key={`${item.Id_Equipo}-${idx}`} className="flex-shrink-0 text-center">
                                 {imgs.length > 0 ? (
                                   <img
-                                    src={`http://localhost:8000/uploads/${imgs[0]}`}
+                                    src={`${API_URL}/uploads/${imgs[0]}`}
                                     alt={group.nombre}
                                     className="rounded border"
                                     style={{ width: '50px', height: '50px', objectFit: 'cover' }}
@@ -1064,7 +1066,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
                           <div className="flex-shrink-0">
                             {imgs.length > 0 ? (
                               <img
-                                src={`http://localhost:8000/uploads/${imgs[0]}`}
+                                src={`${API_URL}/uploads/${imgs[0]}`}
                                 alt={info?.Nom_Material}
                                 className="rounded"
                                 style={{ width: '50px', height: '50px', objectFit: 'cover' }}

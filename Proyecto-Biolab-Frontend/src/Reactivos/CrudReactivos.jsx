@@ -4,6 +4,8 @@ import ReactivosForm from "./ReactivosForm.jsx";
 import Swal from 'sweetalert2';
 import DataTable from 'react-data-table-component';
 
+const API_URL = import.meta.env.VITE_API_URL || "";
+
 const CrudReactivos = ({ userRol }) => {
   const [rowToEdit, setRowToEdit] = useState(null);
   const [Reactivo, setReactivo] = useState([]);
@@ -56,7 +58,7 @@ const CrudReactivos = ({ userRol }) => {
         
         // Abrir el modal automáticamente con el nuevo archivo
         if (response.data && response.data.Ficha_tecnica) {
-          setPdfUrl(`http://localhost:8000/uploads/${response.data.Ficha_tecnica}`);
+          setPdfUrl(`${API_URL}/uploads/${response.data.Ficha_tecnica}`);
           setShowPdf(true);
         }
         
@@ -190,7 +192,7 @@ const CrudReactivos = ({ userRol }) => {
                   <button
                     className="btn btn-sm btn-outline-primary rounded-pill px-3 shadow-none"
                     onClick={() => {
-                      setPdfUrl(`http://localhost:8000/uploads/${row.Ficha_tecnica}`);
+                      setPdfUrl(`${API_URL}/uploads/${row.Ficha_tecnica}`);
                       setShowPdf(true);
                     }}
                   >

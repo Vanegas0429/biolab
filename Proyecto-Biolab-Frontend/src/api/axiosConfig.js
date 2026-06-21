@@ -1,10 +1,10 @@
 import axios from "axios";
 
 const apiNode = axios.create({
-  baseURL: "http://localhost:8000",
+  baseURL: import.meta.env.VITE_API_URL || "",
 });
 
-// 🔥 agregar token automáticamente
+// agregar token automáticamente
 apiNode.interceptors.request.use((config) => {
   const user = JSON.parse(localStorage.getItem("UsuarioLaboratorio"));
 

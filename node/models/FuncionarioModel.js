@@ -9,6 +9,7 @@ const FuncionarioModel = db.define('Funcionario', {
     Correo: { type: DataTypes.STRING},
     Cargo_Funcionario: { type: DataTypes.CHAR},
 }, {
+    tableName: 'funcionario',
     freezeTableName: true
 })
 export default FuncionarioModel;

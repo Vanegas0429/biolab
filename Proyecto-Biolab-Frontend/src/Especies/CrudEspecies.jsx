@@ -4,6 +4,8 @@ import DataTable from 'react-data-table-component'
 import EspeciesForm from "./EspeciesForm.jsx"
 import Swal from 'sweetalert2'
 
+const API_URL = import.meta.env.VITE_API_URL || "";
+
 const CrudEspecie = () => {
   const [rowToEdit, setRowToEdit] = useState(null);
   const [Especie, setEspecie] = useState([])
@@ -205,7 +207,7 @@ const CrudEspecie = () => {
                     <div className="position-relative">
                       {imgs.length > 0 ? (
                         <img
-                          src={`http://localhost:8000/uploads/${imgs[0]}`}
+                          src={`${API_URL}/uploads/${imgs[0]}`}
                           alt={row.Nom_especie}
                           className="rounded shadow-sm border"
                           style={{ width: '45px', height: '45px', objectFit: 'cover', cursor: 'pointer' }}
@@ -316,7 +318,7 @@ const CrudEspecie = () => {
               <button className="carousel-arrow carousel-arrow-left" onClick={carouselPrev}><i className="fa-solid fa-chevron-left"></i></button>
             )}
             <div className="carousel-image-wrapper">
-              <img src={`http://localhost:8000/uploads/${carouselImages[carouselIndex]}`} alt={`Imagen ${carouselIndex + 1}`} className="carousel-image shadow-lg" />
+              <img src={`${API_URL}/uploads/${carouselImages[carouselIndex]}`} alt={`Imagen ${carouselIndex + 1}`} className="carousel-image shadow-lg" />
             </div>
             {carouselImages.length > 1 && (
               <button className="carousel-arrow carousel-arrow-right" onClick={carouselNext}><i className="fa-solid fa-chevron-right"></i></button>

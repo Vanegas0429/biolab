@@ -4,6 +4,8 @@ import EquiposForm from "./EquiposForm";
 import Swal from 'sweetalert2';
 import DataTable from 'react-data-table-component';
 
+const API_URL = import.meta.env.VITE_API_URL || "";
+
 const CrudEquipos = ({ userRol }) => {
   const [equipos, setEquipos] = useState([]);
   const [filterText, setFilterText] = useState("");
@@ -166,7 +168,7 @@ const CrudEquipos = ({ userRol }) => {
 
         // Abrir el modal automáticamente con el nuevo archivo
         if (response.data && response.data.ficha_tecnica) {
-          setPdfUrl(`http://localhost:8000/uploads/${response.data.ficha_tecnica}`);
+          setPdfUrl(`${API_URL}/uploads/${response.data.ficha_tecnica}`);
           setShowPdf(true);
         }
 
@@ -270,7 +272,7 @@ const CrudEquipos = ({ userRol }) => {
                     <div className="me-3 position-relative">
                       {imgs.length > 0 ? (
                         <img
-                          src={`http://localhost:8000/uploads/${imgs[0]}`}
+                          src={`${API_URL}/uploads/${imgs[0]}`}
                           alt={row.nombre}
                           className="rounded shadow-sm border"
                           style={{ width: '45px', height: '45px', objectFit: 'cover', cursor: 'pointer' }}
@@ -336,7 +338,7 @@ const CrudEquipos = ({ userRol }) => {
                   <button
                     className="btn btn-sm btn-outline-primary rounded-pill px-3 shadow-none"
                     onClick={() => {
-                      setPdfUrl(`http://localhost:8000/uploads/${row.ficha_tecnica}`);
+                      setPdfUrl(`${API_URL}/uploads/${row.ficha_tecnica}`);
                       setShowPdf(true);
                     }}
                   >
@@ -436,7 +438,7 @@ const CrudEquipos = ({ userRol }) => {
               <button className="carousel-arrow carousel-arrow-left" onClick={carouselPrev}><i className="fa-solid fa-chevron-left"></i></button>
             )}
             <div className="carousel-image-wrapper">
-              <img src={`http://localhost:8000/uploads/${carouselImages[carouselIndex]}`} alt={`Imagen ${carouselIndex + 1}`} className="carousel-image shadow-lg" />
+              <img src={`${API_URL}/uploads/${carouselImages[carouselIndex]}`} alt={`Imagen ${carouselIndex + 1}`} className="carousel-image shadow-lg" />
             </div>
             {carouselImages.length > 1 && (
               <button className="carousel-arrow carousel-arrow-right" onClick={carouselNext}><i className="fa-solid fa-chevron-right"></i></button>
