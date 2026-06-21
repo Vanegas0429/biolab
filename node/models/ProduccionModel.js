@@ -9,6 +9,7 @@ const ProduccionModel = db.define('Produccion', {
     Id_especie: { type: DataTypes.INTEGER},
     Estado: { type: DataTypes.ENUM('Activo','Inactivo')}
 }, {
+    tableName: 'produccion',
     freezeTableName: true
 })
 

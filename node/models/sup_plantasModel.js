@@ -21,6 +21,7 @@ const  Sup_plantasModel= db.define("Sup_plantas",{
     Estado: {type: DataTypes.ENUM('Activo','Inactivo')},
     Id_produccion: {type:DataTypes.INTEGER},     
 }, {
+    tableName: 'sup_plantas',
     //evitar prularizacion en la gestion de la tabla 
     freezeTableName: true
 })
