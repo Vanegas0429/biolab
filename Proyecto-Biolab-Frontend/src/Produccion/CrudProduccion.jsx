@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react"
 import apiAxios from "../api/axiosConfig.js"
 import DataTable from 'react-data-table-component'
 import ProduccionForm from "./ProduccionForm.jsx"
+import Sup_PlantasForm from "../Sup_Plantas/Sup_PlantasForm.jsx"
 import Swal from "sweetalert2"
 
 const CrudProduccion = () => {
@@ -9,6 +10,11 @@ const CrudProduccion = () => {
   const [Produccion, setProduccion] = useState([])
   const [filterText, setFilterText] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+
+  // Estados para supervisión y resumen
+  const [selectedProdSupervision, setSelectedProdSupervision] = useState(null)
+  const [summaryData, setSummaryData] = useState(null)
+  const [loadingSummary, setLoadingSummary] = useState(false)
 
   const getAllProduccion = async () => {
     try {
@@ -25,6 +31,26 @@ const CrudProduccion = () => {
   useEffect(() => {
     getAllProduccion()
   }, [])
+
+  const handleOpenSupervision = (row) => {
+    setSelectedProdSupervision(row)
+  }
+
+  const handleOpenResumen = async (row) => {
+    setSummaryData({ produccion: row, supervisiones: [] })
+    setLoadingSummary(true)
+    try {
+      const res = await apiAxios.get('/api/Sup_Plantas')
+      const allSups = res.data ?? []
+      const filtered = allSups.filter(s => Number(s.Id_produccion) === Number(row.Id_produccion))
+      setSummaryData({ produccion: row, supervisiones: filtered })
+    } catch (error) {
+      console.error("Error cargando supervisiones:", error)
+      Swal.fire("Error", "No se pudo cargar el resumen de supervisión", "error")
+    } finally {
+      setLoadingSummary(false)
+    }
+  }
 
   const toggleEstado = async (row) => {
     const estadoNuevo = row.Estado === 'Activo' ? 'Inactivo' : 'Activo';
@@ -59,6 +85,11 @@ const CrudProduccion = () => {
 
   const hideModal = () => {
     const btn = document.getElementById('closeModal')
+    if (btn) btn.click()
+  }
+
+  const hideSupervisionModal = () => {
+    const btn = document.getElementById('closeSupervisionModal')
     if (btn) btn.click()
   }
 
@@ -105,7 +136,7 @@ const CrudProduccion = () => {
       <div className="card border-0 shadow-lg overflow-hidden" style={{ borderRadius: '20px' }}>
         <DataTable
           columns={[
-            { name: 'ID', selector: row => row.Id_produccion, sortable: true, width: '100px' },
+            { name: 'ID', selector: row => row.Id_produccion, sortable: true, width: '80px' },
             { 
               name: 'ESPECIE', 
               selector: row => row.Especie?.Nom_especie || 'N/A', 
@@ -117,12 +148,12 @@ const CrudProduccion = () => {
             },
             { name: 'LOTE', selector: row => row.Lote, sortable: true, width: '120px' },
             { name: 'TIPO PRODUCCIÓN', selector: row => row.Tip_produccion, sortable: true, grow: 1 },
-            { name: 'FECHA PRODUCCIÓN', selector: row => row.Fec_produccion, sortable: true, width: '180px' },
+            { name: 'FECHA PRODUCCIÓN', selector: row => row.Fec_produccion, sortable: true, width: '170px' },
             {
               name: 'ESTADO',
               sortable: true,
               center: "true",
-              width: '150px',
+              width: '130px',
               cell: row => (
                 <span 
                   className={`status-badge ${row.Estado === 'Activo' ? 'status-badge-activo' : 'status-badge-inactivo'}`}
@@ -136,17 +167,41 @@ const CrudProduccion = () => {
             {
               name: 'ACCIONES',
               center: "true",
-              width: '120px',
+              width: '280px',
               cell: row => (
-                <button 
-                  className="btn-action btn-action-edit"
-                  onClick={() => setRowToEdit(row)}
-                  data-bs-toggle="modal" 
-                  data-bs-target="#exampleModal"
-                  title="Editar"
-                >
-                  <i className="fa-solid fa-pencil"></i>
-                </button>
+                <div className="d-flex gap-1 align-items-center">
+                  <button 
+                    className="btn-action btn-action-edit"
+                    onClick={() => setRowToEdit(row)}
+                    data-bs-toggle="modal" 
+                    data-bs-target="#exampleModal"
+                    title="Editar Producción"
+                  >
+                    <i className="fa-solid fa-pencil"></i>
+                  </button>
+
+                  <button 
+                    className="btn btn-sm btn-outline-success rounded-pill px-2 py-1 shadow-sm"
+                    style={{ fontSize: '0.75rem' }}
+                    onClick={() => handleOpenSupervision(row)}
+                    data-bs-toggle="modal" 
+                    data-bs-target="#supervisionModal"
+                    title="Agregar Supervisión"
+                  >
+                    <i className="fa-solid fa-leaf me-1"></i>Supervisión
+                  </button>
+
+                  <button 
+                    className="btn btn-sm btn-outline-primary rounded-pill px-2 py-1 shadow-sm"
+                    style={{ fontSize: '0.75rem' }}
+                    onClick={() => handleOpenResumen(row)}
+                    data-bs-toggle="modal" 
+                    data-bs-target="#resumenModal"
+                    title="Resumen por Producción"
+                  >
+                    <i className="fa-solid fa-chart-pie me-1"></i>Resumen
+                  </button>
+                </div>
               )
             }
           ]}
@@ -174,7 +229,7 @@ const CrudProduccion = () => {
         />
       </div>
 
-      {/* Modal */}
+      {/* Modal Producción */}
       <div className="modal fade" id="exampleModal" tabIndex="-1">
         <div className="modal-dialog modal-lg border-0">
           <div className="modal-content shadow-lg border-0" style={{ borderRadius: '20px' }}>
@@ -190,6 +245,119 @@ const CrudProduccion = () => {
                 refreshList={getAllProduccion}
                 rowToEdit={rowToEdit}
               />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Modal Agregar Supervisión */}
+      <div className="modal fade" id="supervisionModal" tabIndex="-1">
+        <div className="modal-dialog modal-xl border-0">
+          <div className="modal-content shadow-lg border-0" style={{ borderRadius: '20px' }}>
+            <div className="modal-header bg-success text-white border-0 py-3" style={{ borderTopLeftRadius: '20px', borderTopRightRadius: '20px' }}>
+              <h5 className="modal-title fw-bold">
+                <i className="fa-solid fa-leaf me-2"></i>
+                Agregar Supervisión a Producción (Lote: {selectedProdSupervision?.Lote})
+              </h5>
+              <button type="button" className="btn-close btn-close-white shadow-none" data-bs-dismiss="modal" id="closeSupervisionModal"></button>
+            </div>
+            <div className="modal-body p-4">
+              {selectedProdSupervision && (
+                <Sup_PlantasForm
+                  hideModal={hideSupervisionModal}
+                  refreshList={getAllProduccion}
+                  rowToEdit={{
+                    Id_produccion: selectedProdSupervision.Id_produccion,
+                    Num_lote: selectedProdSupervision.Lote
+                  }}
+                />
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Modal Resumen por Producción */}
+      <div className="modal fade" id="resumenModal" tabIndex="-1">
+        <div className="modal-dialog modal-lg border-0">
+          <div className="modal-content shadow-lg border-0" style={{ borderRadius: '20px' }}>
+            <div className="modal-header bg-primary text-white border-0 py-3" style={{ borderTopLeftRadius: '20px', borderTopRightRadius: '20px' }}>
+              <h5 className="modal-title fw-bold">
+                <i className="fa-solid fa-chart-pie me-2"></i>
+                Resumen por Producción - Lote {summaryData?.produccion?.Lote}
+              </h5>
+              <button type="button" className="btn-close btn-close-white shadow-none" data-bs-dismiss="modal"></button>
+            </div>
+            <div className="modal-body p-4">
+              {loadingSummary ? (
+                <div className="text-center py-4">
+                  <div className="spinner-border text-primary" role="status"></div>
+                  <p className="mt-2 text-muted">Cargando resumen...</p>
+                </div>
+              ) : summaryData ? (
+                <div>
+                  {/* Ficha rápida de producción */}
+                  <div className="row g-3 mb-4 p-3 bg-light rounded-3 border">
+                    <div className="col-md-4">
+                      <small className="text-muted d-block">Especie:</small>
+                      <strong className="text-dark fs-6">{summaryData.produccion?.Especie?.Nom_especie || 'N/A'}</strong>
+                    </div>
+                    <div className="col-md-4">
+                      <small className="text-muted d-block">Tipo de Producción:</small>
+                      <strong className="text-dark fs-6">{summaryData.produccion?.Tip_produccion}</strong>
+                    </div>
+                    <div className="col-md-4">
+                      <small className="text-muted d-block">Fecha de Producción:</small>
+                      <strong className="text-dark fs-6">{summaryData.produccion?.Fec_produccion}</strong>
+                    </div>
+                  </div>
+
+                  <h6 className="fw-bold mb-3 text-secondary">
+                    <i className="fa-solid fa-clipboard-list me-2"></i>
+                    Supervisiones Registradas ({summaryData.supervisiones?.length || 0}):
+                  </h6>
+
+                  {summaryData.supervisiones?.length === 0 ? (
+                    <div className="alert alert-info text-center py-3">
+                      <i className="fa-solid fa-info-circle me-2"></i>
+                      Esta producción aún no tiene registros de supervisión.
+                    </div>
+                  ) : (
+                    <div className="table-responsive">
+                      <table className="table table-hover align-middle border rounded-3 overflow-hidden">
+                        <thead className="table-light">
+                          <tr>
+                            <th># Lote Sup.</th>
+                            <th>Medio Cultivo</th>
+                            <th>Frascos Iniciales</th>
+                            <th>Contaminación</th>
+                            <th>Germinados / Endurecidos</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {summaryData.supervisiones.map((sup, idx) => (
+                            <tr key={sup.Id_sup_plantas || idx}>
+                              <td className="fw-bold">{sup.Num_lote || 'N/A'}</td>
+                              <td>{sup.Med_Cultivo || 'N/A'}</td>
+                              <td><span className="badge bg-primary rounded-pill px-3">{sup.Fc_Iniciales || 0}</span></td>
+                              <td>
+                                <span className="text-danger small">
+                                  Bacterias: {sup.Fc_Bacterias || 0} | Hongos: {sup.Fc_Hongos || 0}
+                                </span>
+                              </td>
+                              <td>
+                                <span className="text-success small">
+                                  Germ: {sup.Fd_GER || 0} | Endurec: {sup.Num_endurecimiento || 0}
+                                </span>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              ) : null}
             </div>
           </div>
         </div>

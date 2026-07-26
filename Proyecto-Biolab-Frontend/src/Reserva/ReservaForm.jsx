@@ -47,7 +47,61 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
   const [Fec_Reserva, setFec_Reserva] = useState("");
   const [Hor_Reserva, setHor_Reserva] = useState("");
   const [Num_Ficha, setNum_Ficha] = useState("");
+  const [Tipo_Institucion, setTipo_Institucion] = useState("SENA");
+  const [Nom_Institucion, setNom_Institucion] = useState("");
   const [Booleano, setBooleano] = useState("Activo");
+
+  const isWeekend = (dateString) => {
+    if (!dateString) return false;
+    const parts = dateString.split('-');
+    if (parts.length !== 3) return false;
+    const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+    const day = d.getDay();
+    return day === 0 || day === 6;
+  };
+
+  const getMinDate = () => {
+    const user = getLoggedUser();
+    const isSolicitante = user?.rol === 'solicitante';
+    const daysToAdd = isSolicitante ? 4 : 0;
+    const d = new Date();
+    d.setDate(d.getDate() + daysToAdd);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const handleDateChange = (val) => {
+    if (!val) {
+      setFec_Reserva("");
+      return;
+    }
+    if (isWeekend(val)) {
+      Swal.fire({
+        title: "Día no permitido",
+        text: "No se pueden realizar reservas los días sábados ni domingos.",
+        icon: "warning"
+      });
+      setFec_Reserva("");
+      return;
+    }
+    const minD = getMinDate();
+    if (val < minD) {
+      const user = getLoggedUser();
+      const isSolicitante = user?.rol === 'solicitante';
+      Swal.fire({
+        title: "Fecha no válida",
+        text: isSolicitante 
+          ? "Como solicitante debe pedir su reserva con al menos 4 días de antelación."
+          : "La fecha seleccionada no puede ser anterior a hoy.",
+        icon: "warning"
+      });
+      setFec_Reserva("");
+      return;
+    }
+    setFec_Reserva(val);
+  };
 
   const [Id_Estado, setId_Estado] = useState("");
   const [Id_EstadoActual, setId_EstadoActual] = useState("");
@@ -88,6 +142,8 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
     setFec_Reserva("");
     setHor_Reserva("");
     setNum_Ficha("");
+    setTipo_Institucion("SENA");
+    setNom_Institucion("");
     setBooleano("Activo");
     setId_Estado("");
     setId_EstadoActual("");
@@ -158,6 +214,8 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
         setFec_Reserva(reserva.Fec_Reserva ?? "");
         setHor_Reserva(reserva.Hor_Reserva ?? "");
         setNum_Ficha(reserva.Num_Ficha ?? "");
+        setTipo_Institucion(reserva.Tipo_Institucion ?? "SENA");
+        setNom_Institucion(reserva.Nom_Institucion ?? "");
         setBooleano(reserva.Booleano ?? "Activo");
 
         const ultimoEstado = reserva.Des_Estado;
@@ -220,6 +278,8 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
       setFec_Reserva(reserva.Fec_Reserva ?? "");
       setHor_Reserva(reserva.Hor_Reserva ?? "");
       setNum_Ficha(reserva.Num_Ficha ?? "");
+      setTipo_Institucion(reserva.Tipo_Institucion ?? "SENA");
+      setNom_Institucion(reserva.Nom_Institucion ?? "");
       setBooleano(reserva.Booleano ?? "Activo");
       setHistorialEstados(estadosData || []);
 
@@ -309,6 +369,13 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
       limpiarActividadesYRecursos();
     }
   }, [Tip_Reserva]);
+
+  // Cuando se cambia el tipo de institución, ajustar automáticamente el tipo de reserva
+  useEffect(() => {
+    if (Tipo_Institucion !== "SENA" && Tip_Reserva !== "Visita") {
+      setTip_Reserva("Visita");
+    }
+  }, [Tipo_Institucion, Tip_Reserva]);
 
   const consultarRecursos = async (actividades) => {
     try {
@@ -623,7 +690,27 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
   const gestionarForm = async (e) => {
     e.preventDefault();
 
+    if (isWeekend(Fec_Reserva)) {
+      Swal.fire("Atención", "No se pueden realizar reservas los días sábados ni domingos", "warning");
+      return;
+    }
+
+    if (Tip_Reserva === "Visita") {
+      if (!Nom_Institucion) {
+        Swal.fire("Atención", "Debe ingresar el nombre de la institución/visita", "warning");
+        return;
+      }
+      if (Tipo_Institucion === "SENA" && !Num_Ficha) {
+        Swal.fire("Atención", "Para reservas SENA el número de ficha es obligatorio", "warning");
+        return;
+      }
+    }
+
     if (Tip_Reserva === "Practica") {
+      if (!Num_Ficha) {
+        Swal.fire("Atención", "El número de ficha es obligatorio para prácticas", "warning");
+        return;
+      }
       if (actividadesSeleccionadas.length < 1) {
         Swal.fire("Atención", "Debe seleccionar al menos una actividad", "warning");
         return;
@@ -662,7 +749,9 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
       Can_Aprendices: Number(Can_Aprendices) || 0,
       Fec_Reserva,
       Hor_Reserva,
-      Num_Ficha,
+      Num_Ficha: (Tip_Reserva === "Visita" && Tipo_Institucion !== "SENA") ? null : Num_Ficha,
+      Tipo_Institucion,
+      Nom_Institucion: Tip_Reserva === "Visita" ? Nom_Institucion : null,
       Booleano,
       actividades: Tip_Reserva === "Practica" ? actividadesSeleccionadas : [],
       equipos:
@@ -727,6 +816,29 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
   return (
     <form onSubmit={gestionarForm} className="col-12">
       <div className="row">
+        {/* Tipo de Institución: aparece PRIMERO */}
+        <div className="col-md-6 mb-3">
+          <label className="form-label fw-bold">Tipo de Institución:</label>
+          <select
+            className="form-select rounded-pill shadow-sm"
+            value={Tipo_Institucion}
+            onChange={(e) => {
+              const val = e.target.value;
+              setTipo_Institucion(val);
+              if (val !== "SENA") {
+                setTip_Reserva("Visita");
+              }
+            }}
+            required
+            disabled={isViewOnly}
+          >
+            <option value="SENA">SENA</option>
+            <option value="Universidad">Universidad</option>
+            <option value="Institución Educativa">Institución Educativa</option>
+          </select>
+        </div>
+
+        {/* Tipo de reserva: condicionado por la institución */}
         <div className="col-md-6 mb-3">
           <label className="form-label">Tipo de reserva:</label>
           <select
@@ -734,11 +846,17 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
             value={Tip_Reserva}
             onChange={(e) => setTip_Reserva(e.target.value)}
             required
-            disabled={isViewOnly}
+            disabled={isViewOnly || Tipo_Institucion !== "SENA"}
           >
-            <option value="Practica">Practica</option>
+            <option value="Practica" disabled={Tipo_Institucion !== "SENA"}>Practica</option>
             <option value="Visita">Visita</option>
           </select>
+          {Tipo_Institucion !== "SENA" && (
+            <small className="text-muted d-block mt-1 ms-2" style={{ fontSize: '0.75rem' }}>
+              <i className="fa-solid fa-info-circle me-1"></i>
+              Para {Tipo_Institucion} solo se permite reserva tipo Visita.
+            </small>
+          )}
         </div>
 
         {isViewOnly && historialEstados && historialEstados.length > 0 && (
@@ -1170,8 +1288,34 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
           </>
         )}
 
+        {/* Campo de nombre de institución - aparece siempre para Visita */}
+        {Tip_Reserva === "Visita" && (
+          <div className="col-md-6 mb-3">
+            <label className="form-label fw-bold">
+              {Tipo_Institucion === "SENA" && "Nombre de la visita / grupo:"}
+              {Tipo_Institucion === "Universidad" && "Nombre de la Universidad:"}
+              {Tipo_Institucion === "Institución Educativa" && "Nombre de la Institución Educativa:"}
+            </label>
+            <input
+              type="text"
+              className="form-control rounded-pill shadow-sm px-3"
+              value={Nom_Institucion}
+              onChange={(e) => setNom_Institucion(e.target.value)}
+              placeholder={
+                Tipo_Institucion === "SENA"
+                  ? "Ej: Visita Aprendices Agroindustria"
+                  : Tipo_Institucion === "Universidad"
+                  ? "Ej: Universidad Nacional"
+                  : "Ej: Colegio San José"
+              }
+              required
+              readOnly={isViewOnly}
+            />
+          </div>
+        )}
+
         <div className="col-md-6 mb-3">
-          <label className="form-label">Nombre del solicitante:</label>
+          <label className="form-label fw-bold">Nombre del solicitante:</label>
           <input
             type="text"
             className="form-control rounded-pill shadow-sm px-3"
@@ -1183,19 +1327,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
         </div>
 
         <div className="col-md-6 mb-3">
-          <label className="form-label">Documento del solicitante:</label>
-          <input
-            type="text"
-            className="form-control rounded-pill shadow-sm px-3"
-            value={Doc_Solicitante}
-            onChange={(e) => setDoc_Solicitante(e.target.value)}
-            readOnly={isViewOnly || getLoggedUser()?.rol === 'solicitante'}
-            required
-          />
-        </div>
-
-        <div className="col-md-6 mb-3">
-          <label className="form-label">Correo del solicitante:</label>
+          <label className="form-label fw-bold">Correo del solicitante:</label>
           <input
             type="email"
             className="form-control rounded-pill shadow-sm px-3"
@@ -1207,46 +1339,61 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
         </div>
 
         <div className="col-md-6 mb-3">
-          <label className="form-label">Teléfono del solicitante:</label>
+          <label className="form-label fw-bold">Teléfono del solicitante:</label>
           <input
             type="text"
             className="form-control rounded-pill shadow-sm px-3"
             value={Tel_Solicitante}
-            onChange={(e) => setTel_Solicitante(e.target.value)}
+            onChange={(e) => {
+              const val = e.target.value.replace(/[^0-9]/g, '');
+              if (val.length <= 10) setTel_Solicitante(val);
+            }}
+            maxLength="10"
+            required
             readOnly={isViewOnly}
           />
         </div>
 
-        <div className="col-md-4 mb-3">
-          <label className="form-label">Cantidad de aprendices:</label>
+        <div className="col-md-6 mb-3">
+          <label className="form-label fw-bold">
+            {(Tip_Reserva === "Visita" && (Tipo_Institucion === "Universidad" || Tipo_Institucion === "Institución Educativa"))
+              ? "Cantidad de personas:"
+              : "Cantidad de aprendices:"}
+          </label>
           <input
             type="text"
             className="form-control rounded-pill shadow-sm px-3"
             value={Can_Aprendices}
             onChange={(e) => {
               const val = e.target.value.replace(/[^0-9]/g, '');
-              if (val.length <= 2) setCan_Aprendices(val);
+              if (val.length <= 3) setCan_Aprendices(val);
             }}
-            maxLength="2"
-            readOnly={isViewOnly}
-          />
-        </div>
-
-        <div className="col-md-4 mb-3">
-          <label className="form-label">Fecha de la reserva:</label>
-          <input
-            type="date"
-            className="form-control rounded-pill shadow-sm px-3"
-            value={Fec_Reserva}
-            onChange={(e) => setFec_Reserva(e.target.value)}
-            min={new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0]}
+            maxLength="3"
             required
             readOnly={isViewOnly}
           />
         </div>
 
-        <div className="col-md-4 mb-3">
-          <label className="form-label">Hora de la reserva:</label>
+        <div className="col-md-6 mb-3">
+          <label className="form-label fw-bold">Fecha de la reserva:</label>
+          <input
+            type="date"
+            className="form-control rounded-pill shadow-sm px-3"
+            value={Fec_Reserva}
+            onChange={(e) => handleDateChange(e.target.value)}
+            min={getMinDate()}
+            required
+            readOnly={isViewOnly}
+          />
+          <small className="text-muted d-block mt-1 ms-2" style={{ fontSize: '0.75rem' }}>
+            <i className="fa-solid fa-info-circle me-1"></i>
+            No disponible sábados ni domingos. 
+            {getLoggedUser()?.rol === 'solicitante' && " Mínimo 4 días de antelación."}
+          </small>
+        </div>
+
+        <div className="col-md-6 mb-3">
+          <label className="form-label fw-bold">Hora de la reserva:</label>
           <input
             type="time"
             className="form-control rounded-pill shadow-sm px-3"
@@ -1257,16 +1404,19 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
           />
         </div>
 
-        <div className="col-md-6 mb-3">
-          <label className="form-label">Número de ficha:</label>
-          <input
-            type="text"
-            className="form-control rounded-pill shadow-sm px-3"
-            value={Num_Ficha}
-            onChange={(e) => setNum_Ficha(e.target.value)}
-            readOnly={isViewOnly}
-          />
-        </div>
+        {(Tip_Reserva === "Practica" || (Tip_Reserva === "Visita" && Tipo_Institucion === "SENA")) && (
+          <div className="col-md-6 mb-3">
+            <label className="form-label fw-bold">Número de ficha:</label>
+            <input
+              type="text"
+              className="form-control rounded-pill shadow-sm px-3"
+              value={Num_Ficha}
+              onChange={(e) => setNum_Ficha(e.target.value)}
+              required
+              readOnly={isViewOnly}
+            />
+          </div>
+        )}
 
 
 

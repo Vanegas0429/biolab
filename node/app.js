@@ -24,6 +24,7 @@ import PracticaRoutes from './routes/PracticaRoutes.js';
 import EntradaRoutes from './routes/EntradaRoutes.js'
 import UsuarioRouter from './routes/UsuarioRoutes.js';
 import MaterialRoutes from './routes/MaterialRoutes.js'
+import EntradaMaterialRoutes from './routes/EntradaMaterialRoutes.js';
 import MovimientoReactivoRoutes from './routes/MovimientoReactivoRoutes.js';
 
 // Modelos
@@ -66,6 +67,7 @@ app.use('/api/Especie', EspeciesRoutes);
 app.use('/api/Reserva', ReservaRoutes);
 app.use('/api/Practica', PracticaRoutes)
 app.use('/api/Entrada', EntradaRoutes)
+app.use('/api/EntradaMaterial', EntradaMaterialRoutes)
 app.use('/api/Material', MaterialRoutes)
 app.use('/api/Actividad', ActividadRoutes)
 app.use('/api/ActividadEquipo', ActividadEquipoRoutes)

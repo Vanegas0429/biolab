@@ -47,11 +47,18 @@ const NavBar = ({ isAuth, logOut, userRol }) => {
         {/* SUBMENÚ INVENTARIO */}
         <li className="nav-item mt-3 px-3 text-uppercase text-secondary fw-bold" style={{ fontSize: '0.75rem', letterSpacing: '1px' }}>Inventario</li>
         <li className="nav-item"><Link className="nav-link px-3 py-2" onClick={() => navigateTo("/Equipo")}><i className="fa-solid fa-microscope me-3 w-20px text-center"></i>Equipos</Link></li>
+        
+        {/* Reactivos y su submenú */}
         <li className="nav-item"><Link className="nav-link px-3 py-2" onClick={() => navigateTo("/Reactivo")}><i className="fa-solid fa-flask me-3 w-20px text-center"></i>Reactivos</Link></li>
         {userRol !== 'solicitante' && (
+          <li className="nav-item ms-3"><Link className="nav-link px-3 py-1 text-muted" style={{ fontSize: '0.85rem' }} onClick={() => navigateTo("/Entrada")}><i className="fa-solid fa-box-open me-2 text-center" style={{ fontSize: '0.75rem' }}></i>Entradas Reactivos</Link></li>
+        )}
+
+        {/* Materiales y su submenú */}
+        {userRol !== 'solicitante' && (
           <>
-            <li className="nav-item"><Link className="nav-link px-3 py-2" onClick={() => navigateTo("/Material")}><i className="fa-solid fa-boxes-stacked me-3 w-20px text-center"></i>Materiales</Link></li>
-            <li className="nav-item"><Link className="nav-link px-3 py-2" onClick={() => navigateTo("/Entrada")}><i className="fa-solid fa-box-open me-3 w-20px text-center"></i>Entradas</Link></li>
+            <li className="nav-item mt-1"><Link className="nav-link px-3 py-2" onClick={() => navigateTo("/Material")}><i className="fa-solid fa-boxes-stacked me-3 w-20px text-center"></i>Materiales</Link></li>
+            <li className="nav-item ms-3"><Link className="nav-link px-3 py-1 text-muted" style={{ fontSize: '0.85rem' }} onClick={() => navigateTo("/EntradaMaterial")}><i className="fa-solid fa-boxes-packing me-2 text-center" style={{ fontSize: '0.75rem' }}></i>Entradas Materiales</Link></li>
           </>
         )}
 
@@ -88,7 +95,7 @@ const NavBar = ({ isAuth, logOut, userRol }) => {
             <div className="p-3 rounded border border-secondary d-flex align-items-center gap-3" style={{ backgroundColor: 'rgba(255,255,255,0.05)' }}>
               <div className="d-flex flex-column text-start flex-grow-1" style={{ overflow: 'hidden' }}>
                 <span className="text-white fw-bold text-truncate" style={{ fontSize: '1rem' }}>{user.nombre}</span>
-                <span className="text-uppercase fw-bold" style={{ fontSize: '0.7rem', letterSpacing: '1px', color: '#cbd5e1' }}>{user.rol}</span>
+                <span className="text-uppercase fw-bold" style={{ fontSize: '0.7rem', letterSpacing: '1px', color: '#cbd5e1' }}>{userRol || user.rol}</span>
               </div>
               <div
                 className="bg-primary text-white d-flex justify-content-center align-items-center rounded-circle shadow-sm flex-shrink-0"

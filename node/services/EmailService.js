@@ -331,8 +331,103 @@ export async function enviarCorreoRecuperacion(correoDestino, nombreSolicitante,
   }
 }
 
+/**
+ * Envía un correo de bienvenida al registrar un nuevo usuario.
+ * @param {string} correoDestino - Email del nuevo usuario
+ * @param {string} nombreUsuario - Nombre del usuario
+ */
+export async function enviarCorreoRegistro(correoDestino, nombreUsuario) {
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+  const linkLogin = `${frontendUrl}/login`;
+
+  const htmlContent = `
+  <!DOCTYPE html>
+  <html lang="es">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  </head>
+  <body style="margin:0; padding:0; background-color:#f1f5f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f1f5f9; padding: 40px 0;">
+      <tr>
+        <td align="center">
+          <table width="600" cellpadding="0" cellspacing="0" style="background-color:#ffffff; border-radius:16px; overflow:hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.08);">
+            
+            <!-- Header -->
+            <tr>
+              <td style="background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%); padding: 32px 40px; text-align:center;">
+                <h1 style="color:#ffffff; margin:0; font-size:28px; font-weight:700; letter-spacing:2px;">🔬 BIOLAB</h1>
+                <p style="color:rgba(255,255,255,0.8); margin:8px 0 0; font-size:14px;">Bienvenido a nuestro Sistema de Gestión</p>
+              </td>
+            </tr>
+
+            <!-- Body -->
+            <tr>
+              <td style="padding: 40px;">
+                <h2 style="color:#1e293b; margin:0 0 8px; font-size:22px;">¡Registro Exitoso!</h2>
+                <p style="color:#64748b; margin:0 0 24px; font-size:15px;">Hola <strong>${nombreUsuario}</strong>,</p>
+                
+                <p style="color:#64748b; margin:0 0 24px; font-size:14px; line-height:1.6;">
+                  Tu cuenta ha sido creada exitosamente en el sistema BIOLAB. Ya puedes iniciar sesión para solicitar reservas de laboratorio, insumos y equipos.
+                </p>
+
+                <!-- CTA Button -->
+                <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">
+                  <tr>
+                    <td align="center">
+                      <a href="${linkLogin}" 
+                         style="display:inline-block; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color:#ffffff; text-decoration:none; padding:14px 40px; border-radius:50px; font-size:15px; font-weight:600; letter-spacing:0.5px; box-shadow: 0 4px 12px rgba(37,99,235,0.3);">
+                        🔑 Iniciar Sesión
+                      </a>
+                    </td>
+                  </tr>
+                </table>
+
+              </td>
+            </tr>
+
+            <!-- Footer -->
+            <tr>
+              <td style="background-color:#f8fafc; padding: 24px 40px; border-top:1px solid #e2e8f0; text-align:center;">
+                <p style="color:#94a3b8; margin:0; font-size:12px;">
+                  Este es un correo automático del sistema BIOLAB.<br>
+                  Por favor no responda a este mensaje.
+                </p>
+                <p style="color:#cbd5e1; margin:8px 0 0; font-size:11px;">
+                  © ${new Date().getFullYear()} BIOLAB — Centro de Formación SENA
+                </p>
+              </td>
+            </tr>
+
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+  </html>
+  `;
+
+  const mailOptions = {
+    from: `"BIOLAB - Laboratorio" <${process.env.SMTP_USER}>`,
+    to: correoDestino,
+    subject: `🔬 BIOLAB — Registro de Usuario Exitoso`,
+    html: htmlContent,
+  };
+
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`[EMAIL] Correo de registro enviado a ${correoDestino} — ID: ${info.messageId}`);
+    return true;
+  } catch (error) {
+    console.error(`[EMAIL] Error al enviar correo de registro a ${correoDestino}:`, error.message);
+    return false;
+  }
+}
+
 export default {
   enviarCorreoRechazo,
   enviarCorreoAprobacion,
   enviarCorreoRecuperacion,
+  enviarCorreoRegistro,
 };
+

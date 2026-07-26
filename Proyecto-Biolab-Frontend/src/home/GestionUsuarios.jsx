@@ -46,7 +46,6 @@ const GestionUsuarios = () => {
         return usuarios.filter(u =>
             u.nombre?.toLowerCase().includes(searchTerm.toLowerCase()) ||
             u.correo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            u.documento?.toString().includes(searchTerm) ||
             u.telefono?.includes(searchTerm)
         );
     }, [usuarios, searchTerm]);
@@ -110,7 +109,6 @@ const GestionUsuarios = () => {
                                 </div>
                             )
                         },
-                        { name: 'DOCUMENTO', selector: row => row.documento, sortable: true, width: '150px' },
                         { name: 'TELÉFONO', selector: row => row.telefono || 'N/A', sortable: true, width: '150px' },
                         {
                             name: 'ROL ACTUAL',

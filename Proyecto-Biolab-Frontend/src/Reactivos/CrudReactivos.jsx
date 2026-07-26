@@ -15,6 +15,7 @@ const CrudReactivos = ({ userRol }) => {
   // Estado para modal PDF
   const [showPdf, setShowPdf] = useState(false);
   const [pdfUrl, setPdfUrl] = useState("");
+  const [loadingPdf, setLoadingPdf] = useState(false);
 
   const toggleEstado = async (row) => {
     const estadoNuevo = row.Estado === 'Activo' ? 'Inactivo' : 'Activo';
@@ -192,6 +193,7 @@ const CrudReactivos = ({ userRol }) => {
                   <button
                     className="btn btn-sm btn-outline-primary rounded-pill px-3 shadow-none"
                     onClick={() => {
+                      setLoadingPdf(true);
                       setPdfUrl(`${API_URL}/uploads/${row.Ficha_tecnica}`);
                       setShowPdf(true);
                     }}
@@ -282,13 +284,26 @@ const CrudReactivos = ({ userRol }) => {
 
       {/* MODAL PDF */}
       {showPdf && (
-        <div className="carousel-overlay" onClick={() => setShowPdf(false)}>
+        <div className="carousel-overlay" onClick={() => { setShowPdf(false); setLoadingPdf(false); }}>
           <div className="pdf-modal-container shadow-lg" onClick={(e) => e.stopPropagation()}>
             <div className="pdf-modal-header">
               <span className="pdf-modal-title"><i className="fa-solid fa-file-pdf me-2"></i>Ficha Técnica</span>
-              <button className="pdf-modal-close" onClick={() => setShowPdf(false)}><i className="fa-solid fa-xmark"></i></button>
+              <button className="pdf-modal-close" onClick={() => { setShowPdf(false); setLoadingPdf(false); }}><i className="fa-solid fa-xmark"></i></button>
             </div>
-            <iframe src={pdfUrl} className="pdf-modal-iframe" title="Ficha Técnica PDF" />
+            <div className="position-relative" style={{ flex: 1 }}>
+              {loadingPdf && (
+                <div className="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column align-items-center justify-content-center bg-white z-3">
+                  <div className="spinner-border text-primary mb-2" role="status"></div>
+                  <span className="fw-bold text-dark">Cargando Ficha Técnica...</span>
+                </div>
+              )}
+              <iframe
+                src={pdfUrl}
+                className="pdf-modal-iframe"
+                title="Ficha Técnica PDF"
+                onLoad={() => setLoadingPdf(false)}
+              />
+            </div>
           </div>
         </div>
       )}

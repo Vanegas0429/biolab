@@ -242,7 +242,18 @@ const CrudMaterial = () => {
               }
             },
             {
-              name: 'CANTIDAD',
+              name: 'CLASIFICACIÓN',
+              selector: row => row.clasificacion || 'Desechable',
+              sortable: true,
+              width: '180px',
+              cell: (row) => (
+                <span className={`badge ${row.clasificacion === 'Reutilizable' ? 'bg-info text-dark' : 'bg-secondary'} rounded-pill px-3 py-2 fw-medium`}>
+                  {row.clasificacion || 'Desechable'}
+                </span>
+              )
+            },
+            {
+              name: 'CANTIDAD DISPONIBLE',
               selector: row => row.Can_Material,
               sortable: true,
               center: true,
