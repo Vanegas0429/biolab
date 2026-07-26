@@ -370,6 +370,14 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
     }
   }, [Tip_Reserva]);
 
+  // Cuando se cambia el tipo de institución, ajustar automáticamente el tipo de reserva
+  useEffect(() => {
+    if (Tipo_Institucion !== "SENA") {
+      // Universidad o Institución Educativa: solo Visita
+      setTip_Reserva("Visita");
+    }
+  }, [Tipo_Institucion]);
+
   const consultarRecursos = async (actividades) => {
     try {
       setLoadingRecursos(true);
@@ -743,7 +751,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
       Fec_Reserva,
       Hor_Reserva,
       Num_Ficha: (Tip_Reserva === "Visita" && Tipo_Institucion !== "SENA") ? null : Num_Ficha,
-      Tipo_Institucion: Tip_Reserva === "Visita" ? Tipo_Institucion : null,
+      Tipo_Institucion,
       Nom_Institucion: Tip_Reserva === "Visita" ? Nom_Institucion : null,
       Booleano,
       actividades: Tip_Reserva === "Practica" ? actividadesSeleccionadas : [],
@@ -809,6 +817,23 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
   return (
     <form onSubmit={gestionarForm} className="col-12">
       <div className="row">
+        {/* Tipo de Institución: aparece PRIMERO */}
+        <div className="col-md-6 mb-3">
+          <label className="form-label fw-bold">Tipo de Institución:</label>
+          <select
+            className="form-select rounded-pill shadow-sm"
+            value={Tipo_Institucion}
+            onChange={(e) => setTipo_Institucion(e.target.value)}
+            required
+            disabled={isViewOnly}
+          >
+            <option value="SENA">SENA</option>
+            <option value="Universidad">Universidad</option>
+            <option value="Institución Educativa">Institución Educativa</option>
+          </select>
+        </div>
+
+        {/* Tipo de reserva: condicionado por la institución */}
         <div className="col-md-6 mb-3">
           <label className="form-label">Tipo de reserva:</label>
           <select
@@ -816,11 +841,17 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
             value={Tip_Reserva}
             onChange={(e) => setTip_Reserva(e.target.value)}
             required
-            disabled={isViewOnly}
+            disabled={isViewOnly || Tipo_Institucion !== "SENA"}
           >
-            <option value="Practica">Practica</option>
+            {Tipo_Institucion === "SENA" && <option value="Practica">Practica</option>}
             <option value="Visita">Visita</option>
           </select>
+          {Tipo_Institucion !== "SENA" && (
+            <small className="text-muted d-block mt-1 ms-2" style={{ fontSize: '0.75rem' }}>
+              <i className="fa-solid fa-info-circle me-1"></i>
+              Para {Tipo_Institucion} solo se permite reserva tipo Visita.
+            </small>
+          )}
         </div>
 
         {isViewOnly && historialEstados && historialEstados.length > 0 && (
@@ -1252,46 +1283,30 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
           </>
         )}
 
+        {/* Campo de nombre de institución - aparece siempre para Visita */}
         {Tip_Reserva === "Visita" && (
-          <>
-            <div className="col-md-6 mb-3">
-              <label className="form-label fw-bold">Tipo de Institución:</label>
-              <select
-                className="form-select rounded-pill shadow-sm"
-                value={Tipo_Institucion}
-                onChange={(e) => setTipo_Institucion(e.target.value)}
-                required
-                disabled={isViewOnly}
-              >
-                <option value="SENA">SENA</option>
-                <option value="Universidad">Universidad</option>
-                <option value="Institución Educativa">Institución Educativa</option>
-              </select>
-            </div>
-
-            <div className="col-md-6 mb-3">
-              <label className="form-label fw-bold">
-                {Tipo_Institucion === "SENA" && "Nombre de la visita / grupo:"}
-                {Tipo_Institucion === "Universidad" && "Nombre de la Universidad:"}
-                {Tipo_Institucion === "Institución Educativa" && "Nombre de la Institución Educativa:"}
-              </label>
-              <input
-                type="text"
-                className="form-control rounded-pill shadow-sm px-3"
-                value={Nom_Institucion}
-                onChange={(e) => setNom_Institucion(e.target.value)}
-                placeholder={
-                  Tipo_Institucion === "SENA"
-                    ? "Ej: Visita Aprendices Agroindustria"
-                    : Tipo_Institucion === "Universidad"
-                    ? "Ej: Universidad Nacional"
-                    : "Ej: Colegio San José"
-                }
-                required
-                readOnly={isViewOnly}
-              />
-            </div>
-          </>
+          <div className="col-md-6 mb-3">
+            <label className="form-label fw-bold">
+              {Tipo_Institucion === "SENA" && "Nombre de la visita / grupo:"}
+              {Tipo_Institucion === "Universidad" && "Nombre de la Universidad:"}
+              {Tipo_Institucion === "Institución Educativa" && "Nombre de la Institución Educativa:"}
+            </label>
+            <input
+              type="text"
+              className="form-control rounded-pill shadow-sm px-3"
+              value={Nom_Institucion}
+              onChange={(e) => setNom_Institucion(e.target.value)}
+              placeholder={
+                Tipo_Institucion === "SENA"
+                  ? "Ej: Visita Aprendices Agroindustria"
+                  : Tipo_Institucion === "Universidad"
+                  ? "Ej: Universidad Nacional"
+                  : "Ej: Colegio San José"
+              }
+              required
+              readOnly={isViewOnly}
+            />
+          </div>
         )}
 
         <div className="col-md-6 mb-3">

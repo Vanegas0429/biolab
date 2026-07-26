@@ -95,7 +95,7 @@ const NavBar = ({ isAuth, logOut, userRol }) => {
             <div className="p-3 rounded border border-secondary d-flex align-items-center gap-3" style={{ backgroundColor: 'rgba(255,255,255,0.05)' }}>
               <div className="d-flex flex-column text-start flex-grow-1" style={{ overflow: 'hidden' }}>
                 <span className="text-white fw-bold text-truncate" style={{ fontSize: '1rem' }}>{user.nombre}</span>
-                <span className="text-uppercase fw-bold" style={{ fontSize: '0.7rem', letterSpacing: '1px', color: '#cbd5e1' }}>{user.rol}</span>
+                <span className="text-uppercase fw-bold" style={{ fontSize: '0.7rem', letterSpacing: '1px', color: '#cbd5e1' }}>{userRol || user.rol}</span>
               </div>
               <div
                 className="bg-primary text-white d-flex justify-content-center align-items-center rounded-circle shadow-sm flex-shrink-0"
