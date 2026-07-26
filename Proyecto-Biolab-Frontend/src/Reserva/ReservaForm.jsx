@@ -619,30 +619,33 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
 
   const equiposAgrupados = useMemo(() => {
     const groups = {};
-    equiposDisponibles.forEach((eq) => {
-      if (!groups[eq.nombre]) {
-        groups[eq.nombre] = { nombre: eq.nombre, items: [] };
+    (equiposDisponibles || []).forEach((eq) => {
+      if (!eq) return;
+      const name = eq.nombre || `Equipo ${eq.Id_Equipo || ''}`;
+      if (!groups[name]) {
+        groups[name] = { nombre: name, items: [] };
       }
-      groups[eq.nombre].items.push(eq);
+      groups[name].items.push(eq);
     });
     return Object.values(groups);
   }, [equiposDisponibles]);
 
   const selectedEquiposAgrupados = useMemo(() => {
     const groups = {};
-    equipos.forEach((e) => {
-      const dbInfo = equiposDisponibles.find(
-        (ed) => Number(ed.Id_Equipo) === Number(e.Id_Equipo)
+    (equipos || []).forEach((e) => {
+      if (!e) return;
+      const dbInfo = (equiposDisponibles || []).find(
+        (ed) => ed && Number(ed.Id_Equipo) === Number(e.Id_Equipo)
       );
 
       const info = dbInfo || {
-        nombre: e.Nom_Equipo || `Equipo ${e.Id_Equipo}`,
+        nombre: e.Nom_Equipo || `Equipo ${e.Id_Equipo || ''}`,
         img_equipo: e.img_equipo,
         ficha_tecnica: e.ficha_tecnica,
         marca: e.marca
       };
 
-      const name = info.nombre;
+      const name = info.nombre || `Equipo ${e.Id_Equipo || ''}`;
       if (!groups[name]) {
         groups[name] = { nombre: name, items: [] };
       }

@@ -4,6 +4,7 @@ import apiAxios from "../api/axiosConfig.js";
 import DataTable from "react-data-table-component";
 import Swal from "sweetalert2";
 import ReservaForm from "./ReservaForm.jsx";
+import ErrorBoundary from "../components/ErrorBoundary.jsx";
 
 const CrudReserva = () => {
   const [Reserva, setReserva] = useState([]);
@@ -297,16 +298,18 @@ const CrudReserva = () => {
 
             <div className="modal-body position-relative p-4">
 
-              <ReservaForm
-                key={`${rowToEdit?.Id_Reserva ?? "new"}-${formOpenToken}`}
-                hideModal={async () => {
-                  hideModal();
-                  await fetchReservas();
-                }}
-                rowToEdit={rowToEdit}
-                estados={Estados}
-                isViewOnly={isViewOnly}
-              />
+              <ErrorBoundary>
+                <ReservaForm
+                  key={`${rowToEdit?.Id_Reserva ?? "new"}-${formOpenToken}`}
+                  hideModal={async () => {
+                    hideModal();
+                    await fetchReservas();
+                  }}
+                  rowToEdit={rowToEdit}
+                  estados={Estados}
+                  isViewOnly={isViewOnly}
+                />
+              </ErrorBoundary>
             </div>
             <div className="modal-footer border-0">
               <button
