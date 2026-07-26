@@ -372,11 +372,10 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
 
   // Cuando se cambia el tipo de institución, ajustar automáticamente el tipo de reserva
   useEffect(() => {
-    if (Tipo_Institucion !== "SENA") {
-      // Universidad o Institución Educativa: solo Visita
+    if (Tipo_Institucion !== "SENA" && Tip_Reserva !== "Visita") {
       setTip_Reserva("Visita");
     }
-  }, [Tipo_Institucion]);
+  }, [Tipo_Institucion, Tip_Reserva]);
 
   const consultarRecursos = async (actividades) => {
     try {
@@ -823,7 +822,13 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
           <select
             className="form-select rounded-pill shadow-sm"
             value={Tipo_Institucion}
-            onChange={(e) => setTipo_Institucion(e.target.value)}
+            onChange={(e) => {
+              const val = e.target.value;
+              setTipo_Institucion(val);
+              if (val !== "SENA") {
+                setTip_Reserva("Visita");
+              }
+            }}
             required
             disabled={isViewOnly}
           >
@@ -843,7 +848,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
             required
             disabled={isViewOnly || Tipo_Institucion !== "SENA"}
           >
-            {Tipo_Institucion === "SENA" && <option value="Practica">Practica</option>}
+            <option value="Practica" disabled={Tipo_Institucion !== "SENA"}>Practica</option>
             <option value="Visita">Visita</option>
           </select>
           {Tipo_Institucion !== "SENA" && (
