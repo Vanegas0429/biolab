@@ -20,6 +20,7 @@ const CrudEquipos = ({ userRol }) => {
   // Estado para modal PDF
   const [showPdf, setShowPdf] = useState(false);
   const [pdfUrl, setPdfUrl] = useState("");
+  const [loadingPdf, setLoadingPdf] = useState(false);
 
   useEffect(() => {
     getAllEquipos();
@@ -198,7 +199,7 @@ const CrudEquipos = ({ userRol }) => {
     (e.nombre || '').toLowerCase().includes(filterText.toLowerCase()) ||
     (e.grupo || '').toLowerCase().includes(filterText.toLowerCase()) ||
     (e.centro_costos || '').toLowerCase().includes(filterText.toLowerCase()) ||
-    (e.no_chapeta || '').toLowerCase().includes(filterText.toLowerCase())
+    (e.placa || e.no_chapeta || '').toLowerCase().includes(filterText.toLowerCase())
   );
 
   if (loading) return (
@@ -301,8 +302,8 @@ const CrudEquipos = ({ userRol }) => {
               }
             },
             {
-              name: 'NO. CHAPETA',
-              selector: row => row.no_chapeta || 'N/A',
+              name: 'PLACA',
+              selector: row => row.placa || row.no_chapeta || 'N/A',
               sortable: true,
               width: '140px'
             },
@@ -338,6 +339,7 @@ const CrudEquipos = ({ userRol }) => {
                   <button
                     className="btn btn-sm btn-outline-primary rounded-pill px-3 shadow-none"
                     onClick={() => {
+                      setLoadingPdf(true);
                       setPdfUrl(`${API_URL}/uploads/${row.ficha_tecnica}`);
                       setShowPdf(true);
                     }}
@@ -456,12 +458,23 @@ const CrudEquipos = ({ userRol }) => {
       {/* MODAL PDF */}
       {showPdf && (
         <div className="carousel-overlay" onClick={() => setShowPdf(false)}>
-          <div className="pdf-modal-container shadow-lg" onClick={(e) => e.stopPropagation()}>
+          <div className="pdf-modal-container shadow-lg position-relative" onClick={(e) => e.stopPropagation()}>
             <div className="pdf-modal-header">
               <span className="pdf-modal-title"><i className="fa-solid fa-file-pdf me-2"></i>Ficha Técnica</span>
               <button className="pdf-modal-close" onClick={() => setShowPdf(false)}><i className="fa-solid fa-xmark"></i></button>
             </div>
-            <iframe src={pdfUrl} className="pdf-modal-iframe" title="Ficha Técnica PDF" />
+            {loadingPdf && (
+              <div className="position-absolute top-50 start-50 translate-middle d-flex flex-column align-items-center justify-content-center bg-white p-4 rounded-3 shadow z-3">
+                <div className="spinner-border text-primary mb-2" role="status"></div>
+                <span className="fw-bold text-dark">Cargando Ficha Técnica...</span>
+              </div>
+            )}
+            <iframe 
+              src={pdfUrl} 
+              className="pdf-modal-iframe" 
+              title="Ficha Técnica PDF"
+              onLoad={() => setLoadingPdf(false)} 
+            />
           </div>
         </div>
       )}

@@ -13,6 +13,7 @@ const ReactivosForm = ({ hideModal, rowToEdit, refreshList }) => {
     const [Est_reactivo, setEst_Reactivo] = useState("");
     const [fichaTecnica, setFichaTecnica] = useState(null);
     const [textFormButton, setTextFormButton] = useState("Enviar");
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
         if (rowToEdit) {
@@ -42,6 +43,8 @@ const ReactivosForm = ({ hideModal, rowToEdit, refreshList }) => {
             return;
         }
 
+        setIsSubmitting(true);
+
         const formData = new FormData();
         formData.append("Nom_reactivo", Nom_reactivo);
         formData.append("Nomenclatura", Nomenclatura);
@@ -59,7 +62,7 @@ const ReactivosForm = ({ hideModal, rowToEdit, refreshList }) => {
                 });
                 MySwal.fire({ 
                     title: "Actualizado", 
-                    text: "Reactivo actualizado", 
+                    text: "Reactivo actualizado correctamente", 
                     icon: "success",
                     timer: 2000,
                     showConfirmButton: false 
@@ -69,7 +72,7 @@ const ReactivosForm = ({ hideModal, rowToEdit, refreshList }) => {
                     headers: { "Content-Type": "multipart/form-data" }
                 });
                 MySwal.fire({ 
-                    title: "Registrado", text: "Reactivo registrado", 
+                    title: "Registrado", text: "Reactivo registrado correctamente", 
                     icon: "success",
                     timer: 2000,
                     showConfirmButton: false 
@@ -80,11 +83,21 @@ const ReactivosForm = ({ hideModal, rowToEdit, refreshList }) => {
         } catch (error) {
             console.error("Error al guardar Reactivo:", error.response ? error.response.data : error.message);
             MySwal.fire({ title: "Error", text: "Error al guardar el Reactivo", icon: "error" });
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
     return (
-        <form onSubmit={gestionarForm} className="container-fluid">
+        <form onSubmit={gestionarForm} className="container-fluid position-relative">
+            {isSubmitting && (
+                <div className="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column align-items-center justify-content-center bg-white bg-opacity-75 z-3 rounded-3">
+                    <div className="spinner-border text-primary mb-2" role="status"></div>
+                    <span className="fw-bold text-dark">
+                        {fichaTecnica ? "Procesando y cargando Ficha Técnica..." : "Guardando reactivo..."}
+                    </span>
+                </div>
+            )}
             <div className="row g-3">
                 {/* Nombre Reactivo */}
                 <div className="col-md-6">
@@ -144,7 +157,7 @@ const ReactivosForm = ({ hideModal, rowToEdit, refreshList }) => {
                 </div>
 
                 <div className="col-12 text-center mt-4">
-                    <button type="submit" className="btn btn-primary rounded-pill px-5 shadow-sm fw-bold">
+                    <button type="submit" className="btn btn-primary rounded-pill px-5 shadow-sm fw-bold" disabled={isSubmitting}>
                         <i className={`fa-solid ${rowToEdit ? 'fa-rotate' : 'fa-paper-plane'} me-2`}></i>
                         {textFormButton}
                     </button>

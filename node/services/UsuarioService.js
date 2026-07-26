@@ -21,7 +21,7 @@ class UsuarioService {
   async register(data) {
 
     // Extraemos los datos enviados desde el frontend
-    const { documento, nombre, correo, contraseña, rol, estado, telefono} = data;
+    const { nombre, correo, contraseña, rol, estado, telefono } = data;
 
     // Verificamos si ya existe un usuario con el mismo correo
     const UsuarioExist = await UsuarioModel.findOne({
@@ -39,7 +39,6 @@ class UsuarioService {
 
     // Creamos el usuario en la base de datos
     const Usuario = await UsuarioModel.create({
-      documento,
       nombre,
       correo,
       contraseña: hashedcontraseña, // Guardamos la contraseña encriptada
@@ -47,6 +46,11 @@ class UsuarioService {
       rol, 
       estado,
       telefono
+    });
+
+    // Enviar correo de registro en segundo plano
+    EmailService.enviarCorreoRegistro(correo, nombre).catch(err => {
+      console.error("Error enviando correo de registro:", err);
     });
 
     // Retornamos el usuario creado

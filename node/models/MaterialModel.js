@@ -6,6 +6,7 @@ const MaterialModel = db.define('material', {
     Nom_Material: {type: DataTypes.STRING},
     img_material: { type: DataTypes.TEXT },
     Can_Material: { type: DataTypes.INTEGER },
+    clasificacion: { type: DataTypes.ENUM('Desechable', 'Reutilizable'), defaultValue: 'Desechable' },
     Estado: { type: DataTypes.ENUM('Activo','Inactivo')}
 }, {
     freezeTableName: true

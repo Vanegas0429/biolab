@@ -17,6 +17,7 @@ import CrudSup_Plantas from './Sup_Plantas/CrudSup_Plantas';
 import CrudProduccion from './Produccion/CrudProduccion';
 import CrudEquipos from './Equipos/CrudEquipos';
 import CrudEntrada from './Entrada/CrudEntrada';
+import CrudEntradaMaterial from './EntradaMaterial/CrudEntradaMaterial';
 import CrudReactivos from './Reactivos/CrudReactivos';
 import CrudReserva from './Reserva/CrudReserva';
 import CrudMaterial from './Material/CrudMaterial';
@@ -174,7 +175,6 @@ function App() {
                   </div>
                   <ul className="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
                     <li><h6 className="dropdown-header">Perfil</h6></li>
-                    <li><span className="dropdown-item-text text-muted small"><i className="fa-regular fa-id-card me-2"></i>{userProfile.documento}</span></li>
                     <li><span className="dropdown-item-text text-muted small"><i className="fa-solid fa-phone me-2"></i>{userProfile.telefono || 'Sin teléfono'}</span></li>
                     <li><span className="dropdown-item-text text-muted small"><i className="fa-regular fa-envelope me-2"></i>{userProfile.correo}</span></li>
                   </ul>
@@ -241,6 +241,11 @@ function App() {
         <Route path='/Material' element={
           <ProtectedRoute isAuth={isAuth} userRol={userRol} allowedRoles={STAFF_ROLES}>
             <CrudMaterial />
+          </ProtectedRoute>
+        } />
+        <Route path='/EntradaMaterial' element={
+          <ProtectedRoute isAuth={isAuth} userRol={userRol} allowedRoles={STAFF_ROLES}>
+            <CrudEntradaMaterial />
           </ProtectedRoute>
         } />
         <Route path='/Actividad' element={

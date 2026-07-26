@@ -44,7 +44,15 @@ const ReservaModel = db.define('Reserva', {
     },
     Num_Ficha: {
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: true
+    },
+    Tipo_Institucion: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    Nom_Institucion: {
+        type: DataTypes.STRING,
+        allowNull: true
     },
     Booleano: { type: DataTypes.ENUM('Activo', 'Inactivo') }
 

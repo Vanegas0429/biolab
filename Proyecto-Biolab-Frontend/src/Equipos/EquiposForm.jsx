@@ -12,11 +12,12 @@ const EquiposForm = ({ hideModal, rowToEdit, refreshList }) => {
     const [grupo, setGrupo] = useState("");
     const [linea, setLinea] = useState("");
     const [centro_costos, setCentroCostos] = useState("");
-    const [no_chapeta, setNo_Chapeta] = useState("");
+    const [placa, setPlaca] = useState("");
     const [imagenes, setImagenes] = useState([]);        // Archivos nuevos seleccionados
     const [fichaTecnica, setFichaTecnica] = useState(null); // PDF seleccionado
 
     const [textFormButton, setTextFormButton] = useState("Enviar");
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Detectar cuando es edición
     useEffect(() => {
@@ -33,7 +34,7 @@ const EquiposForm = ({ hideModal, rowToEdit, refreshList }) => {
         setGrupo(rowToEdit.grupo || "");
         setLinea(rowToEdit.linea || "");
         setCentroCostos(rowToEdit.centro_costos || "");
-        setNo_Chapeta(rowToEdit.no_chapeta || "");
+        setPlaca(rowToEdit.placa || rowToEdit.no_chapeta || "");
 
         setTextFormButton("Actualizar");
     };
@@ -44,7 +45,7 @@ const EquiposForm = ({ hideModal, rowToEdit, refreshList }) => {
         setGrupo("");
         setLinea("");
         setCentroCostos("");
-        setNo_Chapeta("");
+        setPlaca("");
         setImagenes([]);
         setFichaTecnica(null);
 
@@ -53,6 +54,7 @@ const EquiposForm = ({ hideModal, rowToEdit, refreshList }) => {
 
     const gestionarForm = async (e) => {
         e.preventDefault();
+        setIsSubmitting(true);
 
         const formData = new FormData();
         formData.append("nombre", nombre);
@@ -60,7 +62,7 @@ const EquiposForm = ({ hideModal, rowToEdit, refreshList }) => {
         formData.append("grupo", grupo);
         formData.append("linea", linea);
         formData.append("centro_costos", centro_costos);
-        formData.append("no_chapeta", no_chapeta);
+        formData.append("placa", placa);
 
         // Agregar múltiples imágenes
         if (imagenes.length > 0) {
@@ -86,7 +88,7 @@ const EquiposForm = ({ hideModal, rowToEdit, refreshList }) => {
                 );
 
                 Myswal.fire({
-                    title: "Actualizado", text: "Equipo actualizado",
+                    title: "Actualizado", text: "Equipo actualizado correctamente",
                     icon: "success",
                 });
 
@@ -101,7 +103,7 @@ const EquiposForm = ({ hideModal, rowToEdit, refreshList }) => {
                 );
 
                 Myswal.fire({
-                    title: "Registrado", text: "Equipo registrado",
+                    title: "Registrado", text: "Equipo registrado correctamente",
                     icon: "success",
                 });
             }
@@ -117,6 +119,8 @@ const EquiposForm = ({ hideModal, rowToEdit, refreshList }) => {
                 text: "Ocurrió un error al guardar",
                 icon: "error"
             });
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -132,7 +136,15 @@ const EquiposForm = ({ hideModal, rowToEdit, refreshList }) => {
     };
 
     return (
-        <form onSubmit={gestionarForm} encType="multipart/form-data" className="container-fluid">
+        <form onSubmit={gestionarForm} encType="multipart/form-data" className="container-fluid position-relative">
+            {isSubmitting && (
+                <div className="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column align-items-center justify-content-center bg-white bg-opacity-75 z-3 rounded-3">
+                    <div className="spinner-border text-primary mb-2" role="status"></div>
+                    <span className="fw-bold text-dark">
+                        {fichaTecnica ? "Procesando y cargando Ficha Técnica..." : "Guardando equipo..."}
+                    </span>
+                </div>
+            )}
             <div className="row g-3">
                 {/* Nombre */}
                 <div className="col-md-6">
@@ -147,15 +159,15 @@ const EquiposForm = ({ hideModal, rowToEdit, refreshList }) => {
                     />
                 </div>
 
-                 {/* No. Chapeta */}
+                 {/* Placa */}
                 <div className="col-md-6">
-                    <label className="form-label fw-bold">No. Chapeta:</label>
+                    <label className="form-label fw-bold">Placa:</label>
                     <input
                         type="text"
                         className="form-control rounded-pill shadow-sm px-3"
-                        value={no_chapeta}
-                        onChange={(e) => setNo_Chapeta(e.target.value)}
-                        placeholder="Ingrese No. Chapeta"
+                        value={placa}
+                        onChange={(e) => setPlaca(e.target.value)}
+                        placeholder="Ingrese Placa"
                     />
                 </div>
 
@@ -270,7 +282,7 @@ const EquiposForm = ({ hideModal, rowToEdit, refreshList }) => {
                 )}
 
                 <div className="col-12 text-center mt-4">
-                    <button type="submit" className="btn btn-primary rounded-pill px-5 shadow-sm fw-bold">
+                    <button type="submit" className="btn btn-primary rounded-pill px-5 shadow-sm fw-bold" disabled={isSubmitting}>
                         <i className={`fa-solid ${rowToEdit?.Id_Equipo ? 'fa-rotate' : 'fa-paper-plane'} me-2`}></i>
                         {textFormButton}
                     </button>

@@ -4,7 +4,6 @@ import logo from "../assets/logo.png";
 
 const UsuarioRegistroAdmin = () => {
   const [nombre, setNombre] = useState("");
-  const [documento, setDocumento] = useState("");
   const [telefono, setTelefono] = useState("");
   const [correo, setCorreo] = useState("");
   const [contraseña, setContraseña] = useState("");
@@ -18,7 +17,6 @@ const UsuarioRegistroAdmin = () => {
     try {
       await apiNode.post("/api/auth", {
         nombre,
-        documento,
         telefono,
         correo,
         contraseña,
@@ -70,28 +68,13 @@ const UsuarioRegistroAdmin = () => {
 
             {/* FILA 1 */}
             <div className="row">
-              <div className="col-md-6 mb-2">
+              <div className="col-md-12 mb-2">
                 <label className="form-label">Nombre</label>
                 <input
                   type="text"
                   className="form-control"
                   value={nombre}
                   onChange={(e) => setNombre(e.target.value)}
-                  required
-                />
-              </div>
-
-              <div className="col-md-6 mb-2">
-                <label className="form-label">Documento</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  value={documento}
-                  onChange={(e) => {
-                    const val = e.target.value.replace(/[^0-9]/g, '');
-                    if (val.length <= 10) setDocumento(val);
-                  }}
-                  maxLength="10"
                   required
                 />
               </div>

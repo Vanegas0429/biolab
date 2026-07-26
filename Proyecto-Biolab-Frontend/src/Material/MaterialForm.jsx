@@ -14,6 +14,7 @@ const MaterialForm = ({ hideModal, refreshList, rowToEdit }) => {
     //Campos del formulario
     const [Nom_Material, setNom_Material] = useState("");
     const [Can_Material, setCan_Material] = useState("");
+    const [clasificacion, setClasificacion] = useState("Desechable");
     const [imagenes, setImagenes] = useState([]);
     const [textFormButton, setTextFormButton] = useState("Enviar");
 
@@ -21,12 +22,14 @@ const MaterialForm = ({ hideModal, refreshList, rowToEdit }) => {
         if (rowToEdit) {
             setNom_Material(rowToEdit.Nom_Material || "");
             setCan_Material(rowToEdit.Can_Material || "");
+            setClasificacion(rowToEdit.clasificacion || "Desechable");
             setEstado(rowToEdit.Estado || "Activo");
             setTextFormButton("Actualizar");
         } else {
             setEstado("Activo");
             setNom_Material("");
             setCan_Material("");
+            setClasificacion("Desechable");
             setTextFormButton("Enviar");
         }
         setImagenes([]);
@@ -47,6 +50,7 @@ const MaterialForm = ({ hideModal, refreshList, rowToEdit }) => {
         const formData = new FormData();
         formData.append("Nom_Material", Nom_Material);
         formData.append("Can_Material", Can_Material);
+        formData.append("clasificacion", clasificacion);
         formData.append("Estado", Estado);
         
         if (imagenes.length > 0) {
@@ -93,7 +97,7 @@ const MaterialForm = ({ hideModal, refreshList, rowToEdit }) => {
 
     return (
         <form onSubmit={gestionarForm} className="row g-3">
-            <div className="col-md-8">
+            <div className="col-md-6">
                 <label htmlFor="Nom_Material" className="form-label fw-bold">
                     Nombre del Material:
                 </label>
@@ -104,10 +108,26 @@ const MaterialForm = ({ hideModal, refreshList, rowToEdit }) => {
                     value={Nom_Material}
                     onChange={(e) => setNom_Material(e.target.value)}
                     placeholder="Ej: Probeta de vidrio"
+                    required
                 />
             </div>
 
-            <div className="col-md-4">
+            <div className="col-md-3">
+                <label className="form-label fw-bold">
+                    Clasificación:
+                </label>
+                <select
+                    className="form-select rounded-pill px-3 shadow-sm"
+                    value={clasificacion}
+                    onChange={(e) => setClasificacion(e.target.value)}
+                    required
+                >
+                    <option value="Desechable">Desechable</option>
+                    <option value="Reutilizable">Reutilizable</option>
+                </select>
+            </div>
+
+            <div className="col-md-3">
                 <label htmlFor="Can_Material" className="form-label fw-bold">
                     Cantidad Disponible:
                 </label>
@@ -119,6 +139,7 @@ const MaterialForm = ({ hideModal, refreshList, rowToEdit }) => {
                     onChange={(e) => setCan_Material(e.target.value)}
                     placeholder="0"
                     min="0"
+                    required
                 />
             </div>
 
