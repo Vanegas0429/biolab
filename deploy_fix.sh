@@ -113,7 +113,7 @@ echo "Nginx recargado exitosamente."
 
 echo "=== 10. Reiniciando Backend en PM2 con --update-env ==="
 cd /var/www/biolab/node
-pm2 startOrRestart app.js --name biolab-backend --update-env
+pm2 restart biolab-backend --update-env || pm2 start app.js --name biolab-backend --update-env
 pm2 save
 
 echo ""
