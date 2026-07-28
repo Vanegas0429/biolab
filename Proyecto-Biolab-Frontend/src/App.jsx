@@ -190,7 +190,9 @@ function App() {
         <Route path='/' element={<Home />} />
         <Route path='/login' element={isAuth ? <Navigate to='/' replace /> : <UsuarioLogin setIsAuth={setIsAuth} setUserRol={setUserRol} setUserProfile={setUserProfile} />} />
         <Route path='/Forgot' element={<UsuarioForgot />} />
+        <Route path='/forgot-password' element={<UsuarioForgot />} />
         <Route path='/RestablecerPassword/:token' element={<ResetPassword />} />
+        <Route path='/reset-password/:token' element={<ResetPassword />} />
         <Route path='/register' element={<UsuarioRegistro />} />
         <Route path='/sin-acceso' element={<SinAcceso />} />
 

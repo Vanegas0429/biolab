@@ -1,5 +1,15 @@
 import UsuarioService from "../services/UsuarioService.js";
 
+/**
+ * Función auxiliar para enmascarar correos en los logs sin revelar datos sensibles
+ */
+const maskEmail = (email) => {
+  if (!email || typeof email !== 'string' || !email.includes('@')) return '***@***';
+  const [local, domain] = email.split('@');
+  const maskedLocal = local.length > 2 ? local[0] + '***' + local[local.length - 1] : '***';
+  return `${maskedLocal}@${domain}`;
+};
+
 // REGISTRAR USUARIO
 export const registerUsuario = async (req, res) => {
   try {
@@ -14,7 +24,6 @@ export const registerUsuario = async (req, res) => {
 export const loginUsuario = async (req, res) => {
   try {
     const usuario = await UsuarioService.login(req.body);
-    console.log(usuario)
     res.status(200).json(usuario);
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -43,35 +52,50 @@ export const updateUsuarioRol = async (req, res) => {
   }
 };
 
-// OLVIDASTE CONTRASEÑA (RECUperar)
+// SOLICITAR RECUPERACIÓN DE CONTRASEÑA (RESPUESTA SIEMPRE GENÉRICA)
 export const forgotPassword = async (req, res) => {
+  const correo = req.body?.correo || req.body?.email;
+  const ipAddress = req.ip;
+  const userAgent = req.headers['user-agent'];
+
+  console.log(`[FORGOT-PASSWORD] Solicitud recibida para: ${maskEmail(correo)} desde IP: ${ipAddress}`);
+
   try {
-    const { correo } = req.body;
-    console.log(`[FORGOT] Solicitud de recuperación para: ${correo}`);
-    
-    // Llamar al servicio para generar token y enviar email
-    await UsuarioService.forgotPassword(correo);
-    
-    console.log(`[FORGOT] ✅ Correo de recuperación enviado exitosamente a: ${correo}`);
-    // Siempre respondemos éxito para no revelar si el correo existe o no
-    res.status(200).json({ message: "Si el correo está registrado, hemos enviado las instrucciones." });
+    await UsuarioService.forgotPassword(correo, ipAddress, userAgent);
   } catch (error) {
-    console.error(`[FORGOT] ❌ Error para ${req.body?.correo}:`, error.message);
-    // Si el error es controlado (ej. correo no existe) igual enviamos un 200 por seguridad
-    res.status(200).json({ message: "Si el correo está registrado, hemos enviado las instrucciones." });
+    console.error(`[FORGOT-PASSWORD ERROR] Falla interna al procesar solicitud:`, error.message);
   }
+
+  // Respuesta siempre idéntica e incondicional por seguridad (previene enumeración)
+  return res.status(200).json({
+    message: "Si el correo está registrado, recibirás un enlace para restablecer tu contraseña."
+  });
 };
 
 // RESTABLECER CONTRASEÑA
 export const resetPassword = async (req, res) => {
   try {
-    const { token, nuevaContraseña } = req.body;
+    const { token, password, nuevaContraseña, passwordConfirmation, confirmarContraseña } = req.body;
+
+    const tokenFinal = token;
+    const passwordFinal = password || nuevaContraseña;
+    const confirmFinal = passwordConfirmation || confirmarContraseña;
+
+    if (!tokenFinal || !passwordFinal) {
+      return res.status(400).json({ message: "El enlace de recuperación no es válido o ha expirado." });
+    }
+
+    if (confirmFinal && passwordFinal !== confirmFinal) {
+      return res.status(400).json({ message: "Las contraseñas no coinciden." });
+    }
+
+    await UsuarioService.resetPassword(tokenFinal, passwordFinal);
     
-    await UsuarioService.resetPassword(token, nuevaContraseña);
-    
-    res.status(200).json({ message: "Contraseña actualizada exitosamente" });
+    console.log(`[RESET-PASSWORD SUCCESS] Contraseña restablecida exitosamente`);
+
+    return res.status(200).json({ message: "Contraseña actualizada correctamente." });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    console.error(`[RESET-PASSWORD ERROR]:`, error.message);
+    return res.status(400).json({ message: error.message || "El enlace de recuperación no es válido o ha expirado." });
   }
 };
-

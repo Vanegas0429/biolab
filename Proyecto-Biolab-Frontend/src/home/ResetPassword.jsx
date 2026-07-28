@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import apiNode from "../api/axiosConfig.js";
 import logo from "../assets/logo.png";
@@ -13,23 +13,38 @@ const ResetPassword = () => {
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const navigate = useNavigate();
 
+    useEffect(() => {
+        if (!token) {
+            Swal.fire({
+                title: 'Enlace Inválido',
+                text: 'No se ha detectado ningún token de recuperación válido.',
+                icon: 'error',
+                confirmButtonColor: 'var(--primary-color)'
+            }).then(() => {
+                navigate("/Forgot");
+            });
+        }
+    }, [token, navigate]);
+
     const gestionarReset = async (e) => {
         e.preventDefault();
 
         if (nuevaContraseña !== confirmarContraseña) {
             Swal.fire({
-                title: 'Error',
-                text: 'Las contraseñas no coinciden.',
-                icon: 'error'
+                title: 'Error de Validación',
+                text: 'Las contraseñas ingresadas no coinciden.',
+                icon: 'warning',
+                confirmButtonColor: 'var(--primary-color)'
             });
             return;
         }
 
         if (nuevaContraseña.length < 8) {
             Swal.fire({
-                title: 'Error',
+                title: 'Contraseña Débiles',
                 text: 'La contraseña debe tener al menos 8 caracteres.',
-                icon: 'error'
+                icon: 'warning',
+                confirmButtonColor: 'var(--primary-color)'
             });
             return;
         }
@@ -37,27 +52,31 @@ const ResetPassword = () => {
         setIsLoading(true);
 
         try {
-            await apiNode.post("/api/auth/reset-password", { 
+            const response = await apiNode.post("/api/auth/reset-password", { 
                 token, 
-                nuevaContraseña 
+                password: nuevaContraseña,
+                passwordConfirmation: confirmarContraseña
             });
             
-            Swal.fire({
+            setIsLoading(false);
+            
+            await Swal.fire({
                 title: 'Contraseña Actualizada',
-                text: 'Su contraseña ha sido restablecida exitosamente. Ya puede iniciar sesión.',
+                text: response.data?.message || 'Su contraseña ha sido restablecida exitosamente. Ya puede iniciar sesión.',
                 icon: 'success',
                 confirmButtonColor: 'var(--primary-color)'
             });
-            setIsLoading(false);
-            navigate("/Login");
+            
+            navigate("/login");
 
         } catch (error) {
-            Swal.fire({
-                title: 'Error',
-                text: error.response?.data?.message || 'El enlace es inválido o ha expirado.',
-                icon: 'error'
-            });
             setIsLoading(false);
+            Swal.fire({
+                title: 'Solicitud No Procesada',
+                text: error.response?.data?.message || 'El enlace de recuperación es inválido o ha expirado.',
+                icon: 'error',
+                confirmButtonColor: 'var(--primary-color)'
+            });
         }
     };
 
@@ -77,9 +96,9 @@ const ResetPassword = () => {
                         className="mb-3"
                         style={{ width: "80px", height: "80px", borderRadius: "50%" }}
                     />
-                    <h2 className="fw-bold mb-2" style={{ color: "var(--primary-color)" }}>Crear Contraseña</h2>
+                    <h2 className="fw-bold mb-2" style={{ color: "var(--primary-color)" }}>Crear Nueva Contraseña</h2>
                     <p className="text-muted small">
-                        Ingrese su nueva contraseña.
+                        Asigne una nueva contraseña para su cuenta de BIOLAB.
                     </p>
                 </div>
 
@@ -97,6 +116,7 @@ const ResetPassword = () => {
                                 onChange={(e) => setNuevaContraseña(e.target.value)}
                                 placeholder="Mínimo 8 caracteres"
                                 required
+                                disabled={isLoading}
                             />
                             <button
                                 type="button"
@@ -123,6 +143,7 @@ const ResetPassword = () => {
                                 onChange={(e) => setConfirmarContraseña(e.target.value)}
                                 placeholder="Confirme su contraseña"
                                 required
+                                disabled={isLoading}
                             />
                             <button
                                 type="button"
@@ -146,11 +167,11 @@ const ResetPassword = () => {
                         ) : (
                             <i className="fa-solid fa-save me-2"></i>
                         )}
-                        Guardar Contraseña
+                        Guardar Nueva Contraseña
                     </button>
 
                     <div className="text-center mt-3">
-                        <Link to="/Login" className="text-decoration-none small fw-bold text-primary">
+                        <Link to="/login" className="text-decoration-none small fw-bold text-primary">
                             <i className="fa-solid fa-arrow-left me-2"></i>
                             Volver al inicio de sesión
                         </Link>

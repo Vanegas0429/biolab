@@ -48,11 +48,17 @@ import ReservaEquipoModel from './models/ReservaEquipoModel.js';
 import ReservaMaterialModel from './models/ReservaMaterialModel.js';
 import ReservaReactivoModel from './models/ReservaReactivoModel.js';
 import MovimientoReactivoModel from './models/MovimientoReactivoModel.js';
+import UsuarioModel from './models/UsuarioModel.js';
+import PasswordResetTokenModel from './models/PasswordResetTokenModel.js';
+import { verifyTransporterConnection } from './config/emailTransport.js';
 
 // Configuración
 dotenv.config();
 
 const app = express();
+
+// Habilitar trust proxy para manejo correcto de IP detrás de Nginx
+app.set("trust proxy", 1);
 
 // Middlewares
 app.use(express.json());
@@ -100,6 +106,10 @@ app.get('/', (req, res) => {
 // ==========================================
 // DEFINICIÓN DE RELACIONES (FOREIGN KEYS)
 // ==========================================
+
+// Usuario -> PasswordResetTokens
+PasswordResetTokenModel.belongsTo(UsuarioModel, { foreignKey: 'user_id', targetKey: 'uuid', as: 'Usuario' });
+UsuarioModel.hasMany(PasswordResetTokenModel, { foreignKey: 'user_id', sourceKey: 'uuid', as: 'ResetTokens' });
 
 // Especie -> Produccion
 ProduccionModel.belongsTo(EspeciesModel, { foreignKey: 'Id_especie', as: 'Especie'});
@@ -177,7 +187,7 @@ EntradaModel.hasMany(MovimientoReactivoModel, { foreignKey: 'Id_Entrada', as: 'M
 MovimientoReactivoModel.belongsTo(ReservaModel, { foreignKey: 'Id_Reserva', as: 'Reserva' });
 ReservaModel.hasMany(MovimientoReactivoModel, { foreignKey: 'Id_Reserva', as: 'Movimientos' });
 
-// Sincronización de la base de datos (aplica las relaciones físicamente)
+// Sincronización de la base de datos
 try {
     await db.sync({ alter: true });
     console.log('Base de datos sincronizada con todas las relaciones.');
@@ -185,11 +195,13 @@ try {
     console.error('Error al sincronizar la base de datos:', error);
 }
 
+// Verificar conexión SMTP al iniciar
+verifyTransporterConnection();
+
 // Servidor
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => {
-    console.log(`Server up running in http://localhost:${PORT}`);
+    console.log(`Server up running in port ${PORT}`);
 });
-
 
 export default app;

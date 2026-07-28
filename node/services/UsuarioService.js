@@ -1,5 +1,7 @@
-// Importamos el modelo de Usuario para interactuar con la base de datos
+// Importamos el modelo de Usuario y PasswordResetToken
 import UsuarioModel from "../models/UsuarioModel.js";
+import PasswordResetTokenModel from "../models/PasswordResetTokenModel.js";
+import db from "../database/db.js";
 
 // Librería para encriptar contraseñas
 import bcrypt from "bcrypt";
@@ -7,8 +9,10 @@ import bcrypt from "bcrypt";
 // Librería para generar tokens JWT
 import jwt from "jsonwebtoken";
 
-// Librería para generar identificadores únicos (UUID)
+// Librería para generar identificadores únicos (UUID) y aleatorios criptográficos
 import { v4 as uuidv4 } from "uuid";
+import crypto from "crypto";
+import { Op } from "sequelize";
 
 // Servicio de correos
 import EmailService from "./EmailService.js";
@@ -19,29 +23,23 @@ class UsuarioService {
   // REGISTRAR USUARIO
   // =========================
   async register(data) {
-
-    // Extraemos los datos enviados desde el frontend
     const { nombre, correo, contraseña, rol, estado, telefono } = data;
 
-    // Verificamos si ya existe un usuario con el mismo correo
+    const correoNormalizado = (correo || "").trim().toLowerCase();
+
     const UsuarioExist = await UsuarioModel.findOne({
-      where: { correo: correo }
+      where: { correo: correoNormalizado }
     });
 
-    // Si ya existe, lanzamos un error
     if (UsuarioExist) throw new Error("El usuario ya existe");
 
-    // Encriptamos la contraseña antes de guardarla en la base de datos
     const hashedcontraseña = await bcrypt.hash(contraseña, 10);
-
-    // Generamos un UUID único para identificar al usuario
     const UsuarioUuid = uuidv4();
 
-    // Creamos el usuario en la base de datos
     const Usuario = await UsuarioModel.create({
       nombre,
-      correo,
-      contraseña: hashedcontraseña, // Guardamos la contraseña encriptada
+      correo: correoNormalizado,
+      contraseña: hashedcontraseña,
       uuid: UsuarioUuid,
       rol, 
       estado,
@@ -49,11 +47,10 @@ class UsuarioService {
     });
 
     // Enviar correo de registro en segundo plano
-    EmailService.enviarCorreoRegistro(correo, nombre).catch(err => {
-      console.error("Error enviando correo de registro:", err);
+    EmailService.enviarCorreoRegistro(correoNormalizado, nombre).catch(err => {
+      console.error("Error enviando correo de registro:", err.message);
     });
 
-    // Retornamos el usuario creado
     return Usuario;
   }
 
@@ -61,123 +58,188 @@ class UsuarioService {
   // LOGIN
   // =========================
   async login(data) {
-
-    // Extraemos correo y contraseña enviados por el frontend
     const { correo, contraseña } = data;
 
-    // Validamos que ambos campos estén presentes
     if (!correo || !contraseña) {
       throw new Error("Correo y contraseña son obligatorios");
     }
 
-    // Buscamos el usuario por su correo
+    const correoNormalizado = correo.trim().toLowerCase();
+
     const usuario = await UsuarioModel.findOne({
-      where: { correo }
+      where: { correo: correoNormalizado }
     });
 
-    // Si no existe el usuario, enviamos error genérico
     if (!usuario) {
       throw new Error("Usuario o contraseña incorrecta");
     }
 
-    // Comparamos la contraseña ingresada con la almacenada (encriptada)
     const contraseñaValida = await bcrypt.compare(
       contraseña,
       usuario.contraseña
     );
 
-    // Si la contraseña no coincide, enviamos error
     if (!contraseñaValida) {
       throw new Error("Usuario o contraseña incorrecta");
     }
 
-    // Generamos un token JWT con el id y uuid del usuario
     const token = jwt.sign(
-      { id: usuario.id, uuid: usuario.uuid, rol: usuario.rol }, // payload
-      process.env.JWT_SECRET, // clave secreta
-      { expiresIn: "2h" } // tiempo de expiración
+      { id: usuario.id, uuid: usuario.uuid, rol: usuario.rol },
+      process.env.JWT_SECRET,
+      { expiresIn: "2h" }
     );
 
-    // Eliminamos la contraseña del objeto antes de enviarlo al frontend
     const { contraseña: _, ...usuarioSinPassword } = usuario.toJSON();
+    usuarioSinPassword.token = token;
 
-    usuarioSinPassword.token = token
-
-    // Retornamos el token y los datos del usuario sin contraseña
     return {
-      // token,
       usuario: usuarioSinPassword
     };
   }
 
   // =========================
-  // RECUPERACIÓN DE CONTRASEÑA
+  // RECUPERACIÓN DE CONTRASEÑA (DISEÑO SEGURO)
   // =========================
   
-  async forgotPassword(correo) {
-    if (!correo) throw new Error("El correo es obligatorio");
-
-    const usuario = await UsuarioModel.findOne({ where: { correo } });
-    if (!usuario) {
-      // No revelar si el correo existe o no por seguridad, pero sí arrojar un error interno o simulado
-      throw new Error("Si el correo existe, recibirá instrucciones");
+  /**
+   * Procesa la solicitud de olvido de contraseña.
+   * Genera un token aleatorio, guarda únicamente su HASH SHA-256 en BD y envía la versión original por email.
+   * Siempre responde de forma neutra.
+   */
+  async forgotPassword(inputEmail, ipAddress = null, userAgent = null) {
+    if (!inputEmail || typeof inputEmail !== 'string') {
+      return true; // No revelar nada
     }
 
-    // Generar token único (UUID sin guiones)
-    const resetToken = uuidv4().replace(/-/g, '');
+    const email = inputEmail.trim().toLowerCase();
+    const usuario = await UsuarioModel.findOne({ where: { correo: email } });
 
-    // Guardar token en el usuario
-    usuario.token = resetToken;
-    await usuario.save();
+    // Si el usuario no existe, finalizar silenciosamente sin dar pistas
+    if (!usuario) {
+      console.log(`[FORGOT] Solicitud procesada para correo no registrado (silencioso)`);
+      return true;
+    }
 
-    // Enviar correo
-    const emailEnviado = await EmailService.enviarCorreoRecuperacion(
-      usuario.correo,
-      usuario.nombre,
-      resetToken
+    const ttlMinutes = parseInt(process.env.PASSWORD_RESET_TTL_MINUTES || "15", 10);
+    const expiresAt = new Date(Date.now() + ttlMinutes * 60 * 1000);
+
+    // Invalidar tokens previos activos de este usuario
+    await PasswordResetTokenModel.update(
+      { used_at: new Date() },
+      {
+        where: {
+          user_id: usuario.uuid,
+          used_at: null,
+          expires_at: { [Op.gt]: new Date() }
+        }
+      }
     );
 
-    if (!emailEnviado) {
-      throw new Error("Hubo un problema al enviar el correo de recuperación");
-    }
+    // Generar token seguro de 32 bytes (64 caracteres hexadecimales)
+    const rawToken = crypto.randomBytes(32).toString("hex");
+    const tokenHash = crypto.createHash("sha256").update(rawToken).digest("hex");
+
+    // Guardar únicamente el HASH en la base de datos
+    await PasswordResetTokenModel.create({
+      user_id: usuario.uuid,
+      token_hash: tokenHash,
+      expires_at: expiresAt,
+      requested_ip: ipAddress,
+      user_agent: userAgent ? userAgent.substring(0, 255) : null
+    });
+
+    // Construir la URL pública del frontend usando la variable de entorno
+    const frontendUrl = (process.env.FRONTEND_URL || 'http://77.42.120.211').replace(/\/+$/, '');
+    const resetUrl = `${frontendUrl}/RestablecerPassword/${rawToken}`;
+
+    // Enviar el correo electrónico
+    await EmailService.sendPasswordResetEmail({
+      to: usuario.correo,
+      nombre: usuario.nombre,
+      resetUrl,
+      expiresInMinutes: ttlMinutes
+    });
 
     return true;
   }
 
-  async resetPassword(token, nuevaContraseña) {
-    if (!token || !nuevaContraseña) {
-      throw new Error("Token y nueva contraseña son obligatorios");
+  /**
+   * Restablece la contraseña utilizando el token recibido.
+   * Valida la coincidencia del HASH SHA-256 en la BD, la vigencia y ejecuta la actualización atómicamente.
+   */
+  async resetPassword(rawToken, newPassword) {
+    if (!rawToken || !newPassword) {
+      throw new Error("El enlace de recuperación no es válido o ha expirado.");
     }
 
-    const usuario = await UsuarioModel.findOne({ where: { token } });
-    
-    if (!usuario) {
-      throw new Error("El enlace de recuperación es inválido o ha expirado");
+    if (typeof newPassword !== 'string' || newPassword.length < 8) {
+      throw new Error("La contraseña debe tener al menos 8 caracteres.");
     }
 
-    // Encriptar nueva contraseña
-    const hashedContraseña = await bcrypt.hash(nuevaContraseña, 10);
+    // Calcular el hash del token recibido
+    const tokenHash = crypto.createHash("sha256").update(rawToken).digest("hex");
 
-    // Actualizar contraseña y limpiar token
-    usuario.contraseña = hashedContraseña;
-    usuario.token = null;
-    await usuario.save();
+    // Transacción SQL atómica para prevenir condiciones de carrera
+    const result = await db.transaction(async (t) => {
+      // Buscar registro del token no usado y vigente
+      const tokenRecord = await PasswordResetTokenModel.findOne({
+        where: {
+          token_hash: tokenHash,
+          used_at: null,
+          expires_at: { [Op.gt]: new Date() }
+        },
+        transaction: t
+      });
 
-    return true;
+      if (!tokenRecord) {
+        throw new Error("El enlace de recuperación no es válido o ha expirado.");
+      }
+
+      // Buscar al usuario asociado
+      const usuario = await UsuarioModel.findByPk(tokenRecord.user_id, { transaction: t });
+      if (!usuario) {
+        throw new Error("El enlace de recuperación no es válido o ha expirado.");
+      }
+
+      // Cifrar la nueva contraseña con bcrypt
+      const hashedContraseña = await bcrypt.hash(newPassword, 10);
+
+      // Actualizar la contraseña del usuario
+      usuario.contraseña = hashedContraseña;
+      await usuario.save({ transaction: t });
+
+      // Marcar el token actual como utilizado
+      tokenRecord.used_at = new Date();
+      await tokenRecord.save({ transaction: t });
+
+      // Marcar cualquier otro token pendiente del mismo usuario como consumido
+      await PasswordResetTokenModel.update(
+        { used_at: new Date() },
+        {
+          where: {
+            user_id: usuario.uuid,
+            used_at: null
+          },
+          transaction: t
+        }
+      );
+
+      return true;
+    });
+
+    return result;
   }
 
   // =========================
   // GESTIÓN DE USUARIOS (ADMIN)
   // =========================
   
-  // Obtener todos los usuarios registrados
   async getAll() {
     return await UsuarioModel.findAll({
-      attributes: { exclude: ['contraseña'] } // Nunca enviar la contraseña por seguridad
+      attributes: { exclude: ['contraseña'] }
     });
   }
 
-  // Actualizar el rol de un usuario específico
   async updateRol(id, rol) {
     const usuario = await UsuarioModel.findByPk(id);
     if (!usuario) throw new Error("Usuario no encontrado");
@@ -185,11 +247,9 @@ class UsuarioService {
     usuario.rol = rol;
     await usuario.save();
 
-    // Devolver el usuario actualizado sin contraseña
     const { contraseña: _, ...usuarioSinPassword } = usuario.toJSON();
     return usuarioSinPassword;
   }
 }
 
-// Exportamos una instancia del servicio
 export default new UsuarioService();
