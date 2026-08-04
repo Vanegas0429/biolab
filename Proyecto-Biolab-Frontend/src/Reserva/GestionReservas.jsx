@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import apiAxios from "../api/axiosConfig.js";
 import Swal from "sweetalert2";
 import ReservaForm from "./ReservaForm.jsx";
+import ErrorBoundary from "../components/ErrorBoundary.jsx";
 
 const GestionReservas = () => {
   const [reservas, setReservas] = useState([]);
@@ -477,33 +478,35 @@ const GestionReservas = () => {
               <button type="button" className="btn-close btn-close-white shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div className="modal-body p-4">
-              <ReservaForm
-                key={`${rowToEdit?.Id_Reserva || 'new'}-${formOpenToken}`}
-                hideModal={() => {
-                  try {
-                    const modalEl = document.getElementById("modalGestionReserva");
-                    const modal =
-                      modalEl &&
-                      window.bootstrap?.Modal?.getOrCreateInstance(modalEl);
+              <ErrorBoundary>
+                <ReservaForm
+                  key={`${rowToEdit?.Id_Reserva || 'new'}-${formOpenToken}`}
+                  hideModal={() => {
+                    try {
+                      const modalEl = document.getElementById("modalGestionReserva");
+                      const modal =
+                        modalEl &&
+                        window.bootstrap?.Modal?.getOrCreateInstance(modalEl);
 
-                    if (modal) {
-                      modal.hide();
-                    } else {
-                      const closeBtn = document.querySelector(
-                        "#modalGestionReserva .btn-close"
-                      );
+                      if (modal) {
+                        modal.hide();
+                      } else {
+                        const closeBtn = document.querySelector(
+                          "#modalGestionReserva .btn-close"
+                        );
 
-                      closeBtn?.click();
+                        closeBtn?.click();
+                      }
+                    } catch (err) {
+                      console.warn("Error cerrando modal:", err);
                     }
-                  } catch (err) {
-                    console.warn("Error cerrando modal:", err);
-                  }
 
-                  fetchReservas();
-                }}
-                rowToEdit={rowToEdit}
-                estados={estados}
-              />
+                    fetchReservas();
+                  }}
+                  rowToEdit={rowToEdit}
+                  estados={estados}
+                />
+              </ErrorBoundary>
             </div>
           </div>
         </div>
