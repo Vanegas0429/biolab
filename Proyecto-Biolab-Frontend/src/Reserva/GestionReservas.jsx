@@ -100,89 +100,167 @@ const GestionReservas = () => {
           Swal.fire('Error', error.response?.data?.message || 'No se pudo actualizar el estado', 'error');
         }
       }
-    } else if (nuevoEstadoNombre === "Finalizado" && Array.isArray(reserva.reactivos) && reserva.reactivos.length > 0) {
-      let htmlContent = `<div style="text-align: left;">
-        <p class="text-muted small mb-3">Registre la cantidad real utilizada para cada reactivo. Los reactivos sobrantes se devolverán automáticamente al stock.</p>
-      `;
+    } else if (nuevoEstadoNombre === "Finalizado") {
+      const hasReactivos = Array.isArray(reserva.reactivos) && reserva.reactivos.length > 0;
+      const desechables = Array.isArray(reserva.materiales) ? reserva.materiales.filter(m => m.clasificacion === 'Desechable') : [];
+      const hasEquipos = Array.isArray(reserva.equipos) && reserva.equipos.length > 0;
 
-      reserva.reactivos.forEach((reac) => {
-        htmlContent += `
-          <div class="mb-3">
-            <label class="form-label fw-bold small mb-1">${reac.Nom_Reactivo} (Pedido: ${reac.Can_Reactivo} ${reac.Uni_Medida || ''})</label>
-            <div class="input-group input-group-sm">
-              <input 
-                type="number" 
-                class="form-control swal-reac-input" 
-                data-id="${reac.Id_Reactivo}" 
-                data-max="${reac.Can_Reactivo}" 
-                data-name="${reac.Nom_Reactivo}"
-                value="${reac.Can_Reactivo}" 
-                min="0" 
-                max="${reac.Can_Reactivo}" 
-                step="any"
-                required
-              />
-              <span class="input-group-text">${reac.Uni_Medida || ''}</span>
-            </div>
-          </div>
-        `;
-      });
-      htmlContent += `</div>`;
+      if (!hasReactivos && desechables.length === 0 && !hasEquipos) {
+        // Ninguno de los recursos requiere datos adicionales al finalizar
+        const result = await Swal.fire({
+          title: `¿Finalizar Reserva?`,
+          text: `La reserva #${reserva.Id_Reserva} pasará a estado Finalizado.`,
+          icon: 'question',
+          showCancelButton: true,
+          confirmButtonText: 'Sí, finalizar',
+          cancelButtonText: 'Cancelar',
+          confirmButtonColor: 'var(--primary-color)'
+        });
 
-      const result = await Swal.fire({
-        title: 'Finalizar Reserva - Consumo de Reactivos',
-        html: htmlContent,
-        icon: 'info',
-        showCancelButton: true,
-        confirmButtonText: 'Confirmar y Finalizar',
-        cancelButtonText: 'Cancelar',
-        confirmButtonColor: 'var(--primary-color)',
-        preConfirm: () => {
-          const inputs = document.querySelectorAll('.swal-reac-input');
-          const reactivosUtilizados = [];
-
-          for (let input of inputs) {
-            const id = Number(input.getAttribute('data-id'));
-            const name = input.getAttribute('data-name');
-            const max = Number(input.getAttribute('data-max'));
-            const valStr = input.value;
-
-            if (valStr === '') {
-              Swal.showValidationMessage(`Por favor ingrese la cantidad utilizada para ${name}`);
-              return false;
-            }
-
-            const val = Number(valStr);
-            if (isNaN(val) || val < 0) {
-              Swal.showValidationMessage(`La cantidad para ${name} debe ser un número mayor o igual a 0`);
-              return false;
-            }
-
-            if (val > max) {
-              Swal.showValidationMessage(`La cantidad utilizada para ${name} (${val}) no puede ser mayor que la cantidad pedida (${max})`);
-              return false;
-            }
-
-            reactivosUtilizados.push({
-              Id_Reactivo: id,
-              CantidadUtilizada: val
-            });
+        if (result.isConfirmed) {
+          try {
+            await apiAxios.put(`/api/Reserva/${reserva.Id_Reserva}/estado`, { Id_Estado: estado.Id_Estado });
+            Swal.fire('Actualizado', `Estado cambiado a Finalizado`, 'success');
+            fetchReservas();
+          } catch (error) {
+            Swal.fire('Error', error.response?.data?.message || 'No se pudo actualizar el estado', 'error');
           }
-
-          return reactivosUtilizados;
         }
-      });
-
-      if (result.isConfirmed && result.value) {
-        try {
-          await apiAxios.put(`/api/Reserva/${reserva.Id_Reserva}/estado`, {
-            Id_Estado: estado.Id_Estado,
-            reactivosUtilizados: result.value
+      } else {
+        let htmlContent = `<div style="text-align: left; max-height: 60vh; overflow-y: auto; overflow-x: hidden; padding-right: 10px;">
+          <p class="text-muted small mb-3">Complete la información de devolución.</p>`;
+  
+        if (hasReactivos) {
+          htmlContent += `<h6 class="fw-bold mt-2 text-info border-bottom pb-1"><i class="fa-solid fa-flask"></i> Reactivos (Cantidad Utilizada)</h6>`;
+          reserva.reactivos.forEach((reac) => {
+            htmlContent += `
+              <div class="mb-3">
+                <label class="form-label fw-bold small mb-1">${reac.Nom_Reactivo} (Pedido: ${reac.Can_Reactivo} ${reac.Uni_Medida || ''})</label>
+                <div class="input-group input-group-sm">
+                  <input type="number" class="form-control swal-reac-input" 
+                    data-id="${reac.Id_Reactivo}" data-max="${reac.Can_Reactivo}" data-name="${reac.Nom_Reactivo}"
+                    value="${reac.Can_Reactivo}" min="0" max="${reac.Can_Reactivo}" step="any" required />
+                  <span class="input-group-text">${reac.Uni_Medida || ''}</span>
+                </div>
+              </div>
+            `;
           });
-          Swal.fire('Finalizado', 'La reserva ha sido finalizada y los reactivos sobrantes se devolvieron al stock.', 'success');
-          fetchReservas();
-        } catch (error) {
-          Swal.fire('Error', error.response?.data?.message || 'No se pudo finalizar la reserva', 'error');
+        }
+
+        if (desechables.length > 0) {
+          htmlContent += `<h6 class="fw-bold mt-3 text-success border-bottom pb-1"><i class="fa-solid fa-boxes-stacked"></i> Materiales Desechables (Cantidad Utilizada)</h6>`;
+          desechables.forEach((mat) => {
+            htmlContent += `
+              <div class="mb-3">
+                <label class="form-label fw-bold small mb-1">${mat.Nom_Material} (Pedido: ${mat.Can_Materiales} und)</label>
+                <div class="input-group input-group-sm">
+                  <input type="number" class="form-control swal-mat-input" 
+                    data-id="${mat.Id_Material}" data-max="${mat.Can_Materiales}" data-name="${mat.Nom_Material}"
+                    value="${mat.Can_Materiales}" min="0" max="${mat.Can_Materiales}" step="any" required />
+                  <span class="input-group-text">und</span>
+                </div>
+              </div>
+            `;
+          });
+        }
+
+        if (hasEquipos) {
+          htmlContent += `<h6 class="fw-bold mt-3 text-primary border-bottom pb-1"><i class="fa-solid fa-microscope"></i> Equipos (Observaciones)</h6>`;
+          reserva.equipos.forEach((eq) => {
+            htmlContent += `
+              <div class="mb-3">
+                <label class="form-label fw-bold small mb-1">${eq.Nom_Equipo}</label>
+                <textarea class="form-control form-control-sm swal-eq-input" 
+                  data-id="${eq.Id_Equipo}" placeholder="Observaciones o estado de entrega..." rows="2"></textarea>
+              </div>
+            `;
+          });
+        }
+  
+        htmlContent += `</div>`;
+  
+        const result = await Swal.fire({
+          title: 'Finalizar Reserva',
+          html: htmlContent,
+          icon: 'info',
+          showCancelButton: true,
+          confirmButtonText: 'Confirmar y Finalizar',
+          cancelButtonText: 'Cancelar',
+          confirmButtonColor: 'var(--primary-color)',
+          preConfirm: () => {
+            const reactivosUtilizados = [];
+            const materialesUtilizados = [];
+            const equiposObservaciones = [];
+  
+            if (hasReactivos) {
+              const inputs = document.querySelectorAll('.swal-reac-input');
+              for (let input of inputs) {
+                const id = Number(input.getAttribute('data-id'));
+                const name = input.getAttribute('data-name');
+                const max = Number(input.getAttribute('data-max'));
+                const valStr = input.value;
+    
+                if (valStr === '') {
+                  Swal.showValidationMessage(`Por favor ingrese la cantidad utilizada para ${name}`);
+                  return false;
+                }
+    
+                const val = Number(valStr);
+                if (isNaN(val) || val < 0 || val > max) {
+                  Swal.showValidationMessage(`Cantidad inválida para ${name} (0 - ${max})`);
+                  return false;
+                }
+                reactivosUtilizados.push({ Id_Reactivo: id, CantidadUtilizada: val });
+              }
+            }
+
+            if (desechables.length > 0) {
+              const inputs = document.querySelectorAll('.swal-mat-input');
+              for (let input of inputs) {
+                const id = Number(input.getAttribute('data-id'));
+                const name = input.getAttribute('data-name');
+                const max = Number(input.getAttribute('data-max'));
+                const valStr = input.value;
+    
+                if (valStr === '') {
+                  Swal.showValidationMessage(`Por favor ingrese la cantidad utilizada para ${name}`);
+                  return false;
+                }
+    
+                const val = Number(valStr);
+                if (isNaN(val) || val < 0 || val > max) {
+                  Swal.showValidationMessage(`Cantidad inválida para ${name} (0 - ${max})`);
+                  return false;
+                }
+                materialesUtilizados.push({ Id_Material: id, CantidadUtilizada: val });
+              }
+            }
+
+            if (hasEquipos) {
+              const inputs = document.querySelectorAll('.swal-eq-input');
+              for (let input of inputs) {
+                const id = Number(input.getAttribute('data-id'));
+                equiposObservaciones.push({ Id_Equipo: id, Observaciones: input.value.trim() });
+              }
+            }
+  
+            return { reactivosUtilizados, materialesUtilizados, equiposObservaciones };
+          }
+        });
+  
+        if (result.isConfirmed && result.value) {
+          try {
+            await apiAxios.put(`/api/Reserva/${reserva.Id_Reserva}/estado`, {
+              Id_Estado: estado.Id_Estado,
+              reactivosUtilizados: result.value.reactivosUtilizados,
+              materialesUtilizados: result.value.materialesUtilizados,
+              equiposObservaciones: result.value.equiposObservaciones
+            });
+            Swal.fire('Finalizado', 'La reserva ha sido finalizada con éxito.', 'success');
+            fetchReservas();
+          } catch (error) {
+            Swal.fire('Error', error.response?.data?.message || 'No se pudo finalizar la reserva', 'error');
+          }
         }
       }
     } else {
@@ -195,7 +273,7 @@ const GestionReservas = () => {
         cancelButtonText: 'Cancelar',
         confirmButtonColor: 'var(--primary-color)'
       });
-
+  
       if (result.isConfirmed) {
         try {
           await apiAxios.put(`/api/Reserva/${reserva.Id_Reserva}/estado`, {

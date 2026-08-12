@@ -18,6 +18,16 @@ const ReservaMaterialModel = db.define('ReservaMaterial', {
     Can_Materiales: {
         type: DataTypes.INTEGER,
         allowNull: false
+    },
+    Mat_Utilizados: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        defaultValue: 0
+    },
+    Mat_Devueltos: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        defaultValue: 0
     }
 }, {
     tableName: 'reservamaterial',

@@ -140,6 +140,23 @@ const EntradaMaterialForm = ({ hideModal, refreshList, rowToEdit }) => {
             required
           />
         </div>
+        
+        {/* Cantidad Existente */}
+        {rowToEdit && (
+          <div className="col-md-5">
+            <label htmlFor="Can_Existente" className="form-label fw-bold">Cantidad Existente:</label>
+            <input
+              type="number"
+              id="Can_Existente"
+              className="form-control rounded-pill shadow-sm px-3"
+              value={Can_Existente}
+              onChange={e => setCan_Existente(e.target.value)}
+              placeholder="0"
+              min="0"
+              required
+            />
+          </div>
+        )}
 
         <div className="col-12 text-center mt-4">
           <button type="submit" className="btn btn-primary rounded-pill px-5 shadow-sm fw-bold">

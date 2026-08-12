@@ -710,6 +710,10 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
     }
 
     if (Tip_Reserva === "Practica") {
+      if (Number(Can_Aprendices) > 20) {
+        Swal.fire("Atención", "La cantidad de aprendices para una reserva de tipo práctica no puede ser mayor a 20", "warning");
+        return;
+      }
       if (!Num_Ficha) {
         Swal.fire("Atención", "El número de ficha es obligatorio para prácticas", "warning");
         return;
@@ -1364,14 +1368,17 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
               : "Cantidad de aprendices:"}
           </label>
           <input
-            type="text"
+            type="number"
             className="form-control rounded-pill shadow-sm px-3"
             value={Can_Aprendices}
             onChange={(e) => {
-              const val = e.target.value.replace(/[^0-9]/g, '');
-              if (val.length <= 3) setCan_Aprendices(val);
+              const val = e.target.value;
+              if (val === "" || (Number(val) <= 20 && val.length <= 2)) {
+                setCan_Aprendices(val);
+              }
             }}
-            maxLength="3"
+            min={1}
+            max={20}
             required
             readOnly={isViewOnly}
           />

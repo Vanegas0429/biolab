@@ -418,6 +418,11 @@ const FormReserva = ({ hideModal, rowToEdit = {}, estados = [] }) => {
     e.preventDefault();
 
     if (Tip_Reserva === "Practica") {
+      if (Number(Can_Aprendices) > 20) {
+        Swal.fire("Atención", "La cantidad de aprendices para una reserva de tipo práctica no puede ser mayor a 20", "warning");
+        return;
+      }
+
       if (actividadesSeleccionadas.length < 1) {
         Swal.fire("Atención", "Debe seleccionar al menos una actividad", "warning");
         return;
@@ -829,8 +834,15 @@ const FormReserva = ({ hideModal, rowToEdit = {}, estados = [] }) => {
             type="number"
             className="form-control"
             value={Can_Aprendices}
-            onChange={(e) => setCan_Aprendices(e.target.value)}
-            min={0}
+            onChange={(e) => {
+              const val = e.target.value;
+              if (val === "" || (Number(val) <= 20 && val.length <= 2)) {
+                setCan_Aprendices(val);
+              }
+            }}
+            min={1}
+            max={20}
+            required
           />
         </div>
 
@@ -866,7 +878,7 @@ const FormReserva = ({ hideModal, rowToEdit = {}, estados = [] }) => {
           />
         </div>
 
-        
+
         <div className="col-md-12 mt-2">
           <input type="submit" className="btn btn-primary w-25" value={textFormButton} />
         </div>

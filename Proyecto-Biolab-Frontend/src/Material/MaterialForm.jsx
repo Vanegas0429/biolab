@@ -9,11 +9,8 @@ const MySwal = withReactContent(Swal)
 const MaterialForm = ({ hideModal, refreshList, rowToEdit }) => {
     const [Estado, setEstado] = useState("Activo");
 
-
-
     //Campos del formulario
     const [Nom_Material, setNom_Material] = useState("");
-    const [Can_Material, setCan_Material] = useState("");
     const [clasificacion, setClasificacion] = useState("Desechable");
     const [imagenes, setImagenes] = useState([]);
     const [textFormButton, setTextFormButton] = useState("Enviar");
@@ -21,14 +18,12 @@ const MaterialForm = ({ hideModal, refreshList, rowToEdit }) => {
     useEffect(() => {
         if (rowToEdit) {
             setNom_Material(rowToEdit.Nom_Material || "");
-            setCan_Material(rowToEdit.Can_Material || "");
             setClasificacion(rowToEdit.clasificacion || "Desechable");
             setEstado(rowToEdit.Estado || "Activo");
             setTextFormButton("Actualizar");
         } else {
             setEstado("Activo");
             setNom_Material("");
-            setCan_Material("");
             setClasificacion("Desechable");
             setTextFormButton("Enviar");
         }
@@ -38,7 +33,7 @@ const MaterialForm = ({ hideModal, refreshList, rowToEdit }) => {
     const gestionarForm = async (e) => {
         e.preventDefault();
 
-        if (!Nom_Material || Can_Material === "") {
+        if (!Nom_Material) {
             MySwal.fire({
                 title: "Error",
                 text: "Por favor completa todos los campos obligatorios",
@@ -49,7 +44,6 @@ const MaterialForm = ({ hideModal, refreshList, rowToEdit }) => {
 
         const formData = new FormData();
         formData.append("Nom_Material", Nom_Material);
-        formData.append("Can_Material", Can_Material);
         formData.append("clasificacion", clasificacion);
         formData.append("Estado", Estado);
         
@@ -112,7 +106,7 @@ const MaterialForm = ({ hideModal, refreshList, rowToEdit }) => {
                 />
             </div>
 
-            <div className="col-md-3">
+            <div className="col-md-6">
                 <label className="form-label fw-bold">
                     Clasificación:
                 </label>
@@ -125,22 +119,6 @@ const MaterialForm = ({ hideModal, refreshList, rowToEdit }) => {
                     <option value="Desechable">Desechable</option>
                     <option value="Reutilizable">Reutilizable</option>
                 </select>
-            </div>
-
-            <div className="col-md-3">
-                <label htmlFor="Can_Material" className="form-label fw-bold">
-                    Cantidad Disponible:
-                </label>
-                <input
-                    type="number"
-                    id="Can_Material"
-                    className="form-control rounded-pill px-3 shadow-sm"
-                    value={Can_Material}
-                    onChange={(e) => setCan_Material(e.target.value)}
-                    placeholder="0"
-                    min="0"
-                    required
-                />
             </div>
 
             <div className="col-md-12">

@@ -18,6 +18,9 @@ import MaterialModel from "../models/MaterialModel.js";
 import ReactivosModel from "../models/ReactivosModel.js";
 import EntradaModel from "../models/EntradaModel.js";
 import MovimientoReactivoModel from "../models/MovimientoReactivoModel.js";
+import EntradaMaterialModel from "../models/EntradaMaterialModel.js";
+import MovimientoMaterialModel from "../models/MovimientoMaterialModel.js";
+import EntradaMaterialService from "./EntradaMaterialService.js";
 import { enviarCorreoRechazo, enviarCorreoAprobacion } from "./EmailService.js";
 
 async function discountReactivoStock(idReactivo, quantity, idReserva, transaction) {
@@ -115,6 +118,114 @@ async function restoreReactivoStock(idReactivo, quantity, idReserva, detalle, tr
       Detalle: (detalle || `Devolución por Reserva #${idReserva}`) + ' (Excedente restaurado en primer lote)'
     }, { transaction });
   }
+}
+
+async function discountMaterialStock(idMaterial, quantity, idReserva, transaction) {
+  const material = await MaterialModel.findByPk(idMaterial, { transaction });
+  if (!material) return;
+  // Solo descontar stock si la clasificación es Desechable
+  if (material.clasificacion !== 'Desechable') return;
+
+  let remainingToDiscount = Number(quantity);
+  if (remainingToDiscount <= 0) return;
+
+  const entries = await EntradaMaterialModel.findAll({
+    where: {
+      Id_Material: idMaterial,
+      Estado: 'Activo',
+      Can_Existente: { [Op.gt]: 0 }
+    },
+    order: [
+      ['createdAt', 'ASC'],
+      ['Id_Entrada_Material', 'ASC']
+    ],
+    transaction
+  });
+
+  const totalAvailable = entries.reduce((sum, entry) => sum + Number(entry.Can_Existente || 0), 0);
+  if (totalAvailable < remainingToDiscount) {
+    throw new Error(`Stock insuficiente para el material '${material.Nom_Material}'. Solicitado: ${remainingToDiscount}, Disponible: ${totalAvailable}`);
+  }
+
+  for (const entry of entries) {
+    if (remainingToDiscount <= 0) break;
+
+    const available = Number(entry.Can_Existente || 0);
+    const toSubtract = Math.min(available, remainingToDiscount);
+    entry.Can_Existente = available - toSubtract;
+    await entry.save({ transaction });
+
+    // Log movement
+    await MovimientoMaterialModel.create({
+      Id_Entrada_Material: entry.Id_Entrada_Material,
+      Id_Reserva: idReserva,
+      Tipo: 'Salida',
+      Cantidad: toSubtract,
+      Detalle: `Descuento por Reserva #${idReserva}`
+    }, { transaction });
+
+    remainingToDiscount -= toSubtract;
+  }
+
+  await EntradaMaterialService.recalcularStockMaterial(idMaterial);
+}
+
+async function restoreMaterialStock(idMaterial, quantity, idReserva, detalle, transaction) {
+  const material = await MaterialModel.findByPk(idMaterial, { transaction });
+  if (!material) return;
+  if (material.clasificacion !== 'Desechable') return;
+
+  let remainingToRestore = Number(quantity);
+  if (remainingToRestore <= 0) return;
+
+  const entries = await EntradaMaterialModel.findAll({
+    where: {
+      Id_Material: idMaterial,
+      Estado: 'Activo'
+    },
+    order: [
+      ['createdAt', 'DESC'],
+      ['Id_Entrada_Material', 'DESC']
+    ],
+    transaction
+  });
+
+  for (const entry of entries) {
+    if (remainingToRestore <= 0) break;
+
+    const spaceAvailable = Number(entry.Can_Inicial || 0) - Number(entry.Can_Existente || 0);
+    if (spaceAvailable > 0) {
+      const toAdd = Math.min(spaceAvailable, remainingToRestore);
+      entry.Can_Existente = Number(entry.Can_Existente || 0) + toAdd;
+      await entry.save({ transaction });
+
+      await MovimientoMaterialModel.create({
+        Id_Entrada_Material: entry.Id_Entrada_Material,
+        Id_Reserva: idReserva,
+        Tipo: 'Devolución',
+        Cantidad: toAdd,
+        Detalle: detalle || `Devolución por Reserva #${idReserva}`
+      }, { transaction });
+
+      remainingToRestore -= toAdd;
+    }
+  }
+
+  if (remainingToRestore > 0 && entries.length > 0) {
+    const oldVal = Number(entries[0].Can_Existente || 0);
+    entries[0].Can_Existente = oldVal + remainingToRestore;
+    await entries[0].save({ transaction });
+
+    await MovimientoMaterialModel.create({
+      Id_Entrada_Material: entries[0].Id_Entrada_Material,
+      Id_Reserva: idReserva,
+      Tipo: 'Devolución',
+      Cantidad: remainingToRestore,
+      Detalle: (detalle || `Devolución por Reserva #${idReserva}`) + ' (Excedente restaurado)'
+    }, { transaction });
+  }
+
+  await EntradaMaterialService.recalcularStockMaterial(idMaterial);
 }
 
 class ReservaService {
@@ -488,6 +599,7 @@ class ReservaService {
       }
 
       for (const item of materialesBody) {
+        await discountMaterialStock(Number(item.Id_Material), Number(item.Can_Materiales), reserva.Id_Reserva, transaction);
         await ReservaMaterialModel.create(
           {
             Id_Reserva: reserva.Id_Reserva,
@@ -528,7 +640,7 @@ class ReservaService {
     }
   }
 
-  async cambiarEstado(idReserva, Id_Estado, Mot_RecCan = null, reactivosUtilizados = []) {
+  async cambiarEstado(idReserva, Id_Estado, Mot_RecCan = null, reactivosUtilizados = [], materialesUtilizados = [], equiposObservaciones = []) {
     const transaction = await db_store.transaction();
 
     try {
@@ -601,14 +713,18 @@ class ReservaService {
           { where: { Id_Reserva: idReserva }, transaction }
         );
 
-        // Fetch reagents requested
+        // Fetch reagents & materials requested
         const oldReactivos = await ReservaReactivoModel.findAll({
+          where: { Id_Reserva: idReserva },
+          transaction
+        });
+        const oldMateriales = await ReservaMaterialModel.findAll({
           where: { Id_Reserva: idReserva },
           transaction
         });
 
         if (["Rechazado", "Cancelado"].includes(nuevoEstado.Tip_Estado)) {
-          // Restore 100% of the requested reagents to stock
+          // Restore 100% of requested reagents
           for (const item of oldReactivos) {
             await restoreReactivoStock(
               Number(item.Id_Reactivo),
@@ -617,17 +733,27 @@ class ReservaService {
               `Devolución por reserva ${nuevoEstado.Tip_Estado.toLowerCase()}`,
               transaction
             );
-            // Registrar devolución de todos los reactivos solicitados
             await ReservaReactivoModel.update(
-              { 
-                Reac_Utilizados: 0,
-                Reac_Devueltos: item.Can_Reactivo
-              },
+              { Reac_Utilizados: 0, Reac_Devueltos: item.Can_Reactivo },
               { where: { Id_ReservaReactivo: item.Id_ReservaReactivo }, transaction }
             );
           }
+          // Restore 100% of requested disposable materials
+          for (const item of oldMateriales) {
+            await restoreMaterialStock(
+              Number(item.Id_Material),
+              Number(item.Can_Materiales),
+              idReserva,
+              `Devolución por reserva ${nuevoEstado.Tip_Estado.toLowerCase()}`,
+              transaction
+            );
+            await ReservaMaterialModel.update(
+              { Mat_Utilizados: 0, Mat_Devueltos: item.Can_Materiales },
+              { where: { Id_ReservaMaterial: item.Id_ReservaMaterial }, transaction }
+            );
+          }
         } else if (nuevoEstado.Tip_Estado === "Finalizado") {
-          // Restore the unused difference to stock
+          // Restore unused reactivos
           for (const item of oldReactivos) {
             const util = (reactivosUtilizados || []).find(
               (ru) => Number(ru.Id_Reactivo) === Number(item.Id_Reactivo)
@@ -649,14 +775,56 @@ class ReservaService {
               );
             }
 
-            // Registrar cantidades reales utilizadas y devueltas, manteniendo Can_Reactivo
             await ReservaReactivoModel.update(
-              { 
-                Reac_Utilizados: cantUtilizada,
-                Reac_Devueltos: unused
-              },
+              { Reac_Utilizados: cantUtilizada, Reac_Devueltos: unused },
               { where: { Id_ReservaReactivo: item.Id_ReservaReactivo }, transaction }
             );
+          }
+
+          // Restore unused disposable materials
+          for (const item of oldMateriales) {
+            const util = (materialesUtilizados || []).find(
+              (mu) => Number(mu.Id_Material) === Number(item.Id_Material)
+            );
+            const cantUtilizada = util ? Number(util.CantidadUtilizada) : Number(item.Can_Materiales);
+
+            if (cantUtilizada > Number(item.Can_Materiales)) {
+              throw new Error(`La cantidad utilizada del material con ID ${item.Id_Material} (${cantUtilizada}) no puede superar la cantidad pedida (${item.Can_Materiales}).`);
+            }
+
+            const unused = Number(item.Can_Materiales) - cantUtilizada;
+            if (unused > 0) {
+              await restoreMaterialStock(
+                Number(item.Id_Material),
+                unused,
+                idReserva,
+                `Devolución de material no utilizado por finalización de reserva`,
+                transaction
+              );
+            }
+
+            await ReservaMaterialModel.update(
+              { Mat_Utilizados: cantUtilizada, Mat_Devueltos: unused },
+              { where: { Id_ReservaMaterial: item.Id_ReservaMaterial }, transaction }
+            );
+          }
+
+          // Save equipment observations
+          if (Array.isArray(equiposObservaciones)) {
+            for (const eqObs of equiposObservaciones) {
+              if (eqObs.Id_Equipo && eqObs.Observaciones) {
+                await ReservaEquipoModel.update(
+                  { Observaciones: String(eqObs.Observaciones).trim() },
+                  {
+                    where: {
+                      Id_Reserva: idReserva,
+                      Id_Equipo: Number(eqObs.Id_Equipo)
+                    },
+                    transaction
+                  }
+                );
+              }
+            }
           }
         }
       }

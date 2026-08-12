@@ -253,18 +253,6 @@ const CrudMaterial = () => {
               )
             },
             {
-              name: 'CANTIDAD DISPONIBLE',
-              selector: row => row.Can_Material,
-              sortable: true,
-              center: true,
-              width: '150px',
-              cell: (row) => (
-                <div className={`fw-bold ${row.Can_Material === 0 ? 'text-danger' : 'text-dark'}`}>
-                  {row.Can_Material} <small className="text-muted">und</small>
-                </div>
-              )
-            },
-            {
               name: 'ESTADO',
               sortable: true,
               center: true,

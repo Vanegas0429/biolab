@@ -122,12 +122,12 @@ const CrudEntrada = () => {
           <DataTable
             columns={[
               { name: 'ID', selector: row => row?.Id_Entrada ?? 'N/A', sortable: true, width: '80px' },
-              { name: 'REACTIVO', selector: row => row?.Reactivo?.Nom_reactivo ?? 'N/A', sortable: true, grow: 2 },
+              { name: 'REACTIVO', selector: row => row?.Reactivo?.Nom_reactivo ?? 'N/A', sortable: true, width: '180px' },
               { name: 'LOTE', selector: row => row?.Lote ?? 'N/A', sortable: true, width: '120px' },
-              { name: 'CANT. INICIAL', selector: row => row?.Can_Inicial ?? 0, sortable: true, width: '130px', center: "true" },
+              { name: 'CANT. INICIAL', selector: row => row?.Can_Inicial ?? 0, sortable: true, width: '150px', center: "true" },
               { name: 'CANT. EXISTENTE', selector: row => row?.Can_Existente ?? 0, sortable: true, width: '150px', center: "true" },
-              { name: 'UND. MEDIDA', selector: row => row?.Uni_Medida ?? 'N/A', sortable: true, width: '130px' },
-              { name: 'F. VENCIMIENTO', selector: row => row?.Fec_Vencimiento ?? 'N/A', sortable: true, width: '150px' },
+              { name: 'UND. MEDIDA', selector: row => row?.Uni_Medida ?? 'N/A', sortable: true, width: '150px', center: "true" },
+              { name: 'F. VENCIMIENTO', selector: row => row.Fec_Vencimiento ? row.Fec_Vencimiento.split('T')[0] : '', sortable: true, width: '150px' },
               {
                 name: 'ESTADO',
                 center: "true",

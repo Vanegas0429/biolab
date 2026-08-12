@@ -26,6 +26,7 @@ import UsuarioRouter from './routes/UsuarioRoutes.js';
 import MaterialRoutes from './routes/MaterialRoutes.js'
 import EntradaMaterialRoutes from './routes/EntradaMaterialRoutes.js';
 import MovimientoReactivoRoutes from './routes/MovimientoReactivoRoutes.js';
+import MovimientoMaterialRoutes from './routes/MovimientoMaterialRoutes.js';
 
 // Modelos
 import PracticaModel from './models/PracticaModel.js';
@@ -48,6 +49,8 @@ import ReservaEquipoModel from './models/ReservaEquipoModel.js';
 import ReservaMaterialModel from './models/ReservaMaterialModel.js';
 import ReservaReactivoModel from './models/ReservaReactivoModel.js';
 import MovimientoReactivoModel from './models/MovimientoReactivoModel.js';
+import EntradaMaterialModel from './models/EntradaMaterialModel.js';
+import MovimientoMaterialModel from './models/MovimientoMaterialModel.js';
 
 // Configuración
 dotenv.config();
@@ -81,6 +84,7 @@ app.use('/api/ReservaReactivo', ReservaReactivoRoutes)
 app.use('/api/Estado', EstadoRoutes);
 app.use('/api/auth', UsuarioRouter);
 app.use('/api/MovimientoReactivo', MovimientoReactivoRoutes);
+app.use('/api/MovimientoMaterial', MovimientoMaterialRoutes);
 app.use('/uploads', express.static('public/uploads'));
 
 // Conexión a BD
@@ -176,6 +180,14 @@ EntradaModel.hasMany(MovimientoReactivoModel, { foreignKey: 'Id_Entrada', as: 'M
 // MovimientoReactivo -> Reserva
 MovimientoReactivoModel.belongsTo(ReservaModel, { foreignKey: 'Id_Reserva', as: 'Reserva' });
 ReservaModel.hasMany(MovimientoReactivoModel, { foreignKey: 'Id_Reserva', as: 'Movimientos' });
+
+// MovimientoMaterial -> EntradaMaterial
+MovimientoMaterialModel.belongsTo(EntradaMaterialModel, { foreignKey: 'Id_Entrada_Material', as: 'EntradaMaterial' });
+EntradaMaterialModel.hasMany(MovimientoMaterialModel, { foreignKey: 'Id_Entrada_Material', as: 'Movimientos' });
+
+
+// MovimientoMaterial -> Reserva
+MovimientoMaterialModel.belongsTo(ReservaModel, { foreignKey: 'Id_Reserva', as: 'Reserva' });
 
 // Sincronización de la base de datos (aplica las relaciones físicamente)
 try {

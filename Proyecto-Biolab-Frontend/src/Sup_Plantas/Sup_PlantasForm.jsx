@@ -6,7 +6,7 @@ import withReactContent from 'sweetalert2-react-content'
 
 const MySwal = withReactContent(Swal)
 
-const Sup_PlantasForm = ({ hideModal, refreshList, rowToEdit }) => {
+const Sup_PlantasForm = ({ hideModal, refreshList, rowToEdit, isViewOnly }) => {
   const [Estado, setEstado] = useState("Activo");
 
 
@@ -70,7 +70,7 @@ const Sup_PlantasForm = ({ hideModal, refreshList, rowToEdit }) => {
 
 
 
-  const textFormButton = rowToEdit ? "Actualizar" : "Enviar";
+  const textFormButton = rowToEdit?.Id_supervision ? "Actualizar" : "Enviar";
 
   // Opciones fijas
   const lotes = ["1", "2", "3"];
@@ -98,6 +98,7 @@ const Sup_PlantasForm = ({ hideModal, refreshList, rowToEdit }) => {
       Fc_Iniciales,
       Fc_Bacterias,
       Fc_Hongos,
+      Fra_Contaminados: Number(Fc_Bacterias || 0) + Number(Fc_Hongos || 0),
       Fs_Desarrollo,
       Fd_BR,
       Fd_RA,
@@ -121,6 +122,7 @@ const Sup_PlantasForm = ({ hideModal, refreshList, rowToEdit }) => {
         Fc_Iniciales,
         Fc_Bacterias,
         Fc_Hongos,
+        Fra_Contaminados: Number(Fc_Bacterias || 0) + Number(Fc_Hongos || 0),
         Fs_Desarrollo,
         Fd_BR,
         Fd_RA,
@@ -196,7 +198,7 @@ const Sup_PlantasForm = ({ hideModal, refreshList, rowToEdit }) => {
     }
 
     try {
-      if (rowToEdit) {
+      if (rowToEdit && rowToEdit.Id_supervision) {
         await actualizarSup_Planta(); // ✏️ EDITAR
         MySwal.fire({
           title: "Actualizado",
@@ -230,26 +232,26 @@ const Sup_PlantasForm = ({ hideModal, refreshList, rowToEdit }) => {
       <div className="row g-3">
         <div className="col-md-6">
           <label htmlFor="Num_lote" className="form-label fw-bold">Num de Lote:</label>
-          <select id="Num_lote" className="form-select rounded-pill shadow-sm" value={Num_lote} onChange={e => setNum_lote(e.target.value)}>
+          <select id="Num_lote" className="form-select rounded-pill shadow-sm" value={Num_lote} onChange={e => setNum_lote(e.target.value)} disabled={isViewOnly}>
             <option value="">Selecciona uno</option>
             {lotes.map(l => <option key={l} value={l}>{l}</option>)}
           </select>
         </div>
         <div className="col-md-6">
           <label htmlFor="Fc_Iniciales" className="form-label fw-bold">Fc Iniciales:</label>
-          <input type="number" min="0" id="Fc_Iniciales" className="form-control rounded-pill shadow-sm" value={Fc_Iniciales} onChange={e => setFc_Iniciales(Math.max(0, Number(e.target.value)) || 0)} />
+          <input type="number" min="0" id="Fc_Iniciales" className="form-control rounded-pill shadow-sm" value={Fc_Iniciales} onChange={e => setFc_Iniciales(Math.max(0, Number(e.target.value)) || 0)} readOnly={isViewOnly} />
         </div>
 
         <div className="col-md-6">
           <label htmlFor="Med_Cultivo" className="form-label fw-bold">Medio de Cultivo:</label>
-          <select id="Med_Cultivo" className="form-select rounded-pill shadow-sm" value={Med_Cultivo} onChange={e => setMed_Cultivo(e.target.value)}>
+          <select id="Med_Cultivo" className="form-select rounded-pill shadow-sm" value={Med_Cultivo} onChange={e => setMed_Cultivo(e.target.value)} disabled={isViewOnly}>
             <option value="">Selecciona uno</option>
             {mediosCultivo.map(m => <option key={m} value={m}>{m}</option>)}
           </select>
         </div>
         <div className="col-md-6">
           <label htmlFor="Met_Propagacion" className="form-label fw-bold">Método de Propagación:</label>
-          <select id="Met_Propagacion" className="form-select rounded-pill shadow-sm" value={Met_Propagacion} onChange={e => setMet_Propagacion(e.target.value)}>
+          <select id="Met_Propagacion" className="form-select rounded-pill shadow-sm" value={Met_Propagacion} onChange={e => setMet_Propagacion(e.target.value)} disabled={isViewOnly}>
             <option value="">Selecciona uno</option>
             {metPropagacion.map(m => <option key={m} value={m}>{m}</option>)}
           </select>
@@ -259,22 +261,26 @@ const Sup_PlantasForm = ({ hideModal, refreshList, rowToEdit }) => {
           <span className="badge bg-danger-soft text-danger fw-bold"><i className="fa-solid fa-bug me-2"></i>Frascos Contaminados</span>
         </div>
 
-        <div className="col-md-6">
-          <label htmlFor="Fc_Bacterias" className="form-label small fw-bold">Bacterias:</label>
-          <input type="number" min="0" id="Fc_Bacterias" className="form-control rounded-pill shadow-sm" value={Fc_Bacterias} onChange={handleFrascosChange(setFc_Bacterias)} />
-        </div>
-        <div className="col-md-6">
-          <label htmlFor="Fc_Hongos" className="form-label small fw-bold">Hongos:</label>
-          <input type="number" min="0" id="Fc_Hongos" className="form-control rounded-pill shadow-sm" value={Fc_Hongos} onChange={handleFrascosChange(setFc_Hongos)} />
+        <div className="col-12">
+          <div className="row g-2 bg-light p-3 rounded-3 shadow-sm border border-dashed">
+            <div className="col">
+              <label className="form-label small fw-bold text-center d-block">Bacterias</label>
+              <input type="number" min="0" className="form-control form-control-sm rounded-pill text-center" value={Fc_Bacterias} onChange={handleFrascosChange(setFc_Bacterias)} readOnly={isViewOnly} />
+            </div>
+            <div className="col">
+              <label className="form-label small fw-bold text-center d-block">Hongos</label>
+              <input type="number" min="0" className="form-control form-control-sm rounded-pill text-center" value={Fc_Hongos} onChange={handleFrascosChange(setFc_Hongos)} readOnly={isViewOnly} />
+            </div>
+          </div>
         </div>
 
         <div className="col-md-6">
           <label htmlFor="Fs_Desarrollo" className="form-label fw-bold">Frascos sin desarrollo:</label>
-          <input type="number" min="0" id="Fs_Desarrollo" className="form-control rounded-pill shadow-sm" value={Fs_Desarrollo} onChange={handleFrascosChange(setFs_Desarrollo)} />
+          <input type="number" min="0" id="Fs_Desarrollo" className="form-control rounded-pill shadow-sm" value={Fs_Desarrollo} onChange={handleFrascosChange(setFs_Desarrollo)} readOnly={isViewOnly} />
         </div>
         <div className="col-md-6">
           <label htmlFor="Num_endurecimiento" className="form-label fw-bold">N° Endurecimiento:</label>
-          <input type="number" min="0" id="Num_endurecimiento" className="form-control rounded-pill shadow-sm" value={Num_endurecimiento} onChange={e => setNum_endurecimiento(Math.max(0, Number(e.target.value)) || 0)} />
+          <input type="number" min="0" id="Num_endurecimiento" className="form-control rounded-pill shadow-sm" value={Num_endurecimiento} onChange={e => setNum_endurecimiento(Math.max(0, Number(e.target.value)) || 0)} readOnly={isViewOnly} />
         </div>
 
         <div className="col-12 mt-3 mb-1">
@@ -285,45 +291,35 @@ const Sup_PlantasForm = ({ hideModal, refreshList, rowToEdit }) => {
           <div className="row g-2 bg-light p-3 rounded-3 shadow-sm border border-dashed">
             <div className="col">
               <label className="form-label small fw-bold text-center d-block">BR</label>
-              <input type="number" min="0" className="form-control form-control-sm rounded-pill text-center" value={Fd_BR} onChange={handleFrascosChange(setFd_BR)} />
+              <input type="number" min="0" className="form-control form-control-sm rounded-pill text-center" value={Fd_BR} onChange={handleFrascosChange(setFd_BR)} readOnly={isViewOnly} />
             </div>
             <div className="col">
               <label className="form-label small fw-bold text-center d-block">RA</label>
-              <input type="number" min="0" className="form-control form-control-sm rounded-pill text-center" value={Fd_RA} onChange={handleFrascosChange(setFd_RA)} />
+              <input type="number" min="0" className="form-control form-control-sm rounded-pill text-center" value={Fd_RA} onChange={handleFrascosChange(setFd_RA)} readOnly={isViewOnly} />
             </div>
             <div className="col">
               <label className="form-label small fw-bold text-center d-block">CA</label>
-              <input type="number" min="0" className="form-control form-control-sm rounded-pill text-center" value={Fd_CA} onChange={handleFrascosChange(setFd_CA)} />
+              <input type="number" min="0" className="form-control form-control-sm rounded-pill text-center" value={Fd_CA} onChange={handleFrascosChange(setFd_CA)} readOnly={isViewOnly} />
             </div>
             <div className="col">
               <label className="form-label small fw-bold text-center d-block">MOR</label>
-              <input type="number" min="0" className="form-control form-control-sm rounded-pill text-center" value={Fd_MOR} onChange={handleFrascosChange(setFd_MOR)} />
+              <input type="number" min="0" className="form-control form-control-sm rounded-pill text-center" value={Fd_MOR} onChange={handleFrascosChange(setFd_MOR)} readOnly={isViewOnly} />
             </div>
             <div className="col">
               <label className="form-label small fw-bold text-center d-block">GER</label>
-              <input type="number" min="0" className="form-control form-control-sm rounded-pill text-center" value={Fd_GER} onChange={handleFrascosChange(setFd_GER)} />
+              <input type="number" min="0" className="form-control form-control-sm rounded-pill text-center" value={Fd_GER} onChange={handleFrascosChange(setFd_GER)} readOnly={isViewOnly} />
             </div>
           </div>
         </div>
 
-        <div className="col-md-12">
-          <label className="form-label fw-bold">Producción:</label>
-          <select className="form-select rounded-pill shadow-sm" value={Id_produccion} onChange={e => setId_produccion(Number(e.target.value))}>
-            <option value="">Selecciona una producción</option>
-            {Producciones.map(p => (
-              <option key={p.Id_produccion} value={p.Id_produccion}>
-                {p.Especie?.Nom_especie || 'Sin Especie'} - {p.Tip_produccion} ({p.Fec_produccion})
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="col-12 text-center mt-4">
-          <button type="submit" className="btn btn-primary rounded-pill px-5 shadow-sm fw-bold">
-            <i className={`fa-solid ${rowToEdit ? 'fa-rotate' : 'fa-paper-plane'} me-2`}></i>
-            {textFormButton}
-          </button>
-        </div>
+        {!isViewOnly && (
+          <div className="col-12 text-center mt-4">
+            <button type="submit" className="btn btn-primary rounded-pill px-5 shadow-sm fw-bold">
+              <i className={`fa-solid ${rowToEdit ? 'fa-rotate' : 'fa-paper-plane'} me-2`}></i>
+              {textFormButton}
+            </button>
+          </div>
+        )}
       </div>
     </form>
   );
