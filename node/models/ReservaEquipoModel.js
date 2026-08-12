@@ -18,6 +18,10 @@ const ReservaEquipoModel = db.define('ReservaEquipo', {
     Can_Equipos: {
         type: DataTypes.INTEGER,
         allowNull: false
+    },
+    Observaciones: {
+        type: DataTypes.TEXT,
+        allowNull: true
     }
 }, {
     tableName: 'reservaequipo',

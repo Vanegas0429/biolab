@@ -22,6 +22,9 @@ class ProduccionService {
         return Produccion
     }
     async create(data) {
+        if (data.Can_Existente === undefined || data.Can_Existente === null) {
+            data.Can_Existente = data.Can_Produccion;
+        }
         return await ProduccionModel.create(data)
     }
     async update(id, data) {

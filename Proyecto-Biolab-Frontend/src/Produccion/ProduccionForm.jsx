@@ -10,6 +10,7 @@ const ProduccionForm = ({ hideModal, refreshList, rowToEdit, isViewOnly }) => {
     const [Lote, setLote_Produccion] = useState('')
     const [Tip_produccion, setTip_produccion] = useState('')
     const [Fec_produccion, setFec_produccion] = useState('')
+    const [Can_Produccion, setCan_Produccion] = useState('')
     const [Estado, setEstado] = useState("Activo")
     const [textFormButton, setTextFormButton] = useState('Enviar')
 
@@ -37,6 +38,7 @@ const ProduccionForm = ({ hideModal, refreshList, rowToEdit, isViewOnly }) => {
             setLote_Produccion(rowToEdit.Lote || '')
             setTip_produccion(rowToEdit.Tip_produccion || '')
             setFec_produccion(rowToEdit.Fec_produccion || '')
+            setCan_Produccion(rowToEdit.Can_Produccion || '')
             setEstado(rowToEdit.Estado || 'Activo')
             setTextFormButton('Actualizar')
         } else {
@@ -44,6 +46,7 @@ const ProduccionForm = ({ hideModal, refreshList, rowToEdit, isViewOnly }) => {
             setLote_Produccion('')
             setTip_produccion('')
             setFec_produccion('')
+            setCan_Produccion('')
             setEstado('Activo')
             setTextFormButton('Enviar')
         }
@@ -55,6 +58,7 @@ const ProduccionForm = ({ hideModal, refreshList, rowToEdit, isViewOnly }) => {
             Lote,
             Tip_produccion,
             Fec_produccion,
+            Can_Produccion: Number(Can_Produccion),
             Id_especie: Number(Id_especie),
             Estado
         })
@@ -66,6 +70,7 @@ const ProduccionForm = ({ hideModal, refreshList, rowToEdit, isViewOnly }) => {
             Lote,
             Tip_produccion,
             Fec_produccion,
+            Can_Produccion: Number(Can_Produccion),
             Id_especie: Number(Id_especie),
             Estado
         })
@@ -121,6 +126,25 @@ const ProduccionForm = ({ hideModal, refreshList, rowToEdit, isViewOnly }) => {
     return (
         <form onSubmit={gestionarForm} className="container-fluid">
             <div className="row g-3">
+
+                {/* Especie */}
+                <div className="col-md-6">
+                    <label className="form-label fw-bold">Especie:</label>
+                    <select
+                        className="form-select rounded-pill shadow-sm"
+                        value={Id_especie}
+                        onChange={(e) => setId_especie(Number(e.target.value))}
+                        disabled={isViewOnly}
+                    >
+                        <option value="">Selecciona una especie</option>
+                        {Especies.map(e => (
+                            <option key={e.Id_especie} value={e.Id_especie}>
+                                {e.Nom_especie}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+
                 {/* Lote Produccion */}
                 <div className="col-md-6">
                     <label htmlFor="Lote" className="form-label fw-bold">
@@ -136,6 +160,25 @@ const ProduccionForm = ({ hideModal, refreshList, rowToEdit, isViewOnly }) => {
                         placeholder="Ingrese el lote"
                     />
                 </div>
+
+                {/* Cantidad Producción */}
+                <div className="col-md-6">
+                    <label htmlFor="Can_Produccion" className="form-label fw-bold">
+                        Cantidad Produccion Inicial:
+                    </label>
+                    <input
+                        type="number"
+                        id="Can_Produccion"
+                        className="form-control rounded-pill shadow-sm"
+                        value={Can_Produccion}
+                        onChange={(e) => setCan_Produccion(e.target.value)}
+                        readOnly={isViewOnly}
+                        placeholder="0"
+                        min="0"
+                    />
+                </div>
+
+
 
                 {/* Tipo Producción */}
                 <div className="col-md-6">
@@ -169,24 +212,6 @@ const ProduccionForm = ({ hideModal, refreshList, rowToEdit, isViewOnly }) => {
                         onChange={(e) => setFec_produccion(e.target.value)}
                         readOnly={isViewOnly}
                     />
-                </div>
-
-                {/* Especie */}
-                <div className="col-md-6">
-                    <label className="form-label fw-bold">Especie:</label>
-                    <select
-                        className="form-select rounded-pill shadow-sm"
-                        value={Id_especie}
-                        onChange={(e) => setId_especie(Number(e.target.value))}
-                        disabled={isViewOnly}
-                    >
-                        <option value="">Selecciona una especie</option>
-                        {Especies.map(e => (
-                            <option key={e.Id_especie} value={e.Id_especie}>
-                                {e.Nom_especie}
-                            </option>
-                        ))}
-                    </select>
                 </div>
 
                 {/* Botón */}

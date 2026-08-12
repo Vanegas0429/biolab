@@ -6,6 +6,8 @@ const ProduccionModel = db.define('Produccion', {
     Lote: { type: DataTypes.STRING},
     Tip_produccion: {type: DataTypes.ENUM("Practica","Propia","Externa")},
     Fec_produccion: { type: DataTypes.DATE},
+    Can_Produccion: { type: DataTypes.INTEGER, defaultValue: 0 },
+    Can_Existente: { type: DataTypes.INTEGER, defaultValue: 0 },
     Id_especie: { type: DataTypes.INTEGER},
     Estado: { type: DataTypes.ENUM('Activo','Inactivo')}
 }, {

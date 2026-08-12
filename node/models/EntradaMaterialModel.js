@@ -13,7 +13,7 @@ const EntradaMaterialModel = db.define('entrada_materiales', {
     timestamps: true
 });
 
-EntradaMaterialModel.belongsTo(MaterialModel, { foreignKey: 'Id_Material' });
-MaterialModel.hasMany(EntradaMaterialModel, { foreignKey: 'Id_Material' });
+EntradaMaterialModel.belongsTo(MaterialModel, { foreignKey: 'Id_Material', as: 'Material' });
+MaterialModel.hasMany(EntradaMaterialModel, { foreignKey: 'Id_Material', as: 'Entradas' });
 
 export default EntradaMaterialModel;

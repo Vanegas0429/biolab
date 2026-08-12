@@ -7,6 +7,7 @@ import EquipoModel from "../models/EquipoModel.js";
 import MaterialModel from "../models/MaterialModel.js";
 import ReactivosModel from "../models/ReactivosModel.js";
 import EntradaModel from "../models/EntradaModel.js";
+import EntradaMaterialModel from "../models/EntradaMaterialModel.js";
 
 class ActividadService {
 
@@ -92,7 +93,31 @@ class ActividadService {
 
         const materialesDetalle = await MaterialModel.findAll({
             where: { Id_Material: { [Op.in]: materialesUnicos }, Estado: 'Activo' },
-            attributes: ['Id_Material', 'Nom_Material', 'Can_Material', 'img_material']
+            attributes: ['Id_Material', 'Nom_Material', 'Can_Material', 'clasificacion', 'img_material']
+        });
+
+        // Get stock details from EntradaMaterial table for these materials
+        const entradasMateriales = await EntradaMaterialModel.findAll({
+            where: {
+                Id_Material: { [Op.in]: materialesUnicos },
+                Estado: 'Activo'
+            },
+            attributes: ['Id_Material', 'Can_Existente']
+        });
+
+        const stockMaterialMap = {};
+        entradasMateriales.forEach(ent => {
+            const id = ent.Id_Material;
+            if (!stockMaterialMap[id]) stockMaterialMap[id] = 0;
+            stockMaterialMap[id] += Number(ent.Can_Existente || 0);
+        });
+
+        const materialesDetalleConStock = materialesDetalle.map(mat => {
+            const currentStock = stockMaterialMap[mat.Id_Material] ?? Number(mat.Can_Material || 0);
+            return {
+                ...mat.get({ plain: true }),
+                Can_Material: currentStock
+            };
         });
 
         const reactivosDetalle = await ReactivosModel.findAll({
@@ -142,7 +167,7 @@ class ActividadService {
                 materiales: materialesActivosUnicos,
                 reactivos: reactivosActivosUnicos,
                 equiposDetalle, // Full objects
-                materialesDetalle,
+                materialesDetalle: materialesDetalleConStock,
                 reactivosDetalle: reactivosDetalleConStock
             }
         };

@@ -1,11 +1,13 @@
 import EntradaMaterialModel from "../models/EntradaMaterialModel.js";
 import MaterialModel from "../models/MaterialModel.js";
+import MovimientoMaterialModel from "../models/MovimientoMaterialModel.js";
 
 class EntradaMaterialService {
     async getAll() {
         return await EntradaMaterialModel.findAll({
             include: [{
-                model: MaterialModel
+                model: MaterialModel,
+                as: 'Material'
             }],
             order: [['createdAt', 'DESC']]
         });
@@ -13,7 +15,7 @@ class EntradaMaterialService {
 
     async getById(id) {
         const entrada = await EntradaMaterialModel.findByPk(id, {
-            include: [{ model: MaterialModel }]
+            include: [{ model: MaterialModel, as: 'Material' }]
         });
         if (!entrada) throw new Error("Entrada de material no encontrada");
         return entrada;
@@ -24,6 +26,18 @@ class EntradaMaterialService {
             data.Can_Existente = data.Can_Inicial;
         }
         const newEntrada = await EntradaMaterialModel.create(data);
+
+        // Log movement
+        try {
+            await MovimientoMaterialModel.create({
+                Id_Entrada_Material: newEntrada.Id_Entrada_Material,
+                Tipo: 'Entrada',
+                Cantidad: newEntrada.Can_Inicial,
+                Detalle: 'Ingreso inicial de lote de material'
+            });
+        } catch (e) {
+            console.error("Error al registrar movimiento de entrada de material:", e);
+        }
 
         // Actualizar stock total en la tabla de materiales
         await this.recalcularStockMaterial(newEntrada.Id_Material);

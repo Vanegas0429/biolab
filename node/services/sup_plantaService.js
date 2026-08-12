@@ -23,7 +23,30 @@ class sup_plantasService {
     }
 
     async create(data) {
-        return await sup_plantasModel.create(data)
+        if (data.Fra_Contaminados === undefined || data.Fra_Contaminados === null) {
+            data.Fra_Contaminados = Number(data.Fc_Bacterias || 0) + Number(data.Fc_Hongos || 0);
+        }
+        const supervision = await sup_plantasModel.create(data);
+
+        // Descontar plantas contaminadas de la producción existente
+        if (data.Id_produccion) {
+            try {
+                const prod = await ProduccionModel.findByPk(data.Id_produccion);
+                if (prod) {
+                    const iniciales = Number(data.Fc_Iniciales !== undefined && data.Fc_Iniciales !== null && data.Fc_Iniciales !== '' ? data.Fc_Iniciales : (prod.Can_Existente || 0));
+                    const contaminados = Number(data.Fra_Contaminados || 0);
+                    const restante = Math.max(0, iniciales - contaminados);
+                    await ProduccionModel.update(
+                        { Can_Existente: restante },
+                        { where: { Id_produccion: data.Id_produccion } }
+                    );
+                }
+            } catch (err) {
+                console.error("Error al actualizar Can_Existente:", err);
+            }
+        }
+
+        return supervision;
     }
 
     async update(id, data) {

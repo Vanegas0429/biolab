@@ -10,6 +10,25 @@ const CrudEntradaMaterial = () => {
   const [filterText, setFilterText] = useState("");
   const [loading, setLoading] = useState(true);
 
+  const [selectedRowForHistory, setSelectedRowForHistory] = useState(null);
+  const [historyLogs, setHistoryLogs] = useState([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+
+  const openHistoryModal = async (row) => {
+    setSelectedRowForHistory(row);
+    setHistoryLogs([]);
+    setLoadingHistory(true);
+    try {
+      const response = await apiAxios.get(`/api/MovimientoMaterial/entrada/${row.Id_Entrada_Material}`);
+      setHistoryLogs(response.data ?? []);
+    } catch (error) {
+      console.error("Error cargando historial de movimientos de material:", error);
+      Swal.fire("Error", "No se pudo cargar el historial de movimientos", "error");
+    } finally {
+      setLoadingHistory(false);
+    }
+  };
+
   useEffect(() => {
     getAllEntradasMaterial();
   }, []);
@@ -58,10 +77,11 @@ const CrudEntradaMaterial = () => {
 
   const filteredEntradas = useMemo(() => {
     const text = filterText.toLowerCase();
-    return entradas.filter(e =>
-      e.Material?.Nom_Material?.toLowerCase().includes(text) ||
-      e.Material?.clasificacion?.toLowerCase().includes(text)
-    );
+    return entradas.filter(e => {
+      const nom = e.Material?.Nom_Material?.toLowerCase() || '';
+      const clas = e.Material?.clasificacion?.toLowerCase() || '';
+      return nom.includes(text) || clas.includes(text);
+    });
   }, [entradas, filterText]);
 
   if (loading) return (
@@ -124,7 +144,7 @@ const CrudEntradaMaterial = () => {
             {
               name: 'MATERIAL',
               sortable: true,
-              grow: 2,
+              width: '250px',
               cell: row => (
                 <div className="fw-bold text-dark py-2">
                   {row.Material?.Nom_Material || `Material #${row.Id_Material}`}
@@ -135,7 +155,7 @@ const CrudEntradaMaterial = () => {
               name: 'CLASIFICACIÓN',
               selector: row => row.Material?.clasificacion || 'Desechable',
               sortable: true,
-              width: '180px',
+              width: '220px',
               cell: row => (
                 <span className={`badge ${row.Material?.clasificacion === 'Reutilizable' ? 'bg-info text-dark' : 'bg-secondary'} rounded-pill px-3 py-2 fw-medium`}>
                   {row.Material?.clasificacion || 'Desechable'}
@@ -147,25 +167,22 @@ const CrudEntradaMaterial = () => {
               selector: row => row.Can_Inicial,
               sortable: true,
               center: true,
-              width: '160px',
-              cell: row => <span className="fw-bold text-primary">{row.Can_Inicial}</span>
+              width: '180px',
+              cell: row => <span className="fw-bold text-dark">{row.Can_Inicial}</span>
             },
             {
-              name: 'FECHA REGISTRO',
-              selector: row => row.createdAt,
+              name: 'CANT. EXISTENTE',
+              selector: row => row.Can_Existente,
               sortable: true,
+              center: true,
               width: '180px',
-              cell: row => (
-                <span className="text-muted small">
-                  {row.createdAt ? new Date(row.createdAt).toLocaleString('es-CO', { dateStyle: 'short', timeStyle: 'short' }) : 'N/A'}
-                </span>
-              )
+              cell: row => <span className="fw-bold text-dark">{row.Can_Existente ?? row.Can_Inicial}</span>
             },
             {
               name: 'ESTADO',
               sortable: true,
               center: true,
-              width: '140px',
+              width: '150px',
               cell: row => (
                 <span
                   className={`status-badge ${row.Estado === 'Activo' ? 'status-badge-activo' : 'status-badge-inactivo'}`}
@@ -179,17 +196,28 @@ const CrudEntradaMaterial = () => {
             {
               name: 'ACCIONES',
               center: true,
-              width: '120px',
+              width: '140px',
               cell: row => (
-                <button
-                  className="btn-action btn-action-edit"
-                  onClick={() => setRowToEdit(row)}
-                  data-bs-toggle="modal"
-                  data-bs-target="#modalEntradaMaterial"
-                  title="Editar"
-                >
-                  <i className="fa-solid fa-pencil"></i>
-                </button>
+                <div className="d-flex gap-1 justify-content-center">
+                  <button
+                    className="btn-action btn-action-edit"
+                    onClick={() => setRowToEdit(row)}
+                    data-bs-toggle="modal"
+                    data-bs-target="#modalEntradaMaterial"
+                    title="Editar"
+                  >
+                    <i className="fa-solid fa-pencil"></i>
+                  </button>
+                  <button
+                    className="btn-action btn-action-view"
+                    onClick={() => openHistoryModal(row)}
+                    data-bs-toggle="modal"
+                    data-bs-target="#modalHistorialMaterial"
+                    title="Ver Historial"
+                  >
+                    <i className="fa-solid fa-clock-rotate-left"></i>
+                  </button>
+                </div>
               )
             }
           ]}
@@ -236,6 +264,97 @@ const CrudEntradaMaterial = () => {
           </div>
         </div>
       </div>
+
+      {/* MODAL DE HISTORIAL DE MATERIAL */}
+      <div className="modal fade" id="modalHistorialMaterial" tabIndex="-1">
+        <div className="modal-dialog modal-lg">
+          <div className="modal-content border-0 shadow-lg" style={{ borderRadius: '20px', overflow: 'hidden' }}>
+            <div className="modal-header bg-primary text-white py-3 px-4">
+              <h5 className="modal-title fw-bold">
+                <i className="fa-solid fa-clock-rotate-left me-2"></i>
+                Historial de Movimientos - Material: {selectedRowForHistory?.Material?.Nom_Material ?? 'N/A'}
+              </h5>
+              <button
+                type="button"
+                className="btn-close btn-close-white"
+                data-bs-dismiss="modal"
+                id="closeHistoryMatModalBtn"
+              ></button>
+            </div>
+            <div className="modal-body p-4">
+              <div className="mb-3 bg-light p-3 rounded-3">
+                <p className="mb-1"><strong>Material:</strong> {selectedRowForHistory?.Material?.Nom_Material ?? 'N/A'} ({selectedRowForHistory?.Material?.clasificacion || 'Desechable'})</p>
+                <p className="mb-1"><strong>Cantidad Inicial:</strong> {selectedRowForHistory?.Can_Inicial ?? 0}</p>
+                <p className="mb-0"><strong>Cantidad Existente Actual:</strong> <span className="badge bg-success fs-6">{selectedRowForHistory?.Can_Existente ?? selectedRowForHistory?.Can_Inicial ?? 0}</span></p>
+              </div>
+
+              {loadingHistory ? (
+                <div className="text-center py-4">
+                  <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Cargando...</span>
+                  </div>
+                </div>
+              ) : historyLogs.length === 0 ? (
+                <div className="text-center py-4 text-muted">
+                  <i className="fa-solid fa-folder-open fs-2 mb-2 d-block opacity-25"></i>
+                  No se encontraron movimientos registrados para esta entrada.
+                </div>
+              ) : (
+                <div className="table-responsive">
+                  <table className="table table-hover align-middle">
+                    <thead className="table-dark">
+                      <tr>
+                        <th>Fecha / Hora</th>
+                        <th>Tipo</th>
+                        <th>Cantidad</th>
+                        <th>Detalle</th>
+                        <th>Reserva</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {historyLogs.map((log) => {
+                        let badgeClass = "bg-secondary";
+                        if (log.Tipo === 'Entrada') badgeClass = "bg-success";
+                        else if (log.Tipo === 'Salida') badgeClass = "bg-danger";
+                        else if (log.Tipo === 'Devolución') badgeClass = "bg-info";
+                        else if (log.Tipo === 'Ajuste') badgeClass = "bg-warning";
+
+                        return (
+                          <tr key={log.Id_Movimiento_Material}>
+                            <td className="small">{new Date(log.Fecha).toLocaleString('es-CO')}</td>
+                            <td>
+                              <span className={`badge ${badgeClass}`}>{log.Tipo}</span>
+                            </td>
+                            <td className="fw-bold text-nowrap">
+                              {log.Tipo === 'Salida' ? '-' : '+'}{log.Cantidad}
+                            </td>
+                            <td>{log.Detalle}</td>
+                            <td>
+                              {log.Reserva ? (
+                                <span className="text-primary small fw-semibold">
+                                  Reserva #{log.Reserva.Id_Reserva} ({log.Reserva.Nom_Solicitante})
+                                </span>
+                              ) : (
+                                <span className="text-muted small">-</span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+            <div className="modal-footer border-0 p-3 bg-light text-end">
+              <button type="button" className="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   );
 };
