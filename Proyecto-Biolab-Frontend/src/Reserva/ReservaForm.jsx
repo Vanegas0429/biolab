@@ -1299,9 +1299,9 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
         {Tip_Reserva === "Visita" && (
           <div className="col-md-6 mb-3">
             <label className="form-label fw-bold">
-              {Tipo_Institucion === "SENA" && "Nombre de la visita / grupo:"}
-              {Tipo_Institucion === "Universidad" && "Nombre de la Universidad:"}
-              {Tipo_Institucion === "Institución Educativa" && "Nombre de la Institución Educativa:"}
+              {Tipo_Institucion === "SENA" && <span>Nombre de la visita / grupo:</span>}
+              {Tipo_Institucion === "Universidad" && <span>Nombre de la Universidad:</span>}
+              {Tipo_Institucion === "Institución Educativa" && <span>Nombre de la Institución Educativa:</span>}
             </label>
             <input
               type="text"
@@ -1364,8 +1364,8 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
         <div className="col-md-6 mb-3">
           <label className="form-label fw-bold">
             {(Tip_Reserva === "Visita" && (Tipo_Institucion === "Universidad" || Tipo_Institucion === "Institución Educativa"))
-              ? "Cantidad de personas:"
-              : "Cantidad de aprendices:"}
+              ? <span>Cantidad de personas:</span>
+              : <span>Cantidad de aprendices:</span>}
           </label>
           <input
             type="number"
@@ -1398,7 +1398,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
           <small className="text-muted d-block mt-1 ms-2" style={{ fontSize: '0.75rem' }}>
             <i className="fa-solid fa-info-circle me-1"></i>
             No disponible sábados ni domingos. 
-            {getLoggedUser()?.rol === 'solicitante' && " Mínimo 4 días de antelación."}
+            {getLoggedUser()?.rol === 'solicitante' && <span> Mínimo 4 días de antelación.</span>}
           </small>
         </div>
 
