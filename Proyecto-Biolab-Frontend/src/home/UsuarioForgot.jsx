@@ -7,6 +7,7 @@ const UsuarioForgot = () => {
     const [correo, setCorreo] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [showModal, setShowModal] = useState(false);
+    const [devLink, setDevLink] = useState("");
     const [errorMsg, setErrorMsg] = useState("");
     const navigate = useNavigate();
 
@@ -14,9 +15,13 @@ const UsuarioForgot = () => {
         e.preventDefault();
         setIsLoading(true);
         setErrorMsg("");
+        setDevLink("");
 
         try {
-            await apiNode.post("/api/auth/forgot-password", { correo });
+            const res = await apiNode.post("/api/auth/forgot-password", { correo });
+            if (res.data?.devLink) {
+                setDevLink(res.data.devLink);
+            }
             setIsLoading(false);
             setShowModal(true);
 
@@ -127,6 +132,25 @@ const UsuarioForgot = () => {
                                         Hemos enviado las instrucciones de recuperación a <strong>{correo}</strong>. 
                                         Revisa tu bandeja de entrada y sigue los pasos indicados.
                                     </p>
+
+                                    {devLink && (
+                                        <div className="alert alert-warning text-start mb-4 p-3 rounded-3" style={{ fontSize: '0.85rem' }}>
+                                            <div className="fw-bold mb-1">
+                                                <i className="fa-solid fa-flask me-2 text-warning"></i>
+                                                Entorno de Desarrollo / Pruebas Locales:
+                                            </div>
+                                            <p className="mb-2 text-muted" style={{ fontSize: '0.8rem' }}>
+                                                Al no haber credenciales SMTP de correo configuradas en <code>.env</code>, puedes usar el siguiente enlace para restablecer tu contraseña directamente:
+                                            </p>
+                                            <a 
+                                                href={devLink}
+                                                className="btn btn-sm btn-outline-warning w-100 fw-bold text-dark text-truncate"
+                                            >
+                                                🔑 Ir a Restablecer Contraseña
+                                            </a>
+                                        </div>
+                                    )}
+
                                     <button 
                                         className="btn btn-primary w-100 py-2 rounded-pill shadow-sm"
                                         onClick={() => {

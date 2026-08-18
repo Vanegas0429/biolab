@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-// Configuración del transporter SMTP (altamente compatible con hostings y servicios de correo)
+// Configuración del transporter SMTP (con timeouts estrictos para evitar colgar solicitudes HTTP)
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || 'smtp.gmail.com',
   port: parseInt(process.env.SMTP_PORT || '465'),
@@ -14,7 +14,10 @@ const transporter = nodemailer.createTransport({
   },
   tls: {
     rejectUnauthorized: false // Evita errores de certificados SSL/TLS auto-firmados en servidores cloud
-  }
+  },
+  connectionTimeout: 5000, // Timeout de conexión de 5s máximo
+  greetingTimeout: 5000,
+  socketTimeout: 8000
 });
 
 /**
@@ -240,6 +243,14 @@ export async function enviarCorreoAprobacion(correoDestino, nombreSolicitante, i
 export async function enviarCorreoRecuperacion(correoDestino, nombreSolicitante, token) {
   const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
   const linkRecuperacion = `${frontendUrl}/RestablecerPassword/${token}`;
+
+  // Log siempre visible en servidor para diagnóstico rápido y desarrollo
+  console.log(`[EMAIL] 🔑 Enlace de recuperación generado para ${correoDestino}: ${linkRecuperacion}`);
+
+  if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+    console.warn(`[EMAIL] ⚠️ SMTP_USER o SMTP_PASS no configurados en .env. El correo no se enviará por SMTP, pero el enlace está disponible en logs.`);
+    return false;
+  }
 
   const htmlContent = `
   <!DOCTYPE html>

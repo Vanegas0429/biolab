@@ -119,8 +119,8 @@ class UsuarioService {
 
     const usuario = await UsuarioModel.findOne({ where: { correo } });
     if (!usuario) {
-      // No revelar si el correo existe o no por seguridad, pero sí arrojar un error interno o simulado
-      throw new Error("Si el correo existe, recibirá instrucciones");
+      // Retornar éxito simulado para evitar la enumeración de usuarios
+      return { success: true, userExists: false };
     }
 
     // Generar token único (UUID sin guiones)
@@ -130,18 +130,22 @@ class UsuarioService {
     usuario.token = resetToken;
     await usuario.save();
 
-    // Enviar correo
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const resetLink = `${frontendUrl}/RestablecerPassword/${resetToken}`;
+
+    // Intentar enviar correo vía Nodemailer
     const emailEnviado = await EmailService.enviarCorreoRecuperacion(
       usuario.correo,
       usuario.nombre,
       resetToken
     );
 
-    if (!emailEnviado) {
-      throw new Error("Hubo un problema al enviar el correo de recuperación");
-    }
-
-    return true;
+    return {
+      success: true,
+      userExists: true,
+      emailEnviado,
+      resetLink
+    };
   }
 
   async resetPassword(token, nuevaContraseña) {
