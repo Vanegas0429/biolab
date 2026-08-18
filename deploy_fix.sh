@@ -22,6 +22,13 @@ DB_USER=biolab_user
 DB_PASSWORD=BIOLAB2026*vps
 JWT_SECRET=SuperSecretKey123!
 PORT=8000
+FRONTEND_URL=http://77.42.120.211
+NODE_ENV=production
+# Si deseas envíos de correo reales en producción, configura estas variables SMTP con tu cuenta de Gmail (o servidor de correo):
+# SMTP_HOST=smtp.gmail.com
+# SMTP_PORT=465
+# SMTP_USER=tu_correo@gmail.com
+# SMTP_PASS=tu_contraseña_de_aplicacion
 ENVEOF
 echo "Backend .env updated."
 
