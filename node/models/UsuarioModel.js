@@ -7,8 +7,14 @@ const UsuarioModel = db.define("usuarios", {
   correo: { type: DataTypes.STRING },
   contraseña: { type: DataTypes.STRING },
   telefono: { type: DataTypes.STRING },
-  rol: { type: DataTypes.ENUM('administrador', 'solicitante', 'pasante', 'gestor', 'instructor') },
-  estado: { type: DataTypes.ENUM('Activo', 'Inactivo') },
+  rol: { 
+    type: DataTypes.ENUM('administrador', 'solicitante', 'pasante', 'gestor', 'instructor'),
+    defaultValue: 'solicitante'
+  },
+  estado: { 
+    type: DataTypes.ENUM('Activo', 'Inactivo'),
+    defaultValue: 'Activo'
+  },
   uuid: {
     type: DataTypes.STRING,
     primaryKey: true

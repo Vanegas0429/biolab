@@ -10,10 +10,93 @@ import './Calendario.css';
 moment.locale('es');
 const localizer = momentLocalizer(moment);
 
-const CustomToolbar = ({ label, view, onView, onNavigate }) => {
+const messagesEs = {
+  allDay: 'Todo el día',
+  previous: 'Anterior',
+  next: 'Siguiente',
+  today: 'Hoy',
+  month: 'Mes',
+  week: 'Semana',
+  day: 'Día',
+  agenda: 'Agenda',
+  date: 'Fecha',
+  time: 'Hora',
+  event: 'Evento',
+  noEventsInRange: 'No hay reservas en este periodo.',
+  showMore: total => `+ ${total} adicionales`,
+  work_week: 'Semana laboral'
+};
+
+const MESES_ES = [
+  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+];
+
+const MESES_CORTO = [
+  'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun',
+  'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'
+];
+
+const DIAS_CORTO = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+const DIAS_LARGO = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+
+const formatsEs = {
+  weekdayFormat: (date) => {
+    const days = ['DOM', 'LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB'];
+    return days[date.getDay()];
+  },
+  monthHeaderFormat: (date) => {
+    const d = new Date(date);
+    return `${MESES_ES[d.getMonth()]} de ${d.getFullYear()}`;
+  },
+  dayHeaderFormat: (date) => {
+    const d = new Date(date);
+    return `${DIAS_LARGO[d.getDay()]} ${d.getDate()} de ${MESES_ES[d.getMonth()]} de ${d.getFullYear()}`;
+  },
+  dayRangeHeaderFormat: ({ start, end }) => {
+    const s = new Date(start);
+    const e = new Date(end);
+    return `${s.getDate()} de ${MESES_ES[s.getMonth()]} – ${e.getDate()} de ${MESES_ES[e.getMonth()]} ${e.getFullYear()}`;
+  },
+  agendaHeaderFormat: ({ start, end }) => {
+    const s = new Date(start);
+    const e = new Date(end);
+    return `${s.getDate()} de ${MESES_ES[s.getMonth()]} – ${e.getDate()} de ${MESES_ES[e.getMonth()]} ${e.getFullYear()}`;
+  },
+  agendaDateFormat: (date) => {
+    const d = new Date(date);
+    return `${DIAS_CORTO[d.getDay()]} ${d.getDate()} ${MESES_CORTO[d.getMonth()]}`;
+  },
+  agendaTimeFormat: (date) => {
+    const d = new Date(date);
+    return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+  },
+  agendaTimeRangeFormat: ({ start, end }) => {
+    const s = new Date(start);
+    const e = new Date(end);
+    return `${String(s.getHours()).padStart(2,'0')}:${String(s.getMinutes()).padStart(2,'0')} – ${String(e.getHours()).padStart(2,'0')}:${String(e.getMinutes()).padStart(2,'0')}`;
+  }
+};
+
+const getSpanishDateTitle = (date, view) => {
+  const d = new Date(date);
+  const monthName = MESES_ES[d.getMonth()];
+  const year = d.getFullYear();
+  if (view === 'month') {
+    return `${monthName} ${year}`;
+  }
+  if (view === 'agenda') {
+    return `${monthName} ${year}`;
+  }
+  return `${d.getDate()} de ${monthName} de ${year}`;
+};
+
+const CustomToolbar = ({ date, view, onView, onNavigate }) => {
   const goToBack = () => onNavigate('PREV');
   const goToNext = () => onNavigate('NEXT');
   const goToToday = () => onNavigate('TODAY');
+
+  const formattedTitle = getSpanishDateTitle(date, view);
 
   return (
     <div className="rbc-toolbar d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 p-4 bg-white rounded-4 shadow-sm border border-light">
@@ -45,15 +128,13 @@ const CustomToolbar = ({ label, view, onView, onNavigate }) => {
       
       <div className="mb-3 mb-md-0">
         <h3 className="fw-bold text-dark text-capitalize mb-0" style={{ letterSpacing: '-1px' }}>
-          {label}
+          {formattedTitle}
         </h3>
       </div>
 
       <div className="btn-group p-1 bg-light rounded-pill shadow-inner">
         {[
           { id: 'month', label: 'Mes' },
-          { id: 'week', label: 'Semana' },
-          { id: 'day', label: 'Día' },
           { id: 'agenda', label: 'Agenda' }
         ].map(v => (
           <button
@@ -134,16 +215,7 @@ const Calendario = () => {
   };
 
   return (
-    <div className="container-fluid py-4 fade-in" style={{ minHeight: '90vh' }}>
-      <div className="d-flex align-items-center justify-content-center gap-3 mb-5 text-center flex-column flex-md-row">
-        <div className="bg-primary text-white rounded-circle d-flex justify-content-center align-items-center shadow-lg" style={{ width: '60px', height: '60px' }}>
-          <i className="fa-regular fa-calendar-check fs-3"></i>
-        </div>
-        <div>
-          <h1 className="display-6 fw-bold mb-0" style={{ color: 'var(--secondary-color)', letterSpacing: '-1px' }}>Agenda BIOLAB</h1>
-          <p className="text-muted mb-0">Gestión visual de reservas y recursos.</p>
-        </div>
-      </div>
+    <div className="w-100 fade-in">
       
       {isLoading ? (
         <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '50vh' }}>
@@ -153,6 +225,8 @@ const Calendario = () => {
         <div className="calendar-container bg-white p-2 rounded-4 shadow-lg border-0">
           <Calendar
             localizer={localizer}
+            culture="es"
+            formats={formatsEs}
             events={events}
             startAccessor="start"
             endAccessor="end"
@@ -160,11 +234,8 @@ const Calendario = () => {
             onView={(v) => setView(v)}
             date={date}
             onNavigate={(d) => setDate(d)}
-            style={{ height: '75vh' }}
-            messages={{
-              noEventsInRange: "No hay reservas en este periodo.",
-              showMore: total => `+ ${total} adicionales`
-            }}
+            style={{ height: '70vh' }}
+            messages={messagesEs}
             eventPropGetter={eventStyleGetter}
             components={{
               toolbar: CustomToolbar

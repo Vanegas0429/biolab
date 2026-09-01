@@ -124,9 +124,11 @@ const UsuarioRegistroAdmin = () => {
                 required
               >
                 <option value="">Selecciona uno</option>
-                <option value="pasante">Pasante</option>
-                <option value="gestor">Gestor</option>
+                <option value="administrador">Administrador</option>
+                <option value="solicitante">Solicitante</option>
                 <option value="instructor">Instructor</option>
+                <option value="gestor">Gestor</option>
+                <option value="pasante">Pasante</option>
               </select>
             </div>
 

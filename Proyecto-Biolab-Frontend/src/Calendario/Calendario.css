@@ -4,29 +4,30 @@
 }
 
 .rbc-month-view {
-  border-radius: var(--radius-lg);
+  border-radius: 16px;
   overflow: hidden;
   border: 1px solid #e2e8f0 !important;
-  box-shadow: var(--shadow-soft);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
 }
 
 .rbc-header {
-  background: #f8fafc;
-  padding: 12px !important;
+  background: linear-gradient(135deg, #f0fdf4, #ecfdf5);
+  padding: 14px 8px !important;
   font-weight: 700 !important;
-  color: var(--secondary-color);
+  color: #1e293b;
   text-transform: uppercase;
   font-size: 0.75rem;
-  letter-spacing: 1px;
-  border-bottom: 1px solid #e2e8f0 !important;
+  letter-spacing: 1.2px;
+  border-bottom: 2px solid #d1fae5 !important;
 }
 
 .rbc-off-range-bg {
-  background: #f1f5f9 !important;
+  background: #f8fafc !important;
 }
 
 .rbc-today {
-  background-color: rgba(16, 185, 129, 0.04) !important;
+  background-color: rgba(16, 185, 129, 0.08) !important;
+  border-left: 3px solid #10b981 !important;
 }
 
 .rbc-day-bg {
@@ -34,44 +35,121 @@
 }
 
 .rbc-day-bg:hover {
-  background-color: #f8fafc;
+  background-color: #f0fdf4;
+}
+
+/* Sombreado fines de semana en vista mes */
+.rbc-month-row .rbc-day-bg:nth-child(1),
+.rbc-month-row .rbc-day-bg:nth-child(7) {
+  background-color: #fef2f2 !important;
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 8px,
+    rgba(239, 68, 68, 0.03) 8px,
+    rgba(239, 68, 68, 0.03) 16px
+  );
 }
 
 .rbc-event {
   transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+  border-radius: 8px !important;
+  font-size: 0.8rem !important;
+  font-weight: 500 !important;
 }
 
 .rbc-event:hover {
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 10px 20px -4px rgba(0, 0, 0, 0.15) !important;
   z-index: 10;
 }
 
 .rbc-show-more {
-  color: var(--primary-color) !important;
+  color: #10b981 !important;
   font-weight: 600 !important;
   font-size: 0.75rem !important;
   background: transparent !important;
 }
 
+/* ====== AGENDA VIEW - PREMIUM ====== */
+.rbc-agenda-view {
+  border-radius: 16px;
+  overflow: hidden;
+  border: none !important;
+}
+
 .rbc-agenda-view table.rbc-agenda-table {
-  border: 1px solid #e2e8f0 !important;
-  border-radius: var(--radius-lg) !important;
+  border: none !important;
+  border-radius: 16px !important;
   overflow: hidden !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
 }
 
 .rbc-agenda-view table.rbc-agenda-table thead > tr > th {
-  background: var(--secondary-color) !important;
+  background: linear-gradient(135deg, #059669, #10b981) !important;
   color: white !important;
-  padding: 12px !important;
+  padding: 14px 16px !important;
+  font-weight: 700 !important;
+  font-size: 0.8rem !important;
+  letter-spacing: 0.8px !important;
+  text-transform: uppercase !important;
+  border: none !important;
 }
 
+.rbc-agenda-view table.rbc-agenda-table tbody > tr > td {
+  padding: 12px 16px !important;
+  font-size: 0.85rem !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+  border-right: 1px solid #f1f5f9 !important;
+  color: #334155 !important;
+  vertical-align: middle !important;
+}
+
+.rbc-agenda-view table.rbc-agenda-table tbody > tr:hover > td {
+  background-color: #f0fdf4 !important;
+}
+
+.rbc-agenda-view table.rbc-agenda-table tbody > tr:last-child > td {
+  border-bottom: none !important;
+}
+
+.rbc-agenda-date-cell {
+  font-weight: 600 !important;
+  color: #1e293b !important;
+  white-space: nowrap !important;
+}
+
+.rbc-agenda-time-cell {
+  font-weight: 500 !important;
+  color: #059669 !important;
+  font-variant-numeric: tabular-nums !important;
+  white-space: nowrap !important;
+}
+
+.rbc-agenda-event-cell {
+  font-weight: 500 !important;
+}
+
+/* Empty agenda message */
+.rbc-agenda-empty {
+  text-align: center !important;
+  padding: 48px 16px !important;
+  color: #94a3b8 !important;
+  font-size: 0.95rem !important;
+  font-style: italic !important;
+}
+
+/* ====== TOOLBAR ====== */
 .nav-btn-calendar {
+  width: 38px !important;
+  height: 38px !important;
   transition: all 0.3s ease !important;
 }
 
 .nav-btn-calendar:hover {
-  background-color: var(--primary-color) !important;
+  background-color: #10b981 !important;
+  border-color: #10b981 !important;
   color: white !important;
   transform: scale(1.1);
 }

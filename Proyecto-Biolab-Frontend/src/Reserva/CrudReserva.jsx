@@ -5,6 +5,7 @@ import DataTable from "react-data-table-component";
 import Swal from "sweetalert2";
 import ReservaForm from "./ReservaForm.jsx";
 import ErrorBoundary from "../components/ErrorBoundary.jsx";
+import Calendario from "../Calendario/Calendario.jsx";
 
 const CrudReserva = () => {
   const [Reserva, setReserva] = useState([]);
@@ -200,6 +201,13 @@ const CrudReserva = () => {
             />
           </div>
           <button
+            className="btn btn-outline-primary rounded-pill px-4 shadow-sm"
+            data-bs-toggle="modal"
+            data-bs-target="#modalCalendario"
+          >
+            <i className="fa-regular fa-calendar-check me-2"></i>Ver Cronograma
+          </button>
+          <button
             className="btn btn-primary rounded-pill px-4 shadow-sm"
             data-bs-toggle="modal"
             data-bs-target="#modalReserva"
@@ -314,6 +322,42 @@ const CrudReserva = () => {
             <div className="modal-footer border-0">
               <button
                 id="closeModal"
+                type="button"
+                className="btn btn-secondary rounded-pill px-4"
+                data-bs-dismiss="modal"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Modal Cronograma de Calendario */}
+      <div
+        className="modal fade"
+        id="modalCalendario"
+        tabIndex="-1"
+        aria-hidden="true"
+      >
+        <div className="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable" style={{ maxWidth: '1200px' }}>
+          <div className="modal-content shadow-lg border-0" style={{ borderRadius: '20px' }}>
+            <div className="modal-header bg-primary text-white border-0 py-3" style={{ borderTopLeftRadius: '20px', borderTopRightRadius: '20px' }}>
+              <h5 className="modal-title fw-bold">
+                <i className="fa-regular fa-calendar-check me-2"></i>Cronograma de Reservas BIOLAB
+              </h5>
+              <button
+                type="button"
+                className="btn-close btn-close-white shadow-none"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              ></button>
+            </div>
+            <div className="modal-body p-3">
+              <Calendario />
+            </div>
+            <div className="modal-footer border-0 py-2">
+              <button
                 type="button"
                 className="btn btn-secondary rounded-pill px-4"
                 data-bs-dismiss="modal"
