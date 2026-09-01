@@ -43,8 +43,8 @@ class UsuarioService {
       correo,
       contraseña: hashedcontraseña, // Guardamos la contraseña encriptada
       uuid: UsuarioUuid,
-      rol, 
-      estado,
+      rol: rol || 'solicitante', 
+      estado: estado || 'Activo',
       telefono
     });
 

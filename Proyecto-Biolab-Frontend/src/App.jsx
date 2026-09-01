@@ -110,7 +110,7 @@ function App() {
   if (isLoading) return <div className="d-flex align-items-center justify-content-center" style={{ minHeight: '100vh' }}>Cargando...</div>;
 
   // Roles con acceso a la gestión operativa (MiddelWare X)
-  const STAFF_ROLES = ['administrador', 'gestor', 'pasante'];
+  const STAFF_ROLES = ['administrador', 'gestor', 'pasante', 'instructor'];
 
   return (
     <>
@@ -284,11 +284,7 @@ function App() {
           </ProtectedRoute>
         } />
         
-        <Route path='/Calendario' element={
-          <ProtectedRoute isAuth={isAuth} userRol={userRol} allowedRoles={STAFF_ROLES}>
-            <Calendario />
-          </ProtectedRoute>
-        } />
+        <Route path='/Calendario' element={<Navigate to='/Reserva' replace />} />
 
         {/* Redirigir cualquier ruta desconocida */}
         <Route path='*' element={<Navigate to={isAuth ? '/Reserva' : '/'} replace />} />

@@ -22,6 +22,51 @@ const FormReserva = ({ hideModal, rowToEdit = {}, estados = [] }) => {
   const [Id_EstadoActual, setId_EstadoActual] = useState("");
   const [catalogoEstados, setCatalogoEstados] = useState([]);
 
+  const isWeekend = (dateString) => {
+    if (!dateString) return false;
+    const parts = dateString.split('-');
+    if (parts.length !== 3) return false;
+    const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+    const day = d.getDay();
+    return day === 0 || day === 6;
+  };
+
+  const getMinDate = () => {
+    const d = new Date();
+    d.setDate(d.getDate() + 4);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const handleDateChange = (val) => {
+    if (!val) {
+      setFec_Reserva("");
+      return;
+    }
+    if (isWeekend(val)) {
+      Swal.fire({
+        title: "Día no permitido",
+        text: "No se pueden realizar reservas los días sábados ni domingos.",
+        icon: "warning"
+      });
+      setFec_Reserva("");
+      return;
+    }
+    const minD = getMinDate();
+    if (val < minD) {
+      Swal.fire({
+        title: "Fecha no válida",
+        text: "Debe solicitar su reserva con al menos 4 días de antelación.",
+        icon: "warning"
+      });
+      setFec_Reserva("");
+      return;
+    }
+    setFec_Reserva(val);
+  };
+
   const [actividadesDisponibles, setActividadesDisponibles] = useState([]);
   const [actividadesSeleccionadas, setActividadesSeleccionadas] = useState([]);
 
@@ -416,6 +461,11 @@ const FormReserva = ({ hideModal, rowToEdit = {}, estados = [] }) => {
 
   const gestionarForm = async (e) => {
     e.preventDefault();
+
+    if (isWeekend(Fec_Reserva)) {
+      Swal.fire("Atención", "No se pueden realizar reservas los días sábados ni domingos", "warning");
+      return;
+    }
 
     if (Tip_Reserva === "Practica") {
       if (Number(Can_Aprendices) > 20) {
@@ -852,9 +902,14 @@ const FormReserva = ({ hideModal, rowToEdit = {}, estados = [] }) => {
             type="date"
             className="form-control"
             value={Fec_Reserva}
-            onChange={(e) => setFec_Reserva(e.target.value)}
+            onChange={(e) => handleDateChange(e.target.value)}
+            min={getMinDate()}
             required
           />
+          <small className="text-muted d-block mt-1" style={{ fontSize: '0.75rem' }}>
+            <i className="fa-solid fa-info-circle me-1"></i>
+            No disponible sábados ni domingos.
+          </small>
         </div>
 
         <div className="col-md-4 mb-3">

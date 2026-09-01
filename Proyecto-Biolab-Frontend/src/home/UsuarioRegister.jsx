@@ -22,7 +22,9 @@ const UsuarioRegistro = () => {
         nombre,
         telefono,
         correo,
-        contraseña
+        contraseña,
+        rol: "solicitante",
+        estado: "Activo"
       });
 
       setSuccess(true);
