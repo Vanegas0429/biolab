@@ -43,22 +43,27 @@ export const updateUsuarioRol = async (req, res) => {
   }
 };
 
-// OLVIDASTE CONTRASEÑA (RECUperar)
+// OLVIDASTE CONTRASEÑA (Recuperar)
 export const forgotPassword = async (req, res) => {
   try {
     const { correo } = req.body;
-    console.log(`[FORGOT] Solicitud de recuperación para: ${correo}`);
+    console.log(`[FORGOT] Solicitud de recuperación recibida para: ${correo}`);
     
     // Llamar al servicio para generar token y enviar email
-    await UsuarioService.forgotPassword(correo);
+    const result = await UsuarioService.forgotPassword(correo);
     
-    console.log(`[FORGOT] ✅ Correo de recuperación enviado exitosamente a: ${correo}`);
-    // Siempre respondemos éxito para no revelar si el correo existe o no
-    res.status(200).json({ message: "Si el correo está registrado, hemos enviado las instrucciones." });
+    console.log(`[FORGOT] ✅ Proceso completado exitosamente para: ${correo}`);
+
+    // Si estamos en entorno local o si no hay credenciales SMTP configuradas, adjuntamos devLink para pruebas locales
+    const isDev = process.env.NODE_ENV !== 'production' || !process.env.SMTP_USER;
+    
+    res.status(200).json({ 
+      message: "Si el correo está registrado, hemos enviado las instrucciones de recuperación.",
+      ...(isDev && result?.resetLink ? { devLink: result.resetLink } : {})
+    });
   } catch (error) {
-    console.error(`[FORGOT] ❌ Error para ${req.body?.correo}:`, error.message);
-    // Si el error es controlado (ej. correo no existe) igual enviamos un 200 por seguridad
-    res.status(200).json({ message: "Si el correo está registrado, hemos enviado las instrucciones." });
+    console.error(`[FORGOT] ❌ Error inesperado para ${req.body?.correo}:`, error.message);
+    res.status(200).json({ message: "Si el correo está registrado, hemos enviado las instrucciones de recuperación." });
   }
 };
 

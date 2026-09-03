@@ -108,7 +108,7 @@ const EquiposForm = ({ hideModal, rowToEdit, refreshList }) => {
                 });
             }
 
-            if (refreshList) refreshList();
+            if (refreshList) await refreshList();
             hideModal();
 
         } catch (error) {

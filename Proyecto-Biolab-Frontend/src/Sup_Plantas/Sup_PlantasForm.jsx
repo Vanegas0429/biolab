@@ -214,7 +214,7 @@ const Sup_PlantasForm = ({ hideModal, refreshList, rowToEdit, isViewOnly }) => {
       }
 
 
-      refreshList();
+      if (refreshList) await refreshList();
       hideModal();
     } catch (error) {
       console.error("Error al guardar supervisión:", error);

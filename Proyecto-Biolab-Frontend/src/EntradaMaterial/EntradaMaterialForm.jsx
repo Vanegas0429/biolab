@@ -93,7 +93,7 @@ const EntradaMaterialForm = ({ hideModal, refreshList, rowToEdit }) => {
         });
       }
 
-      refreshList();
+      if (refreshList) await refreshList();
       hideModal();
     } catch (error) {
       console.error("Error al guardar Entrada de Material:", error);
