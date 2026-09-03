@@ -108,8 +108,8 @@ const ProduccionForm = ({ hideModal, refreshList, rowToEdit, isViewOnly }) => {
                 })
             }
 
-            refreshList && refreshList()
-            hideModal && hideModal()
+            if (refreshList) await refreshList();
+            if (hideModal) hideModal();
 
         } catch (error) {
 

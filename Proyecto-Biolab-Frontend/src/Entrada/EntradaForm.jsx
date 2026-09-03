@@ -123,7 +123,7 @@ const EntradaForm = ({ hideModal, refreshList, rowToEdit }) => {
         });
       }
 
-      refreshList();
+      if (refreshList) await refreshList();
       hideModal();
     } catch (error) {
       console.error("Error al guardar Entrada:", error);

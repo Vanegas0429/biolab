@@ -78,7 +78,7 @@ const ReactivosForm = ({ hideModal, rowToEdit, refreshList }) => {
                     showConfirmButton: false 
                 });
             }
-            if (refreshList) refreshList();
+            if (refreshList) await refreshList();
             hideModal();
         } catch (error) {
             console.error("Error al guardar Reactivo:", error.response ? error.response.data : error.message);
