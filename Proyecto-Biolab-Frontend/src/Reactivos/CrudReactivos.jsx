@@ -157,12 +157,12 @@ const CrudReactivos = ({ userRol }) => {
       <div className="card border-0 shadow-lg overflow-hidden" style={{ borderRadius: '20px' }}>
         <DataTable
           columns={[
-            {
+            ...(userRol !== 'solicitante' ? [{
               name: 'ID',
               selector: row => row.Id_Reactivo,
               sortable: true,
               width: '70px'
-            },
+            }] : []),
             {
               name: 'REACTIVO',
               sortable: true,
@@ -201,9 +201,11 @@ const CrudReactivos = ({ userRol }) => {
                     <i className="fa-solid fa-file-pdf"></i>
                   </button>
                 ) : (
-                  <button className="btn btn-sm text-muted opacity-50" onClick={() => uploadFicha(row)}>
-                    <i className="fa-solid fa-upload"></i>
-                  </button>
+                  userRol !== 'solicitante' && (
+                    <button className="btn btn-sm text-muted opacity-50" onClick={() => uploadFicha(row)}>
+                      <i className="fa-solid fa-upload"></i>
+                    </button>
+                  )
                 )
               )
             },

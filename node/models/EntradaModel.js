@@ -7,7 +7,7 @@ const EntradaModel = db.define('entrada', {
     Lote: { type: DataTypes.STRING},
     Can_Inicial: { type: DataTypes.INTEGER},
     Can_Existente: { type: DataTypes.INTEGER, field: 'Can_Salida' },
-    Uni_Medida: { type: DataTypes.ENUM('gr','L','mL')},
+    Uni_Medida: { type: DataTypes.ENUM('g','L','mL','lbs','kg')},
     Fec_Vencimiento: { type: DataTypes.DATE},
     Estado: { type: DataTypes.ENUM("Activo", "Inactivo") }
 }, {

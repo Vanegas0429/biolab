@@ -5,7 +5,7 @@ const ReactivosModel = db.define('reactivos', {
     Id_Reactivo: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     Nom_reactivo: { type: DataTypes.STRING },
     Nomenclatura: { type: DataTypes.STRING },
-    Presentacion: { type: DataTypes.STRING },
+    Presentacion: { type: DataTypes.ENUM("Liquido", "Granulado") },
     Estado: { type: DataTypes.ENUM("Activo", "Inactivo") },
     Ficha_tecnica: { type: DataTypes.STRING }
 

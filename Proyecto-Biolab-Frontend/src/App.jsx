@@ -230,7 +230,7 @@ function App() {
         } />
         <Route path='/Entrada' element={
           <ProtectedRoute isAuth={isAuth} userRol={userRol} allowedRoles={STAFF_ROLES}>
-            <CrudEntrada />
+            <CrudEntrada userRol={userRol} />
           </ProtectedRoute>
         } />
         <Route path='/Equipo' element={
@@ -239,13 +239,13 @@ function App() {
           </ProtectedRoute>
         } />
         <Route path='/Material' element={
-          <ProtectedRoute isAuth={isAuth} userRol={userRol} allowedRoles={STAFF_ROLES}>
-            <CrudMaterial />
+          <ProtectedRoute isAuth={isAuth} userRol={userRol} allowedRoles={[...STAFF_ROLES, 'solicitante']}>
+            <CrudMaterial userRol={userRol} />
           </ProtectedRoute>
         } />
         <Route path='/EntradaMaterial' element={
           <ProtectedRoute isAuth={isAuth} userRol={userRol} allowedRoles={STAFF_ROLES}>
-            <CrudEntradaMaterial />
+            <CrudEntradaMaterial userRol={userRol} />
           </ProtectedRoute>
         } />
         <Route path='/Actividad' element={

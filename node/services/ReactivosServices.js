@@ -11,15 +11,31 @@ class ReactivosService {
         return Reactivo
     }
     async create(data) {
-        return await ReactivosModel.create(data)
+        if (data.Nom_reactivo) {
+            const normalizedNewName = data.Nom_reactivo.trim().toLowerCase().replace(/\s+/g, ' ');
+            const allReactivos = await ReactivosModel.findAll();
+            const exists = allReactivos.some(r => r.Nom_reactivo && r.Nom_reactivo.trim().toLowerCase().replace(/\s+/g, ' ') === normalizedNewName);
+            if (exists) {
+                throw new Error(`Ya existe un reactivo registrado con el nombre "${data.Nom_reactivo.trim()}"`);
+            }
+        }
+        return await ReactivosModel.create(data);
     }
     async update(id, data) {
-        const result = await ReactivosModel.update(data, {where: { Id_Reactivo: id}})
-        const updated = result[0]
+        if (data.Nom_reactivo) {
+            const normalizedNewName = data.Nom_reactivo.trim().toLowerCase().replace(/\s+/g, ' ');
+            const allReactivos = await ReactivosModel.findAll();
+            const exists = allReactivos.some(r => String(r.Id_Reactivo) !== String(id) && r.Nom_reactivo && r.Nom_reactivo.trim().toLowerCase().replace(/\s+/g, ' ') === normalizedNewName);
+            if (exists) {
+                throw new Error(`Ya existe otro reactivo registrado con el nombre "${data.Nom_reactivo.trim()}"`);
+            }
+        }
+        const result = await ReactivosModel.update(data, {where: { Id_Reactivo: id}});
+        const updated = result[0];
 
-        if (updated === 0) throw new Error("Reactivos no encontrado o sin cambios")
+        if (updated === 0) throw new Error("Reactivo no encontrado o sin cambios");
 
-            return true
+        return true;
     }
     async delete(id) {
         const deleted = await ReactivosModel.destroy({where: { Id_Reactivo: id }})

@@ -4,7 +4,7 @@ import DataTable from 'react-data-table-component';
 import EntradaMaterialForm from "./EntradaMaterialForm.jsx";
 import Swal from "sweetalert2";
 
-const CrudEntradaMaterial = () => {
+const CrudEntradaMaterial = ({ userRol }) => {
   const [rowToEdit, setRowToEdit] = useState(null);
   const [entradas, setEntradas] = useState([]);
   const [filterText, setFilterText] = useState("");
@@ -259,6 +259,7 @@ const CrudEntradaMaterial = () => {
                 hideModal={hideModal}
                 refreshList={getAllEntradasMaterial}
                 rowToEdit={rowToEdit}
+                userRol={userRol}
               />
             </div>
           </div>
@@ -317,7 +318,9 @@ const CrudEntradaMaterial = () => {
                         if (log.Tipo === 'Entrada') badgeClass = "bg-success";
                         else if (log.Tipo === 'Salida') badgeClass = "bg-danger";
                         else if (log.Tipo === 'Devolución') badgeClass = "bg-info";
-                        else if (log.Tipo === 'Ajuste') badgeClass = "bg-warning";
+                        else if (log.Tipo === 'Ajuste') badgeClass = "bg-warning text-dark";
+
+                        const isDiscount = log.Tipo === 'Salida' || (log.Tipo === 'Ajuste' && (log.Detalle?.toLowerCase().includes('descuento') || log.Detalle?.toLowerCase().includes('baja')));
 
                         return (
                           <tr key={log.Id_Movimiento_Material}>
@@ -325,8 +328,8 @@ const CrudEntradaMaterial = () => {
                             <td>
                               <span className={`badge ${badgeClass}`}>{log.Tipo}</span>
                             </td>
-                            <td className="fw-bold text-nowrap">
-                              {log.Tipo === 'Salida' ? '-' : '+'}{log.Cantidad}
+                            <td className={`fw-bold text-nowrap ${isDiscount ? 'text-danger' : 'text-success'}`}>
+                              {isDiscount ? '-' : '+'}{log.Cantidad}
                             </td>
                             <td>{log.Detalle}</td>
                             <td>
