@@ -31,6 +31,13 @@ const CrudEntradaMaterial = ({ userRol }) => {
 
   useEffect(() => {
     getAllEntradasMaterial();
+
+    // Auto-refresh cada 15 segundos
+    const interval = setInterval(() => {
+      getAllEntradasMaterial();
+    }, 15000);
+
+    return () => clearInterval(interval);
   }, []);
 
   const getAllEntradasMaterial = async () => {
@@ -136,15 +143,9 @@ const CrudEntradaMaterial = ({ userRol }) => {
         <DataTable
           columns={[
             {
-              name: 'ID',
-              selector: row => row.Id_Entrada_Material,
-              sortable: true,
-              width: '80px'
-            },
-            {
               name: 'MATERIAL',
               sortable: true,
-              width: '250px',
+              width: '350px',
               cell: row => (
                 <div className="fw-bold text-dark py-2">
                   {row.Material?.Nom_Material || `Material #${row.Id_Material}`}
@@ -155,7 +156,7 @@ const CrudEntradaMaterial = ({ userRol }) => {
               name: 'CLASIFICACIÓN',
               selector: row => row.Material?.clasificacion || 'Desechable',
               sortable: true,
-              width: '220px',
+              width: '250px',
               cell: row => (
                 <span className={`badge ${row.Material?.clasificacion === 'Reutilizable' ? 'bg-info text-dark' : 'bg-secondary'} rounded-pill px-3 py-2 fw-medium`}>
                   {row.Material?.clasificacion || 'Desechable'}
@@ -168,7 +169,7 @@ const CrudEntradaMaterial = ({ userRol }) => {
               sortable: true,
               center: true,
               width: '180px',
-              cell: row => <span className="fw-bold text-dark">{row.Can_Inicial}</span>
+              cell: row => <span className="fw-normal">{row.Can_Inicial}</span>
             },
             {
               name: 'CANT. EXISTENTE',
@@ -176,7 +177,7 @@ const CrudEntradaMaterial = ({ userRol }) => {
               sortable: true,
               center: true,
               width: '180px',
-              cell: row => <span className="fw-bold text-dark">{row.Can_Existente ?? row.Can_Inicial}</span>
+              cell: row => <span className="fw-normal">{row.Can_Existente ?? row.Can_Inicial}</span>
             },
             {
               name: 'ESTADO',
@@ -222,6 +223,7 @@ const CrudEntradaMaterial = ({ userRol }) => {
             }
           ]}
           data={filteredEntradas}
+          keyField="Id_Entrada_Material"
           pagination
           highlightOnHover
           persistTableHead
@@ -349,11 +351,7 @@ const CrudEntradaMaterial = ({ userRol }) => {
                 </div>
               )}
             </div>
-            <div className="modal-footer border-0 p-3 bg-light text-end">
-              <button type="button" className="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">
-                Cerrar
-              </button>
-            </div>
+
           </div>
         </div>
       </div>

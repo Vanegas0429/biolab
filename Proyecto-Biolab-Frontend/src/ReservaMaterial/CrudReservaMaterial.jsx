@@ -142,11 +142,7 @@ const CrudReservaMaterial = () => {
                   ))}
                 </div>
               </div>
-              <div className="modal-footer border-0 bg-light">
-                <button type="button" className="btn btn-secondary px-4 fw-bold" data-bs-dismiss="modal">
-                  Cerrar
-                </button>
-              </div>
+
             </div>
           </div>
         </div>

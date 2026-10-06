@@ -104,6 +104,13 @@ const CrudReserva = () => {
   useEffect(() => {
     fetchReservas();
     fetchEstados();
+
+    // Auto-refresh cada 15 segundos para sincronizar cambios de otros usuarios
+    const interval = setInterval(() => {
+      fetchReservas();
+    }, 15000);
+
+    return () => clearInterval(interval);
   }, []);
 
   // Efecto para detectar navegación desde notificaciones
@@ -222,13 +229,13 @@ const CrudReserva = () => {
       <div className="card border-0 shadow-lg overflow-hidden" style={{ borderRadius: '20px' }}>
         <DataTable
           columns={[
-            { name: "ID_RESERVA", selector: (row) => row?.Id_Reserva ?? "", sortable: true, width: '110px' },
+            { name: "ID", selector: (row) => row?.Id_Reserva ?? "", sortable: true, width: '110px' },
             { name: "TIPO", selector: (row) => row?.Tip_Reserva ?? "", sortable: true, width: '120px' },
             {
-              name: 'ESTADO RES...',
+              name: 'ESTADO RESERVA',
               selector: (row) => row?.Des_Estado ?? "",
               sortable: true,
-              width: '150px',
+              width: '160px',
               cell: row => {
                 const status = row.Des_Estado;
                 let badgeClass = 'bg-secondary';
@@ -240,7 +247,7 @@ const CrudReserva = () => {
                 return <span className={`badge ${badgeClass} rounded-pill`}>{status}</span>;
               }
             },
-            { name: "MOTIVO R/C", selector: (row) => row?.Mot_RecCan ?? "", sortable: true, width: '150px' },
+            { name: "MOTIVO R/C", selector: (row) => row?.Mot_RecCan ?? "", sortable: true, width: '250px' },
             { name: "SOLICITANTE", selector: (row) => row?.Nom_Solicitante ?? "", sortable: true, width: '180px' },
             { name: "FECHA", selector: (row) => row?.Fec_Reserva ?? "", sortable: true, width: '120px' },
             { name: "HORA", selector: (row) => row?.Hor_Reserva ?? "", sortable: true, width: '120px' },
@@ -248,7 +255,7 @@ const CrudReserva = () => {
             {
               name: "ACCIONES",
               center: "true",
-              width: '120px',
+              width: '100px',
               cell: (row) => (
                 <div className="d-flex gap-2">
                   <button
@@ -319,16 +326,13 @@ const CrudReserva = () => {
                 />
               </ErrorBoundary>
             </div>
-            <div className="modal-footer border-0">
-              <button
-                id="closeModal"
-                type="button"
-                className="btn btn-secondary rounded-pill px-4"
-                data-bs-dismiss="modal"
-              >
-                Cerrar
-              </button>
-            </div>
+            {/* Botón oculto para cerrar modal programáticamente */}
+            <button
+              id="closeModal"
+              type="button"
+              className="d-none"
+              data-bs-dismiss="modal"
+            ></button>
           </div>
         </div>
       </div>
@@ -356,15 +360,7 @@ const CrudReserva = () => {
             <div className="modal-body p-3">
               <Calendario />
             </div>
-            <div className="modal-footer border-0 py-2">
-              <button
-                type="button"
-                className="btn btn-secondary rounded-pill px-4"
-                data-bs-dismiss="modal"
-              >
-                Cerrar
-              </button>
-            </div>
+
           </div>
         </div>
       </div>

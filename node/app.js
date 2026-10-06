@@ -86,6 +86,7 @@ app.use('/api/auth', UsuarioRouter);
 app.use('/api/MovimientoReactivo', MovimientoReactivoRoutes);
 app.use('/api/MovimientoMaterial', MovimientoMaterialRoutes);
 app.use('/uploads', express.static('public/uploads'));
+app.use('/uploads', express.static('uploads'));
 
 // Conexión a BD
 try {

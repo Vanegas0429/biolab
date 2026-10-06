@@ -37,6 +37,13 @@ const CrudProduccion = () => {
 
   useEffect(() => {
     getAllProduccion()
+
+    // Auto-refresh cada 15 segundos
+    const interval = setInterval(() => {
+      getAllProduccion()
+    }, 15000)
+
+    return () => clearInterval(interval)
   }, [])
 
   const handleOpenSupervision = (row) => {
@@ -143,7 +150,6 @@ const CrudProduccion = () => {
       <div className="card border-0 shadow-lg overflow-hidden" style={{ borderRadius: '20px' }}>
         <DataTable
           columns={[
-            { name: 'ID', selector: row => row.Id_produccion, sortable: true, width: '80px' },
             {
               name: 'ESPECIE',
               selector: row => row.Especie?.Nom_especie || 'N/A',
@@ -220,6 +226,7 @@ const CrudProduccion = () => {
             }
           ]}
           data={filteredItems}
+          keyField="Id_produccion"
           pagination
           highlightOnHover
           persistTableHead

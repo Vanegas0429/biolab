@@ -11,6 +11,13 @@ const CrudFuncionarios = () => {
 
   useEffect(() => {
     getAllFuncionarios();
+
+    // Auto-refresh cada 15 segundos
+    const interval = setInterval(() => {
+      getAllFuncionarios();
+    }, 15000);
+
+    return () => clearInterval(interval);
   }, []);
 
   const getAllFuncionarios = async () => {
@@ -40,7 +47,6 @@ const CrudFuncionarios = () => {
   });
 
   const columnsTable = [
-    { name: 'ID', selector: row => row.id || row.Id_Funcionario, sortable: true, width: '80px' },
     { name: 'NOMBRE', selector: row => `${row.Nombre} ${row.Apellido}`, sortable: true, grow: 2 },
     { name: 'TELÉFONO', selector: row => row.Telefono || 'N/A', sortable: true, width: '150px' },
     { name: 'CORREO', selector: row => row.Correo, sortable: true, grow: 2 },
@@ -115,6 +121,7 @@ const CrudFuncionarios = () => {
         <DataTable
           columns={columnsTable}
           data={newListFuncionarios}
+          keyField="Id_Funcionario"
           pagination
           highlightOnHover
           noDataComponent={

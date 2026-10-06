@@ -18,6 +18,13 @@ const CrudEspecie = () => {
 
   useEffect(() => {
     getAllEspecies()
+
+    // Auto-refresh cada 15 segundos
+    const interval = setInterval(() => {
+      getAllEspecies()
+    }, 15000)
+
+    return () => clearInterval(interval)
   }, [])
 
   const getAllEspecies = async () => {
@@ -186,7 +193,6 @@ const CrudEspecie = () => {
       <div className="card border-0 shadow-lg overflow-hidden" style={{ borderRadius: '20px' }}>
         <DataTable
           columns={[
-            { name: 'ID', selector: row => row?.Id_especie ?? "N/A", sortable: true, width: '100px' },
             {
               name: 'NOMBRE DE ESPECIE',
               selector: row => row?.Nom_especie ?? "N/A",
@@ -199,7 +205,7 @@ const CrudEspecie = () => {
             {
               name: 'IMAGEN',
               center: "true",
-              width: '220px',
+              width: '400px',
               cell: (row) => {
                 const imgs = parseImages(row.img_especie);
                 return (
@@ -265,6 +271,7 @@ const CrudEspecie = () => {
             }
           ]}
           data={newListEspecie}
+          keyField="Id_especie"
           pagination
           highlightOnHover
           persistTableHead

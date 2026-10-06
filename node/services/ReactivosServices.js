@@ -11,6 +11,12 @@ class ReactivosService {
         return Reactivo
     }
     async create(data) {
+        if (data.Nom_reactivo && typeof data.Nom_reactivo === 'string') {
+            const trimmed = data.Nom_reactivo.trim();
+            if (trimmed) {
+                data.Nom_reactivo = trimmed.charAt(0).toUpperCase() + trimmed.slice(1).toLowerCase();
+            }
+        }
         if (data.Nom_reactivo) {
             const normalizedNewName = data.Nom_reactivo.trim().toLowerCase().replace(/\s+/g, ' ');
             const allReactivos = await ReactivosModel.findAll();
@@ -22,6 +28,12 @@ class ReactivosService {
         return await ReactivosModel.create(data);
     }
     async update(id, data) {
+        if (data.Nom_reactivo && typeof data.Nom_reactivo === 'string') {
+            const trimmed = data.Nom_reactivo.trim();
+            if (trimmed) {
+                data.Nom_reactivo = trimmed.charAt(0).toUpperCase() + trimmed.slice(1).toLowerCase();
+            }
+        }
         if (data.Nom_reactivo) {
             const normalizedNewName = data.Nom_reactivo.trim().toLowerCase().replace(/\s+/g, ' ');
             const allReactivos = await ReactivosModel.findAll();

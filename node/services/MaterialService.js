@@ -13,9 +13,21 @@ class MaterialService {
         return Material
     }
     async create(data) {
+        if (data.Nom_Material && typeof data.Nom_Material === 'string') {
+            const trimmed = data.Nom_Material.trim();
+            if (trimmed) {
+                data.Nom_Material = trimmed.charAt(0).toUpperCase() + trimmed.slice(1).toLowerCase();
+            }
+        }
         return await MaterialModel.create(data)
     }
     async update(id, data) {
+        if (data.Nom_Material && typeof data.Nom_Material === 'string') {
+            const trimmed = data.Nom_Material.trim();
+            if (trimmed) {
+                data.Nom_Material = trimmed.charAt(0).toUpperCase() + trimmed.slice(1).toLowerCase();
+            }
+        }
         const result = await MaterialModel.update(data, {where: { Id_Material: id}})
         const updated = result[0]
 

@@ -34,12 +34,6 @@ const CrudActividad = () => {
 
   const columnsTable = [
     {
-      name: 'ID',
-      selector: row => row.Id_Actividad,
-      sortable: true,
-      width: '100px'
-    },
-    {
       name: 'ACTIVIDAD',
       selector: row => row.Nom_Actividad,
       sortable: true,
@@ -79,6 +73,13 @@ const CrudActividad = () => {
 
   useEffect(() => {
     getAllActividad()
+
+    // Auto-refresh cada 15 segundos
+    const interval = setInterval(() => {
+      getAllActividad()
+    }, 15000)
+
+    return () => clearInterval(interval)
   }, [])
 
   const getAllActividad = async () => {

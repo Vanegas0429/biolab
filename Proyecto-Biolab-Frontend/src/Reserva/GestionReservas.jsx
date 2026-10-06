@@ -4,6 +4,19 @@ import Swal from "sweetalert2";
 import ReservaForm from "./ReservaForm.jsx";
 import ErrorBoundary from "../components/ErrorBoundary.jsx";
 
+const formatTimeAMPM = (timeStr) => {
+  if (!timeStr) return 'N/A';
+  const parts = String(timeStr).split(':');
+  if (parts.length < 2) return timeStr;
+  let hours = parseInt(parts[0], 10);
+  const minutes = parts[1];
+  if (isNaN(hours)) return timeStr;
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12;
+  hours = hours ? hours : 12;
+  return `${String(hours).padStart(2, '0')}:${minutes} ${ampm}`;
+};
+
 const GestionReservas = () => {
   const [reservas, setReservas] = useState([]);
   const [filterText, setFilterText] = useState("");
@@ -396,32 +409,36 @@ const GestionReservas = () => {
                   </div>
 
                   <div className="card-body px-4 pb-4">
-                    <div className="row g-4 mb-4">
-                      <div className="col-md-3">
-                        <small className="text-muted d-block mb-1"><i className="fa-solid fa-file-lines me-1"></i> Tipo de Resrrva</small>
+                    <div className="row g-3 mb-4 align-items-center">
+                      <div className="col-md-2">
+                        <small className="text-muted d-block mb-1"><i className="fa-solid fa-file-lines me-1 text-primary"></i> Tipo Reserva</small>
                         <span className="fw-semibold">{reserva.Tip_Reserva}</span>
                       </div>
                       <div className="col-md-3">
-                        <small className="text-muted d-block mb-1"><i className="fa-solid fa-align-left me-1"></i> Nombre del Solictante</small>
+                        <small className="text-muted d-block mb-1"><i className="fa-solid fa-user me-1 text-primary"></i> Solicitante</small>
                         <span className="fw-semibold">{reserva.Nom_Solicitante}</span>
                       </div>
                       <div className="col-md-2">
-                        <small className="text-muted d-block mb-1"><i className="fa-solid fa-hashtag me-1"></i> Ficha</small>
-                        <span className="fw-semibold">{reserva.Num_Ficha}</span>
+                        <small className="text-muted d-block mb-1"><i className="fa-solid fa-hashtag me-1 text-primary"></i> Ficha</small>
+                        <span className="fw-semibold">{reserva.Num_Ficha || 'N/A'}</span>
                       </div>
                       <div className="col-md-2">
-                        <small className="text-muted d-block mb-1"><i className="fa-solid fa-calendar me-1"></i> Fecha</small>
-                        <span className="fw-semibold">{reserva.Fec_Reserva}</span>
+                        <small className="text-muted d-block mb-1"><i className="fa-solid fa-calendar-day me-1 text-primary"></i> Fecha</small>
+                        <span className="fw-bold text-dark">{reserva.Fec_Reserva || 'N/A'}</span>
                       </div>
-                      <div className="col-md-2 text-end">
+                      <div className="col-md-2">
+                        <small className="text-muted d-block mb-1"><i className="fa-solid fa-clock me-1 text-primary"></i> Hora</small>
+                        <span className="fw-bold text-dark">{formatTimeAMPM(reserva.Hor_Reserva)}</span>
+                      </div>
+                      <div className="col-md-1 text-end">
                         {reserva.Des_Estado === 'Solicitado' && (
                           <button
-                            className="btn btn-outline-primary btn-sm rounded-pill"
+                            className="btn btn-outline-primary btn-sm rounded-pill px-3"
                             data-bs-toggle="modal"
                             data-bs-target="#modalGestionReserva"
                             onClick={() => openEditModal(reserva)}
                           >
-                            <i className="fa-solid fa-pencil me-1"></i> Editar
+                            <i className="fa-solid fa-pencil me-1"></i>
                           </button>
                         )}
                       </div>

@@ -159,6 +159,12 @@ const Calendario = () => {
 
   useEffect(() => {
     fetchReservas();
+
+    const interval = setInterval(() => {
+      fetchReservas();
+    }, 15000);
+
+    return () => clearInterval(interval);
   }, []);
 
   const fetchReservas = async () => {

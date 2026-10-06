@@ -54,7 +54,16 @@ const CrudEntrada = ({ userRol }) => {
     }
   };
 
-  useEffect(() => { getAllEntradas(); }, []);
+  useEffect(() => {
+    getAllEntradas();
+
+    // Auto-refresh cada 15 segundos
+    const interval = setInterval(() => {
+      getAllEntradas();
+    }, 15000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const getAllEntradas = async () => {
     try {
@@ -121,11 +130,30 @@ const CrudEntrada = ({ userRol }) => {
         <div className="table-responsive-custom">
           <DataTable
             columns={[
-              { name: 'ID', selector: row => row?.Id_Entrada ?? 'N/A', sortable: true, width: '80px' },
-              { name: 'REACTIVO', selector: row => row?.Reactivo?.Nom_reactivo ?? 'N/A', sortable: true, width: '180px' },
+              { 
+                name: 'REACTIVO', 
+                selector: row => row?.Reactivo?.Nom_reactivo ?? 'N/A', 
+                sortable: true, 
+                width: '300px',
+                cell: row => <span className="fw-bold text-dark">{row?.Reactivo?.Nom_reactivo ?? 'N/A'}</span>
+              },
               { name: 'LOTE', selector: row => row?.Lote ?? 'N/A', sortable: true, width: '120px' },
-              { name: 'CANT. INICIAL', selector: row => `${row?.Can_Inicial ?? 0} ${row?.Uni_Medida ?? ''}`, sortable: true, width: '160px', center: "true" },
-              { name: 'CANT. EXISTENTE', selector: row => `${row?.Can_Existente ?? 0} ${row?.Uni_Medida ?? ''}`, sortable: true, width: '160px', center: "true" },
+              { 
+                name: 'CANT. INICIAL', 
+                selector: row => `${row?.Can_Inicial ?? 0} ${row?.Uni_Medida ?? ''}`, 
+                sortable: true, 
+                width: '160px', 
+                center: "true",
+                cell: row => <span className="fw-normal">{row?.Can_Inicial ?? 0} {row?.Uni_Medida ?? ''}</span>
+              },
+              { 
+                name: 'CANT. EXISTENTE', 
+                selector: row => `${row?.Can_Existente ?? 0} ${row?.Uni_Medida ?? ''}`, 
+                sortable: true, 
+                width: '160px', 
+                center: "true",
+                cell: row => <span className="fw-normal">{row?.Can_Existente ?? 0} {row?.Uni_Medida ?? ''}</span>
+              },
               { name: 'F. VENCIMIENTO', selector: row => row.Fec_Vencimiento ? row.Fec_Vencimiento.split('T')[0] : '', sortable: true, width: '150px' },
               {
                 name: 'ESTADO',
@@ -171,6 +199,7 @@ const CrudEntrada = ({ userRol }) => {
               }
             ]}
             data={filteredEntradas}
+            keyField="Id_Entrada"
             pagination
             highlightOnHover
             persistTableHead
@@ -296,11 +325,7 @@ const CrudEntrada = ({ userRol }) => {
                 </div>
               )}
             </div>
-            <div className="modal-footer border-0 p-3 bg-light text-end">
-              <button type="button" className="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">
-                Cerrar
-              </button>
-            </div>
+
           </div>
         </div>
       </div>

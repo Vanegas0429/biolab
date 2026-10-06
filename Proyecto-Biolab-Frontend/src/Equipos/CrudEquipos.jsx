@@ -24,6 +24,13 @@ const CrudEquipos = ({ userRol }) => {
 
   useEffect(() => {
     getAllEquipos();
+
+    // Auto-refresh cada 15 segundos
+    const interval = setInterval(() => {
+      getAllEquipos();
+    }, 15000);
+
+    return () => clearInterval(interval);
   }, []);
 
   const getAllEquipos = async () => {
@@ -195,6 +202,133 @@ const CrudEquipos = ({ userRol }) => {
     });
   };
 
+  const onViewDetails = (row) => {
+    const imgs = parseImages(row.img_equipo);
+    const hasImages = imgs.length > 0;
+    const hasPdf = Boolean(row.ficha_tecnica);
+    let currentImgIdx = 0;
+
+    Swal.fire({
+      title: `<div class="d-flex align-items-center justify-content-between pb-2 border-bottom w-100 px-2">
+        <span class="fw-bold text-primary fs-4 text-start me-3"><i class="fa-solid fa-microscope me-2"></i>${row.nombre || 'Detalles del Equipo'}</span>
+        <span class="badge ${row.estado === 'Activo' ? 'bg-success' : 'bg-danger'} px-3 py-2 rounded-pill fs-6">${row.estado || 'N/A'}</span>
+      </div>`,
+      width: '720px',
+      showConfirmButton: false,
+      showCloseButton: true,
+      html: `
+        <div class="text-start mt-2 px-1" style="font-size: 0.92rem;">
+          ${hasImages ? `
+            <div class="position-relative text-center mb-3 bg-light p-3 rounded-4 shadow-sm border overflow-hidden">
+              <div class="d-flex align-items-center justify-content-center" style="min-height: 320px;">
+                <img id="swal-equipo-img" src="${API_URL}/uploads/${imgs[0]}" alt="${row.nombre}" class="rounded-3 shadow-sm transition-all" style="max-height: 340px; object-fit: contain; width: 100%;" />
+              </div>
+              ${imgs.length > 1 ? `
+                <button id="swal-img-prev" type="button" class="btn btn-primary rounded-circle position-absolute top-50 start-0 translate-middle-y ms-3 shadow" style="width: 44px; height: 44px; z-index: 5;">
+                  <i class="fa-solid fa-chevron-left fs-5"></i>
+                </button>
+                <button id="swal-img-next" type="button" class="btn btn-primary rounded-circle position-absolute top-50 end-0 translate-middle-y me-3 shadow" style="width: 44px; height: 44px; z-index: 5;">
+                  <i class="fa-solid fa-chevron-right fs-5"></i>
+                </button>
+                <span id="swal-img-counter" class="position-absolute bottom-0 start-50 translate-middle-x mb-3 badge bg-dark opacity-75 px-3 py-2 rounded-pill fs-6">
+                  1 / ${imgs.length}
+                </span>
+              ` : ''}
+            </div>
+          ` : ''}
+
+          <div class="row g-3 mb-3 bg-light p-3 rounded-4 mx-0 shadow-sm border">
+            <div class="col-6">
+              <p class="mb-1 text-muted small fw-semibold"><i class="fa-solid fa-tag me-2 text-primary"></i>PLACA</p>
+              <h6 class="fw-bold mb-0 text-dark">${row.placa || row.no_chapeta || 'N/A'}</h6>
+            </div>
+            <div class="col-6">
+              <p class="mb-1 text-muted small fw-semibold"><i class="fa-solid fa-barcode me-2 text-primary"></i>SERIAL</p>
+              <h6 class="fw-bold mb-0 text-dark">${row.serial || 'N/A'}</h6>
+            </div>
+            <div class="col-6">
+              <p class="mb-1 text-muted small fw-semibold"><i class="fa-solid fa-copyright me-2 text-primary"></i>MARCA</p>
+              <p class="fw-semibold mb-0 text-dark">${row.marca || 'N/A'}</p>
+            </div>
+            <div class="col-6">
+              <p class="mb-1 text-muted small fw-semibold"><i class="fa-solid fa-layer-group me-2 text-primary"></i>GRUPO</p>
+              <p class="fw-semibold mb-0 text-dark">${row.grupo || 'N/A'}</p>
+            </div>
+            <div class="col-6">
+              <p class="mb-1 text-muted small fw-semibold"><i class="fa-solid fa-building me-2 text-primary"></i>CENTRO DE COSTOS</p>
+              <p class="fw-semibold mb-0 text-dark">${row.centro_costos || 'N/A'}</p>
+            </div>
+            <div class="col-6">
+              <p class="mb-1 text-muted small fw-semibold"><i class="fa-solid fa-calendar-day me-2 text-primary"></i>F. ADQUISICIÓN</p>
+              <p class="fw-semibold mb-0 text-dark">${row.fecha_adquisicion || 'N/A'}</p>
+            </div>
+            <div class="col-6">
+              <p class="mb-1 text-muted small fw-semibold"><i class="fa-solid fa-clock-history me-2 text-primary"></i>VIDA ÚTIL</p>
+              <p class="fw-semibold mb-0 text-dark">${row.vida_util ? `${row.vida_util} años` : 'N/A'}</p>
+            </div>
+            <div class="col-6">
+              <p class="mb-1 text-muted small fw-semibold"><i class="fa-solid fa-dollar-sign me-2 text-primary"></i>VALOR UNITARIO</p>
+              <p class="fw-semibold mb-0 text-dark">${row.valor_unitario !== null && row.valor_unitario !== undefined && row.valor_unitario !== '' ? `$${Math.round(Number(row.valor_unitario)).toLocaleString('es-CO')}` : 'N/A'}</p>
+            </div>
+          </div>
+
+          <div class="mb-3 p-3 bg-white border rounded-4 shadow-sm">
+            <h6 class="mb-2 text-muted small fw-bold text-uppercase"><i class="fa-solid fa-align-left me-2 text-primary"></i>Descripción del Equipo</h6>
+            <p class="mb-0 text-secondary" style="white-space: pre-wrap; line-height: 1.6; font-size: 0.92rem;">${row.linea || 'Sin descripción disponible.'}</p>
+          </div>
+
+          ${hasPdf ? `
+            <div class="text-end">
+              <button id="swal-pdf-btn" type="button" class="btn btn-primary rounded-pill px-4 py-2 fw-semibold shadow-sm">
+                <i class="fa-solid fa-file-pdf me-2 text-white"></i>Ver Ficha Técnica (PDF)
+              </button>
+            </div>
+          ` : ''}
+        </div>
+      `,
+      customClass: {
+        popup: 'rounded-4 border-0 shadow-lg'
+      },
+      didOpen: () => {
+        const pdfBtn = document.getElementById('swal-pdf-btn');
+        if (pdfBtn) {
+          pdfBtn.addEventListener('click', () => {
+            Swal.close();
+            setLoadingPdf(true);
+            setPdfUrl(`${API_URL}/uploads/${row.ficha_tecnica}`);
+            setShowPdf(true);
+          });
+        }
+
+        if (imgs.length > 1) {
+          const imgEl = document.getElementById('swal-equipo-img');
+          const prevBtn = document.getElementById('swal-img-prev');
+          const nextBtn = document.getElementById('swal-img-next');
+          const counterEl = document.getElementById('swal-img-counter');
+
+          const updateImg = () => {
+            if (imgEl) imgEl.src = `${API_URL}/uploads/${imgs[currentImgIdx]}`;
+            if (counterEl) counterEl.textContent = `${currentImgIdx + 1} / ${imgs.length}`;
+          };
+
+          if (prevBtn) {
+            prevBtn.addEventListener('click', () => {
+              currentImgIdx = currentImgIdx === 0 ? imgs.length - 1 : currentImgIdx - 1;
+              updateImg();
+            });
+          }
+
+          if (nextBtn) {
+            nextBtn.addEventListener('click', () => {
+              currentImgIdx = currentImgIdx === imgs.length - 1 ? 0 : currentImgIdx + 1;
+              updateImg();
+            });
+          }
+        }
+      }
+    });
+  };
+
   const equiposFiltrados = equipos.filter((e) =>
     (e.nombre || '').toLowerCase().includes(filterText.toLowerCase()) ||
     (e.grupo || '').toLowerCase().includes(filterText.toLowerCase()) ||
@@ -255,16 +389,10 @@ const CrudEquipos = ({ userRol }) => {
       <div className="card border-0 shadow-lg overflow-hidden" style={{ borderRadius: '20px' }}>
         <DataTable
           columns={[
-            ...(userRol !== 'solicitante' ? [{
-              name: 'ID',
-              selector: row => row.Id_Equipo,
-              sortable: true,
-              width: '70px'
-            }] : []),
             {
               name: 'EQUIPO',
               sortable: true,
-              grow: 2,
+              grow: 1,
               minWidth: '180px',
               cell: (row) => {
                 const imgs = parseImages(row.img_equipo);
@@ -308,12 +436,6 @@ const CrudEquipos = ({ userRol }) => {
               width: '140px'
             },
             {
-              name: 'SERIAL',
-              selector: row => row.serial || 'N/A',
-              sortable: true,
-              width: '120px'
-            },
-            {
               name: 'MARCA / GRUPO',
               sortable: true,
               width: '200px',
@@ -325,11 +447,11 @@ const CrudEquipos = ({ userRol }) => {
               )
             },
             {
-              name: 'DESCRIPCIÓN EQUIPO',
+              name: 'DESCRIPCIÓN DEL EQUIPO',
               selector: row => row.linea || 'N/A',
               sortable: true,
               grow: 2,
-              minWidth: '250px',
+              minWidth: '200px',
               wrap: true,
               cell: (row) => (
                 <div style={{
@@ -342,103 +464,63 @@ const CrudEquipos = ({ userRol }) => {
                 </div>
               ),
             },
-            ...(userRol !== 'solicitante' ? [
-              {
-                name: 'CENTRO DE COSTOS',
-                sortable: true,
-                grow: 2,
-                minWidth: '250px',
-                wrap: true,
-                cell: (row) => (
-                  <div
-                    style={{
-                      whiteSpace: 'normal',
-                      wordBreak: 'break-word',
-                      padding: '10px 0',
-                      lineHeight: '1.4'
-                    }}
-                  >
-                    {row.centro_costos || 'N/A'}
-                  </div>
-                ),
-              },
-              {
-                name: 'VIDA ÚTIL',
-                selector: row => row.vida_util ? `${row.vida_util} años` : 'N/A',
-                sortable: true,
-                width: '120px'
-              },
-              {
-                name: 'V. UNITARIO',
-                selector: row => row.valor_unitario !== null && row.valor_unitario !== undefined && row.valor_unitario !== '' ? `$${Math.round(Number(row.valor_unitario)).toLocaleString('es-CO')}` : 'N/A',
-                sortable: true,
-                width: '140px'
-              },
-              {
-                name: 'F. ADQUISICIÓN',
-                selector: row => row.fecha_adquisicion || 'N/A',
-                sortable: true,
-                width: '160px'
-              }
-            ] : []),
             {
-              name: 'FICHA',
-              center: "true",
-              width: '80px',
-              cell: (row) => (
-                row.ficha_tecnica ? (
-                  <button
-                    className="btn btn-sm btn-outline-primary rounded-pill px-3 shadow-none"
-                    onClick={() => {
-                      setLoadingPdf(true);
-                      setPdfUrl(`${API_URL}/uploads/${row.ficha_tecnica}`);
-                      setShowPdf(true);
-                    }}
-                  >
-                    <i className="fa-solid fa-file-pdf"></i>
-                  </button>
-                ) : (
-                  userRol !== 'solicitante' && (
-                    <button className="btn btn-sm text-muted opacity-50" onClick={() => uploadFicha(row)}>
-                      <i className="fa-solid fa-upload"></i>
-                    </button>
-                  )
-                )
-              )
-            },
-            ...(userRol !== 'solicitante' ? [{
-              name: 'ESTADO',
+              name: 'CENTRO DE COSTOS',
               sortable: true,
-              center: "true",
-              width: '150px',
+              grow: 1,
+              minWidth: '180px',
+              wrap: true,
               cell: (row) => (
-                <span
-                  className={`status-badge ${row.estado === 'Activo' ? 'status-badge-activo' : 'status-badge-inactivo'}`}
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => toggleEstado(row)}
+                <div
+                  style={{
+                    whiteSpace: 'normal',
+                    wordBreak: 'break-word',
+                    padding: '10px 0',
+                    lineHeight: '1.4'
+                  }}
                 >
-                  {row.estado}
-                </span>
-              )
-            }] : []),
-            ...(userRol !== 'solicitante' ? [{
+                  {row.centro_costos || 'N/A'}
+                </div>
+              ),
+            },
+            {
+              name: 'FECHA ADQUISICIÓN',
+              selector: row => row.fecha_adquisicion || 'N/A',
+              sortable: true,
+              width: '180px'
+            },
+            {
               name: 'ACCIONES',
               center: "true",
-              width: '150px',
+              width: '120px',
               cell: (row) => (
-                <button
-                  className="btn-action btn-action-edit"
-                  onClick={() => setRowToEdit(row)}
-                  data-bs-toggle="modal"
-                  data-bs-target="#exampleModal"
-                  title="Editar"
-                >
-                  <i className="fa-solid fa-pencil"></i>
-                </button>
+                <div className="d-flex gap-2">
+                  <button
+                    type="button"
+                    className="btn-action"
+                    style={{ background: '#64748b', color: 'white' }}
+                    onClick={() => onViewDetails(row)}
+                    title="Ver detalles"
+                  >
+                    <i className="fa-solid fa-eye"></i>
+                  </button>
+                  {userRol !== 'solicitante' && (
+                    <button
+                      className="btn-action btn-action-edit"
+                      onClick={() => setRowToEdit(row)}
+                      data-bs-toggle="modal"
+                      data-bs-target="#exampleModal"
+                      title="Editar"
+                    >
+                      <i className="fa-solid fa-pencil"></i>
+                    </button>
+                  )}
+                </div>
               )
-            }] : [])
+            }
           ]}
           data={equiposFiltrados}
+          keyField="Id_Equipo"
           pagination
           highlightOnHover
           noDataComponent={
