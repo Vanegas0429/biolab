@@ -6,7 +6,7 @@ import DataTable from 'react-data-table-component';
 
 const API_URL = import.meta.env.VITE_API_URL || "";
 
-const CrudMaterial = () => {
+const CrudMaterial = ({ userRol }) => {
   const [rowToEdit, setRowToEdit] = useState(null);
   const [Material, setMaterial] = useState([]);
   const [filterText, setFilterText] = useState("");
@@ -182,14 +182,16 @@ const CrudMaterial = () => {
               onChange={(e) => setFilterText(e.target.value)}
             />
           </div>
-          <button
-            className="btn btn-primary rounded-pill px-4 shadow-sm"
-            data-bs-toggle="modal"
-            data-bs-target="#exampleModal"
-            onClick={() => setRowToEdit(null)}
-          >
-            <i className="fa-solid fa-plus me-2"></i>Nuevo Material
-          </button>
+          {userRol !== 'solicitante' && (
+            <button
+              className="btn btn-primary rounded-pill px-4 shadow-sm"
+              data-bs-toggle="modal"
+              data-bs-target="#exampleModal"
+              onClick={() => setRowToEdit(null)}
+            >
+              <i className="fa-solid fa-plus me-2"></i>Nuevo Material
+            </button>
+          )}
         </div>
       </div>
 
@@ -197,12 +199,12 @@ const CrudMaterial = () => {
       <div className="card border-0 shadow-lg overflow-hidden" style={{ borderRadius: '20px' }}>
         <DataTable
           columns={[
-            {
+            ...(userRol !== 'solicitante' ? [{
               name: 'ID',
               selector: row => row.Id_Material,
               sortable: true,
               width: '100px'
-            },
+            }] : []),
             {
               name: 'MATERIAL',
               sortable: true,
@@ -212,7 +214,12 @@ const CrudMaterial = () => {
                 const imgs = parseImages(row.img_material);
                 return (
                   <div className="d-flex align-items-center py-2">
-                    <div className="me-3 position-relative">
+                    <div
+                      className="position-relative"
+                      style={{
+                        marginRight: userRol === 'solicitante' ? '70px' : '16px'
+                      }}
+                    >
                       {imgs.length > 0 ? (
                         <img
                           src={`${API_URL}/uploads/${imgs[0]}`}
@@ -224,8 +231,8 @@ const CrudMaterial = () => {
                       ) : (
                         <div
                           className="bg-light text-muted d-flex align-items-center justify-content-center rounded border"
-                          style={{ width: '45px', height: '45px', borderStyle: 'dashed !important', cursor: 'pointer' }}
-                          onClick={() => triggerImageUpload(row)}
+                          style={{ width: '45px', height: '45px', borderStyle: 'dashed !important', cursor: userRol !== 'solicitante' ? 'pointer' : 'default' }}
+                          onClick={() => userRol !== 'solicitante' && triggerImageUpload(row)}
                         >
                           <i className="fa-solid fa-camera opacity-50"></i>
                         </div>
@@ -245,14 +252,30 @@ const CrudMaterial = () => {
               name: 'CLASIFICACIÓN',
               selector: row => row.clasificacion || 'Desechable',
               sortable: true,
-              width: '180px',
+              width: userRol === 'solicitante' ? '600px' : '180px',
               cell: (row) => (
-                <span className={`badge ${row.clasificacion === 'Reutilizable' ? 'bg-info text-dark' : 'bg-secondary'} rounded-pill px-3 py-2 fw-medium`}>
-                  {row.clasificacion || 'Desechable'}
-                </span>
+                <div
+                  style={{
+                    width: '100%',
+                    display: 'flex',
+                    justifyContent: userRol === 'solicitante'
+                      ? 'flex-start'
+                      : 'center',
+                    paddingLeft: userRol === 'solicitante' ? '20px' : '0px'
+                  }}
+                >
+                  <span
+                    className={`badge ${row.clasificacion === 'Reutilizable'
+                      ? 'bg-info text-dark'
+                      : 'bg-secondary'
+                      } rounded-pill px-3 py-2 fw-medium`}
+                  >
+                    {row.clasificacion || 'Desechable'}
+                  </span>
+                </div>
               )
             },
-            {
+            ...(userRol !== 'solicitante' ? [{
               name: 'ESTADO',
               sortable: true,
               center: true,
@@ -282,7 +305,7 @@ const CrudMaterial = () => {
                   <i className="fa-solid fa-pencil"></i>
                 </button>
               )
-            }
+            }] : [])
           ]}
           data={newListMaterial}
           pagination
@@ -342,10 +365,12 @@ const CrudMaterial = () => {
             {carouselImages.length > 1 && (
               <button className="carousel-arrow carousel-arrow-right" onClick={carouselNext}><i className="fa-solid fa-chevron-right"></i></button>
             )}
-            <div className="carousel-actions">
-              <button className="carousel-action-btn add-btn" onClick={() => { const mat = findCarouselMaterial(); if (mat) triggerImageUpload(mat); }}><i className="fa-solid fa-plus me-2"></i>Agregar</button>
-              <button className="carousel-action-btn delete-btn" onClick={() => { const mat = findCarouselMaterial(); if (mat) deleteImage(mat.Id_Material, carouselImages[carouselIndex]); }}><i className="fa-solid fa-trash-can me-2"></i>Eliminar</button>
-            </div>
+            {userRol !== 'solicitante' && (
+              <div className="carousel-actions">
+                <button className="carousel-action-btn add-btn" onClick={() => { const mat = findCarouselMaterial(); if (mat) triggerImageUpload(mat); }}><i className="fa-solid fa-plus me-2"></i>Agregar</button>
+                <button className="carousel-action-btn delete-btn" onClick={() => { const mat = findCarouselMaterial(); if (mat) deleteImage(mat.Id_Material, carouselImages[carouselIndex]); }}><i className="fa-solid fa-trash-can me-2"></i>Eliminar</button>
+              </div>
+            )}
           </div>
         </div>
       )}

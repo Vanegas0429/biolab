@@ -54,11 +54,9 @@ const NavBar = ({ isAuth, logOut, userRol }) => {
         )}
 
         {/* Materiales y su submenú */}
+        <li className="nav-item mt-1"><Link className="nav-link px-3 py-2" onClick={() => navigateTo("/Material")}><i className="fa-solid fa-boxes-stacked me-3 w-20px text-center"></i>Materiales</Link></li>
         {userRol !== 'solicitante' && (
-          <>
-            <li className="nav-item mt-1"><Link className="nav-link px-3 py-2" onClick={() => navigateTo("/Material")}><i className="fa-solid fa-boxes-stacked me-3 w-20px text-center"></i>Materiales</Link></li>
-            <li className="nav-item ms-3"><Link className="nav-link px-3 py-1 text-muted" style={{ fontSize: '0.85rem' }} onClick={() => navigateTo("/EntradaMaterial")}><i className="fa-solid fa-boxes-packing me-2 text-center" style={{ fontSize: '0.75rem' }}></i>Entradas Materiales</Link></li>
-          </>
+          <li className="nav-item ms-3"><Link className="nav-link px-3 py-1 text-muted" style={{ fontSize: '0.85rem' }} onClick={() => navigateTo("/EntradaMaterial")}><i className="fa-solid fa-boxes-packing me-2 text-center" style={{ fontSize: '0.75rem' }}></i>Entradas Materiales</Link></li>
         )}
 
         {/* SUBMENÚ ACTIVIDADES */}

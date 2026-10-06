@@ -6,7 +6,7 @@ import withReactContent from 'sweetalert2-react-content'
 
 const MySwal = withReactContent(Swal)
 
-const EntradaForm = ({ hideModal, refreshList, rowToEdit }) => {
+const EntradaForm = ({ hideModal, refreshList, rowToEdit, userRol }) => {
   const [Estado, setEstado] = useState("Activo");
 
   // Campos del formulario
@@ -47,7 +47,7 @@ const EntradaForm = ({ hideModal, refreshList, rowToEdit }) => {
   const textFormButton = "Enviar";
 
   // Opciones fijas
-  const UnidadMedida = ["gr", "L", "mL"];
+  const UnidadMedida = ["g", "L", "mL", "lbs", "kg"];
 
   useEffect(() => {
     getReactivo();
@@ -193,7 +193,13 @@ const EntradaForm = ({ hideModal, refreshList, rowToEdit }) => {
             value={Can_Inicial}
             onChange={e => setCan_Inicial(e.target.value)}
             placeholder="0"
+            disabled={Boolean(rowToEdit) && userRol !== 'administrador'}
           />
+          {Boolean(rowToEdit) && userRol !== 'administrador' && (
+            <small className="text-muted d-block mt-1 ms-2">
+              <i className="fa-solid fa-lock me-1"></i>Solo el administrador puede editar la cantidad inicial
+            </small>
+          )}
         </div>
 
         {/* Fecha Vencimiento */}

@@ -17,6 +17,12 @@ const UsuarioRegistro = () => {
   const gestionarRegistro = async (e) => {
     e.preventDefault();
 
+    const passwordRegex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
+    if (!passwordRegex.test(contraseña)) {
+      setError("La contraseña debe tener al menos 8 caracteres, incluir al menos una letra mayúscula y un número.");
+      return;
+    }
+
     try {
       await apiNode.post("/api/auth", {
         nombre,
@@ -31,7 +37,7 @@ const UsuarioRegistro = () => {
       setError(null);
 
     } catch (err) {
-      setError(err.response?.data?.msg || "Error al registrar usuario");
+      setError(err.response?.data?.message || err.response?.data?.msg || "Error al registrar usuario");
     }
   };
 
@@ -120,24 +126,30 @@ const UsuarioRegistro = () => {
               />
             </div>
 
-            <div className="input-group">
-              <input
-                type={showPassword ? "text" : "password"}
-                className="form-control border-end-0"
-                value={contraseña}
-                onChange={(e) => setContraseña(e.target.value)}
-                placeholder="Ingrese su contraseña"
-                required
-              />
-              <button
-                type="button"
-                className="btn btn-outline-secondary border-start-0 bg-white"
-                onClick={() => setShowPassword(!showPassword)}
-                tabIndex={-1}
-                style={{ borderColor: "#dee2e6" }}
-              >
-                <i className={`fa-solid ${showPassword ? "fa-eye-slash" : "fa-eye"} text-muted`}></i>
-              </button>
+            <div className="mb-2">
+              <label className="form-label">Contraseña</label>
+              <div className="input-group">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  className="form-control border-end-0"
+                  value={contraseña}
+                  onChange={(e) => setContraseña(e.target.value)}
+                  placeholder="Ingrese su contraseña"
+                  required
+                />
+                <button
+                  type="button"
+                  className="btn btn-outline-secondary border-start-0 bg-white"
+                  onClick={() => setShowPassword(!showPassword)}
+                  tabIndex={-1}
+                  style={{ borderColor: "#dee2e6" }}
+                >
+                  <i className={`fa-solid ${showPassword ? "fa-eye-slash" : "fa-eye"} text-muted`}></i>
+                </button>
+              </div>
+              <small className="text-muted d-block mt-1">
+                Mínimo 8 caracteres, al menos 1 letra mayúscula y 1 número.
+              </small>
             </div>
             <button
               type="submit"

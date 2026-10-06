@@ -5,10 +5,11 @@ import withReactContent from 'sweetalert2-react-content';
 
 const MySwal = withReactContent(Swal);
 
-const EntradaMaterialForm = ({ hideModal, refreshList, rowToEdit }) => {
+const EntradaMaterialForm = ({ hideModal, refreshList, rowToEdit, userRol }) => {
   const [Estado, setEstado] = useState("Activo");
   const [Can_Inicial, setCan_Inicial] = useState('');
   const [Can_Existente, setCan_Existente] = useState('');
+  const [Motivo_Ajuste, setMotivo_Ajuste] = useState('');
   const [Id_Material, setId_Material] = useState('');
   const [materiales, setMateriales] = useState([]);
 
@@ -16,12 +17,14 @@ const EntradaMaterialForm = ({ hideModal, refreshList, rowToEdit }) => {
     if (rowToEdit) {
       setCan_Inicial(rowToEdit.Can_Inicial ?? '');
       setCan_Existente(rowToEdit.Can_Existente ?? '');
+      setMotivo_Ajuste('');
       setId_Material(rowToEdit.Id_Material ?? '');
       setEstado(rowToEdit.Estado ?? "Activo");
     } else {
       setEstado("Activo");
       setCan_Inicial('');
       setCan_Existente('');
+      setMotivo_Ajuste('');
       setId_Material('');
     }
   }, [rowToEdit]);
@@ -54,6 +57,7 @@ const EntradaMaterialForm = ({ hideModal, refreshList, rowToEdit }) => {
       {
         Can_Inicial: Number(Can_Inicial),
         Can_Existente: Number(Can_Existente || Can_Inicial),
+        Motivo_Ajuste: Motivo_Ajuste ? Motivo_Ajuste.trim() : undefined,
         Id_Material: Number(Id_Material),
         Estado: rowToEdit?.Estado || "Activo"
       }
@@ -138,9 +142,15 @@ const EntradaMaterialForm = ({ hideModal, refreshList, rowToEdit }) => {
             placeholder="0"
             min="1"
             required
+            disabled={Boolean(rowToEdit) && userRol !== 'administrador'}
           />
+          {Boolean(rowToEdit) && userRol !== 'administrador' && (
+            <small className="text-muted d-block mt-1 ms-2">
+              <i className="fa-solid fa-lock me-1"></i>Solo el administrador puede editar la cantidad ingresada
+            </small>
+          )}
         </div>
-        
+
         {/* Cantidad Existente */}
         {rowToEdit && (
           <div className="col-md-5">
@@ -154,6 +164,23 @@ const EntradaMaterialForm = ({ hideModal, refreshList, rowToEdit }) => {
               placeholder="0"
               min="0"
               required
+            />
+          </div>
+        )}
+
+        {/* Motivo de Ajuste - Solo si es material Reutilizable */}
+        {rowToEdit && materiales.find(m => Number(m.Id_Material) === Number(Id_Material))?.clasificacion === 'Reutilizable' && (
+          <div className="col-md-12">
+            <label htmlFor="Motivo_Ajuste" className="form-label fw-bold text-muted small">
+              Motivo (Solo si se daña un material reutilizable):
+            </label>
+            <input
+              type="text"
+              id="Motivo_Ajuste"
+              className="form-control rounded-pill shadow-sm px-3"
+              value={Motivo_Ajuste}
+              onChange={e => setMotivo_Ajuste(e.target.value)}
+              placeholder="Ej: Material reutilizable dañado en laboratorio, baja por ruptura, etc."
             />
           </div>
         )}

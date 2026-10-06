@@ -255,12 +255,12 @@ const CrudEquipos = ({ userRol }) => {
       <div className="card border-0 shadow-lg overflow-hidden" style={{ borderRadius: '20px' }}>
         <DataTable
           columns={[
-            {
+            ...(userRol !== 'solicitante' ? [{
               name: 'ID',
               selector: row => row.Id_Equipo,
               sortable: true,
               width: '70px'
-            },
+            }] : []),
             {
               name: 'EQUIPO',
               sortable: true,
@@ -308,6 +308,12 @@ const CrudEquipos = ({ userRol }) => {
               width: '140px'
             },
             {
+              name: 'SERIAL',
+              selector: row => row.serial || 'N/A',
+              sortable: true,
+              width: '120px'
+            },
+            {
               name: 'MARCA / GRUPO',
               sortable: true,
               width: '200px',
@@ -319,17 +325,62 @@ const CrudEquipos = ({ userRol }) => {
               )
             },
             {
-              name: 'LÍNEA',
+              name: 'DESCRIPCIÓN EQUIPO',
               selector: row => row.linea || 'N/A',
               sortable: true,
-              width: '250px'
+              grow: 2,
+              minWidth: '250px',
+              wrap: true,
+              cell: (row) => (
+                <div style={{
+                  whiteSpace: 'normal',
+                  wordBreak: 'break-word',
+                  padding: '8px 0',
+                  lineHeight: '1.4'
+                }}>
+                  {row.linea || 'N/A'}
+                </div>
+              ),
             },
-            {
-              name: 'CENTRO DE COSTOS',
-              selector: row => row.centro_costos || 'N/A',
-              sortable: true,
-              width: '200px'
-            },
+            ...(userRol !== 'solicitante' ? [
+              {
+                name: 'CENTRO DE COSTOS',
+                sortable: true,
+                grow: 2,
+                minWidth: '250px',
+                wrap: true,
+                cell: (row) => (
+                  <div
+                    style={{
+                      whiteSpace: 'normal',
+                      wordBreak: 'break-word',
+                      padding: '10px 0',
+                      lineHeight: '1.4'
+                    }}
+                  >
+                    {row.centro_costos || 'N/A'}
+                  </div>
+                ),
+              },
+              {
+                name: 'VIDA ÚTIL',
+                selector: row => row.vida_util ? `${row.vida_util} años` : 'N/A',
+                sortable: true,
+                width: '120px'
+              },
+              {
+                name: 'V. UNITARIO',
+                selector: row => row.valor_unitario !== null && row.valor_unitario !== undefined && row.valor_unitario !== '' ? `$${Math.round(Number(row.valor_unitario)).toLocaleString('es-CO')}` : 'N/A',
+                sortable: true,
+                width: '140px'
+              },
+              {
+                name: 'F. ADQUISICIÓN',
+                selector: row => row.fecha_adquisicion || 'N/A',
+                sortable: true,
+                width: '160px'
+              }
+            ] : []),
             {
               name: 'FICHA',
               center: "true",
@@ -469,11 +520,11 @@ const CrudEquipos = ({ userRol }) => {
                 <span className="fw-bold text-dark">Cargando Ficha Técnica...</span>
               </div>
             )}
-            <iframe 
-              src={pdfUrl} 
-              className="pdf-modal-iframe" 
+            <iframe
+              src={pdfUrl}
+              className="pdf-modal-iframe"
               title="Ficha Técnica PDF"
-              onLoad={() => setLoadingPdf(false)} 
+              onLoad={() => setLoadingPdf(false)}
             />
           </div>
         </div>

@@ -13,6 +13,10 @@ const EquiposForm = ({ hideModal, rowToEdit, refreshList }) => {
     const [linea, setLinea] = useState("");
     const [centro_costos, setCentroCostos] = useState("");
     const [placa, setPlaca] = useState("");
+    const [serial, setSerial] = useState("");
+    const [vida_util, setVidaUtil] = useState("");
+    const [valor_unitario, setValorUnitario] = useState("");
+    const [fecha_adquisicion, setFechaAdquisicion] = useState("");
     const [imagenes, setImagenes] = useState([]);        // Archivos nuevos seleccionados
     const [fichaTecnica, setFichaTecnica] = useState(null); // PDF seleccionado
 
@@ -35,6 +39,10 @@ const EquiposForm = ({ hideModal, rowToEdit, refreshList }) => {
         setLinea(rowToEdit.linea || "");
         setCentroCostos(rowToEdit.centro_costos || "");
         setPlaca(rowToEdit.placa || rowToEdit.no_chapeta || "");
+        setSerial(rowToEdit.serial || "");
+        setVidaUtil(rowToEdit.vida_util || "");
+        setValorUnitario(rowToEdit.valor_unitario ? String(Math.round(Number(rowToEdit.valor_unitario))) : "");
+        setFechaAdquisicion(rowToEdit.fecha_adquisicion || "");
 
         setTextFormButton("Actualizar");
     };
@@ -46,6 +54,10 @@ const EquiposForm = ({ hideModal, rowToEdit, refreshList }) => {
         setLinea("");
         setCentroCostos("");
         setPlaca("");
+        setSerial("");
+        setVidaUtil("");
+        setValorUnitario("");
+        setFechaAdquisicion("");
         setImagenes([]);
         setFichaTecnica(null);
 
@@ -63,6 +75,10 @@ const EquiposForm = ({ hideModal, rowToEdit, refreshList }) => {
         formData.append("linea", linea);
         formData.append("centro_costos", centro_costos);
         formData.append("placa", placa);
+        formData.append("serial", serial);
+        formData.append("vida_util", vida_util);
+        formData.append("valor_unitario", valor_unitario ? String(Math.round(Number(valor_unitario))) : "0");
+        formData.append("fecha_adquisicion", fecha_adquisicion);
 
         // Agregar múltiples imágenes
         if (imagenes.length > 0) {
@@ -159,7 +175,7 @@ const EquiposForm = ({ hideModal, rowToEdit, refreshList }) => {
                     />
                 </div>
 
-                 {/* Placa */}
+                {/* Placa */}
                 <div className="col-md-6">
                     <label className="form-label fw-bold">Placa:</label>
                     <input
@@ -168,6 +184,18 @@ const EquiposForm = ({ hideModal, rowToEdit, refreshList }) => {
                         value={placa}
                         onChange={(e) => setPlaca(e.target.value)}
                         placeholder="Ingrese Placa"
+                    />
+                </div>
+
+                {/* Serial */}
+                <div className="col-md-6">
+                    <label className="form-label fw-bold">Serial:</label>
+                    <input
+                        type="text"
+                        className="form-control rounded-pill shadow-sm px-3"
+                        value={serial}
+                        onChange={(e) => setSerial(e.target.value)}
+                        placeholder="Ej: SN-12345"
                     />
                 </div>
 
@@ -195,18 +223,6 @@ const EquiposForm = ({ hideModal, rowToEdit, refreshList }) => {
                     />
                 </div>
 
-                {/* Línea */}
-                <div className="col-md-6">
-                    <label className="form-label fw-bold">Línea:</label>
-                    <input
-                        type="text"
-                        className="form-control rounded-pill shadow-sm px-3"
-                        value={linea}
-                        onChange={(e) => setLinea(e.target.value)}
-                        placeholder="Ingrese la línea"
-                    />
-                </div>
-
                 {/* Centro de costos */}
                 <div className="col-md-6">
                     <label className="form-label fw-bold">Centro de Costos:</label>
@@ -216,6 +232,59 @@ const EquiposForm = ({ hideModal, rowToEdit, refreshList }) => {
                         value={centro_costos}
                         onChange={(e) => setCentroCostos(e.target.value)}
                         placeholder="Ej: Lab-01-SEC"
+                    />
+                </div>
+
+                {/* Descripcion Equipo */}
+                <div className="col-md-12">
+                    <label className="form-label fw-bold">Descripción Equipo:</label>
+                    <textarea
+                        className="form-control rounded-3 shadow-sm px-3 py-2"
+                        rows="4"
+                        value={linea}
+                        onChange={(e) => setLinea(e.target.value)}
+                        placeholder="Ingrese la Descripción del Equipo..."
+                    />
+                </div>
+
+                {/* Vida Útil */}
+                <div className="col-md-6">
+                    <label className="form-label fw-bold">Vida Útil (Años):</label>
+                    <input
+                        type="number"
+                        className="form-control rounded-pill shadow-sm px-3"
+                        value={vida_util}
+                        onChange={(e) => setVidaUtil(e.target.value)}
+                        placeholder="Ej: 5"
+                        min="0"
+                    />
+                </div>
+
+                {/* Valor Unitario */}
+                <div className="col-md-6">
+                    <label className="form-label fw-bold">Valor Unitario:</label>
+                    <input
+                        type="number"
+                        step="1"
+                        min="0"
+                        className="form-control rounded-pill shadow-sm px-3"
+                        value={valor_unitario}
+                        onChange={(e) => {
+                            const val = e.target.value;
+                            setValorUnitario(val !== "" ? String(Math.round(Number(val))) : "");
+                        }}
+                        placeholder="Ej: 1500"
+                    />
+                </div>
+
+                {/* Fecha Adquisición */}
+                <div className="col-md-6">
+                    <label className="form-label fw-bold">Fecha de Adquisición:</label>
+                    <input
+                        type="date"
+                        className="form-control rounded-pill shadow-sm px-3"
+                        value={fecha_adquisicion}
+                        onChange={(e) => setFechaAdquisicion(e.target.value)}
                     />
                 </div>
 

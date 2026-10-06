@@ -49,7 +49,31 @@ class EntradaMaterialService {
         const oldEntrada = await EntradaMaterialModel.findByPk(id);
         if (!oldEntrada) throw new Error("Entrada de material no encontrada");
 
+        const oldQty = Number(oldEntrada.Can_Existente ?? oldEntrada.Can_Inicial ?? 0);
+        const newQty = data.Can_Existente !== undefined && data.Can_Existente !== null ? Number(data.Can_Existente) : oldQty;
+        const diff = oldQty - newQty;
+
         await EntradaMaterialModel.update(data, { where: { Id_Entrada_Material: id } });
+
+        // Registrar movimiento de Ajuste si la cantidad existente cambió
+        if (diff !== 0) {
+            try {
+                let detalleMsg = data.Motivo_Ajuste;
+                if (!detalleMsg) {
+                    detalleMsg = diff > 0 
+                        ? `Descuento manual / baja (${oldQty} -> ${newQty})`
+                        : `Incremento manual (${oldQty} -> ${newQty})`;
+                }
+                await MovimientoMaterialModel.create({
+                    Id_Entrada_Material: id,
+                    Tipo: 'Ajuste',
+                    Cantidad: Math.abs(diff),
+                    Detalle: detalleMsg
+                });
+            } catch (e) {
+                console.error("Error al registrar movimiento de ajuste de material:", e);
+            }
+        }
 
         // Recalcular stock
         await this.recalcularStockMaterial(oldEntrada.Id_Material);

@@ -14,6 +14,12 @@ const UsuarioRegistroAdmin = () => {
   const gestionarRegistro = async (e) => {
     e.preventDefault();
 
+    const passwordRegex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
+    if (!passwordRegex.test(contraseña)) {
+      setError("La contraseña debe tener al menos 8 caracteres, incluir al menos una letra mayúscula y un número.");
+      return;
+    }
+
     try {
       await apiNode.post("/api/auth", {
         nombre,
@@ -27,7 +33,7 @@ const UsuarioRegistroAdmin = () => {
       setError(null);
 
     } catch (err) {
-      setError(err.response?.data?.msg || "Error al registrar usuario");
+      setError(err.response?.data?.message || err.response?.data?.msg || "Error al registrar usuario");
     }
   };
 
@@ -106,12 +112,19 @@ const UsuarioRegistroAdmin = () => {
               />
             </div>
 
-            <div className="mb-3"> <label className="form-label">Contraseña</label>
-              <input type="password"
-                className="form-control" value={contraseña} onChange={(e) => setContraseña(e.target.value)}
-                placeholder="Mínimo 8 caracteres"
+            <div className="mb-3">
+              <label className="form-label">Contraseña</label>
+              <input
+                type="password"
+                className="form-control"
+                value={contraseña}
+                onChange={(e) => setContraseña(e.target.value)}
+                placeholder="Mínimo 8 caracteres, 1 mayúscula y 1 número"
                 required
               />
+              <small className="text-muted d-block mt-1">
+                Mínimo 8 caracteres, al menos 1 letra mayúscula y 1 número.
+              </small>
             </div>
 
             {/* ROL */}

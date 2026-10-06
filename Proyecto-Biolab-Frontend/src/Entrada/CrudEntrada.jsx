@@ -4,7 +4,7 @@ import DataTable from 'react-data-table-component'
 import EntradaForm from "./EntradaForm.jsx"
 import Swal from "sweetalert2"
 
-const CrudEntrada = () => {
+const CrudEntrada = ({ userRol }) => {
   const [rowToEdit, setRowToEdit] = useState(null);
   const [Entrada, setEntrada] = useState([]);
   const [filterText, setFilterText] = useState("");
@@ -124,9 +124,8 @@ const CrudEntrada = () => {
               { name: 'ID', selector: row => row?.Id_Entrada ?? 'N/A', sortable: true, width: '80px' },
               { name: 'REACTIVO', selector: row => row?.Reactivo?.Nom_reactivo ?? 'N/A', sortable: true, width: '180px' },
               { name: 'LOTE', selector: row => row?.Lote ?? 'N/A', sortable: true, width: '120px' },
-              { name: 'CANT. INICIAL', selector: row => row?.Can_Inicial ?? 0, sortable: true, width: '150px', center: "true" },
-              { name: 'CANT. EXISTENTE', selector: row => row?.Can_Existente ?? 0, sortable: true, width: '150px', center: "true" },
-              { name: 'UND. MEDIDA', selector: row => row?.Uni_Medida ?? 'N/A', sortable: true, width: '150px', center: "true" },
+              { name: 'CANT. INICIAL', selector: row => `${row?.Can_Inicial ?? 0} ${row?.Uni_Medida ?? ''}`, sortable: true, width: '160px', center: "true" },
+              { name: 'CANT. EXISTENTE', selector: row => `${row?.Can_Existente ?? 0} ${row?.Uni_Medida ?? ''}`, sortable: true, width: '160px', center: "true" },
               { name: 'F. VENCIMIENTO', selector: row => row.Fec_Vencimiento ? row.Fec_Vencimiento.split('T')[0] : '', sortable: true, width: '150px' },
               {
                 name: 'ESTADO',
@@ -209,6 +208,7 @@ const CrudEntrada = () => {
                 hideModal={hideModal}
                 refreshList={getAllEntradas}
                 rowToEdit={rowToEdit}
+                userRol={userRol}
               />
             </div>
           </div>

@@ -25,10 +25,11 @@ const ResetPassword = () => {
             return;
         }
 
-        if (nuevaContraseña.length < 8) {
+        const passwordRegex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
+        if (!passwordRegex.test(nuevaContraseña)) {
             Swal.fire({
-                title: 'Error',
-                text: 'La contraseña debe tener al menos 8 caracteres.',
+                title: 'Contraseña poco segura',
+                text: 'La contraseña debe tener al menos 8 caracteres, incluir al menos una letra mayúscula y un número.',
                 icon: 'error'
             });
             return;
@@ -108,6 +109,9 @@ const ResetPassword = () => {
                                 <i className={`fa-solid ${showPassword ? "fa-eye-slash" : "fa-eye"} text-muted`}></i>
                             </button>
                         </div>
+                        <small className="text-muted d-block mt-1">
+                            Mínimo 8 caracteres, al menos 1 letra mayúscula y 1 número.
+                        </small>
                     </div>
 
                     <div className="mb-4">

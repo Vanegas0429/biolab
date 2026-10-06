@@ -82,7 +82,8 @@ const ReactivosForm = ({ hideModal, rowToEdit, refreshList }) => {
             hideModal();
         } catch (error) {
             console.error("Error al guardar Reactivo:", error.response ? error.response.data : error.message);
-            MySwal.fire({ title: "Error", text: "Error al guardar el Reactivo", icon: "error" });
+            const errorMessage = error.response?.data?.message || "Error al guardar el Reactivo";
+            MySwal.fire({ title: "Error", text: errorMessage, icon: "error" });
         } finally {
             setIsSubmitting(false);
         }
@@ -127,13 +128,16 @@ const ReactivosForm = ({ hideModal, rowToEdit, refreshList }) => {
                 {/* Presentación */}
                 <div className="col-md-12">
                     <label className="form-label fw-bold">Presentación:</label>
-                    <input
-                        type="text"
-                        className="form-control rounded-pill shadow-sm px-3"
+                    <select
+                        className="form-select rounded-pill shadow-sm px-3"
                         value={Presentacion}
                         onChange={(e) => setPresentacion(e.target.value)}
-                        placeholder="Ej: Botella 1L, Frasco 500g"
-                    />
+                        required
+                    >
+                        <option value="">Selecciona presentación</option>
+                        <option value="Liquido">Líquido</option>
+                        <option value="Granulado">Granulado</option>
+                    </select>
                 </div>
 
                 {/* Campo Ficha Técnica PDF */}

@@ -31,6 +31,12 @@ class UsuarioService {
     // Si ya existe, lanzamos un error
     if (UsuarioExist) throw new Error("El usuario ya existe");
 
+    // Validamos fortaleza de la contraseña (mínimo 8 caracteres, al menos 1 mayúscula y 1 número)
+    const passwordRegex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
+    if (!contraseña || !passwordRegex.test(contraseña)) {
+      throw new Error("La contraseña debe tener al menos 8 caracteres, incluir al menos una letra mayúscula y un número.");
+    }
+
     // Encriptamos la contraseña antes de guardarla en la base de datos
     const hashedcontraseña = await bcrypt.hash(contraseña, 10);
 
@@ -151,6 +157,11 @@ class UsuarioService {
   async resetPassword(token, nuevaContraseña) {
     if (!token || !nuevaContraseña) {
       throw new Error("Token y nueva contraseña son obligatorios");
+    }
+
+    const passwordRegex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
+    if (!passwordRegex.test(nuevaContraseña)) {
+      throw new Error("La contraseña debe tener al menos 8 caracteres, incluir al menos una letra mayúscula y un número.");
     }
 
     const usuario = await UsuarioModel.findOne({ where: { token } });
