@@ -11,7 +11,6 @@ const CrudPractica = () => {
   const [rowToEdit, setRowToEdit] = useState([])
 
   const columnsTable = [
-    { name: 'Id_Practica', selector: row => row.Id_Practica },
     { name: 'Solicitante', selector: row => row.Reserva?.Nom_Solicitante },
     { name: 'Tipo Reserva', selector: row => row.Reserva?.Tip_Reserva },
     { name: 'Fecha', selector: row => row.Reserva?.Fec_Reserva },
@@ -50,6 +49,13 @@ const CrudPractica = () => {
 
   useEffect(() => {
     getAllPracticas()
+
+    // Auto-refresh cada 15 segundos
+    const interval = setInterval(() => {
+      getAllPracticas()
+    }, 15000)
+
+    return () => clearInterval(interval)
   }, [])
 
   const getAllPracticas = async () => {

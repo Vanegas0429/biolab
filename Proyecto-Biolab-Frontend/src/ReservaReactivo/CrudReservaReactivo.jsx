@@ -142,11 +142,7 @@ const CrudReservaReactivo = () => {
                   ))}
                 </div>
               </div>
-              <div className="modal-footer border-0 bg-light">
-                <button type="button" className="btn btn-secondary px-4 fw-bold" data-bs-toggle="modal" data-bs-target="#reactivosListModal">
-                  Cerrar
-                </button>
-              </div>
+
             </div>
           </div>
         </div>

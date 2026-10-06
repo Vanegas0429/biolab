@@ -80,6 +80,13 @@ const CrudReactivos = ({ userRol }) => {
 
   useEffect(() => {
     getAllReactivos();
+
+    // Auto-refresh cada 15 segundos
+    const interval = setInterval(() => {
+      getAllReactivos();
+    }, 15000);
+
+    return () => clearInterval(interval);
   }, []);
 
   const getAllReactivos = async () => {
@@ -157,12 +164,6 @@ const CrudReactivos = ({ userRol }) => {
       <div className="card border-0 shadow-lg overflow-hidden" style={{ borderRadius: '20px' }}>
         <DataTable
           columns={[
-            ...(userRol !== 'solicitante' ? [{
-              name: 'ID',
-              selector: row => row.Id_Reactivo,
-              sortable: true,
-              width: '70px'
-            }] : []),
             {
               name: 'REACTIVO',
               sortable: true,
@@ -242,6 +243,7 @@ const CrudReactivos = ({ userRol }) => {
             }] : [])
           ]}
           data={newListReactivo}
+          keyField="Id_Reactivo"
           pagination
           highlightOnHover
           noDataComponent={

@@ -26,6 +26,13 @@ const CrudSup_Plantas = () => {
 
   useEffect(() => {
     getAllSup_Plantas();
+
+    // Auto-refresh cada 15 segundos
+    const interval = setInterval(() => {
+      getAllSup_Plantas();
+    }, 15000);
+
+    return () => clearInterval(interval);
   }, []);
 
   const toggleEstado = async (row) => {
@@ -108,7 +115,6 @@ const CrudSup_Plantas = () => {
       <div className="card border-0 shadow-lg overflow-hidden table-responsive-custom" style={{ borderRadius: '20px' }}>
         <DataTable
           columns={[
-            { name: 'ID', selector: row => row?.Id_supervision ?? "N/A", sortable: true, width: '80px' },
             { name: 'LOTE', selector: row => row?.Num_lote ?? "N/A", sortable: true, width: '100px' },
             { name: 'MEDIO CULTIVO', selector: row => row?.Med_Cultivo ?? "N/A", sortable: true, width: '150px' },
             { name: 'MÉTODO PROPAGACION.', selector: row => row?.Met_Propagacion ?? "N/A", sortable: true, width: '150px' },
@@ -176,6 +182,7 @@ const CrudSup_Plantas = () => {
             }
           ]}
           data={filteredItems}
+          keyField="Id_supervision"
           pagination
           highlightOnHover
           persistTableHead
@@ -235,9 +242,7 @@ const CrudSup_Plantas = () => {
                 isViewOnly={true}
               />
             </div>
-            <div className="modal-footer border-0">
-              <button type="button" className="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cerrar</button>
-            </div>
+
           </div>
         </div>
       </div>

@@ -20,10 +20,34 @@ class EquipoService {
     }
 
     async create(data) {
+        if (data.nombre && typeof data.nombre === 'string') {
+            const trimmed = data.nombre.trim();
+            if (trimmed) {
+                data.nombre = trimmed.charAt(0).toUpperCase() + trimmed.slice(1).toLowerCase();
+            }
+        }
+        if (data.linea && typeof data.linea === 'string') {
+            const trimmed = data.linea.trim();
+            if (trimmed) {
+                data.linea = trimmed.charAt(0).toUpperCase() + trimmed.slice(1).toLowerCase();
+            }
+        }
         return await EquipoModel.create(data);
     }
 
     async update(Id_Equipo, data) {
+        if (data.nombre && typeof data.nombre === 'string') {
+            const trimmed = data.nombre.trim();
+            if (trimmed) {
+                data.nombre = trimmed.charAt(0).toUpperCase() + trimmed.slice(1).toLowerCase();
+            }
+        }
+        if (data.linea && typeof data.linea === 'string') {
+            const trimmed = data.linea.trim();
+            if (trimmed) {
+                data.linea = trimmed.charAt(0).toUpperCase() + trimmed.slice(1).toLowerCase();
+            }
+        }
 
         const result = await EquipoModel.update(
             data,

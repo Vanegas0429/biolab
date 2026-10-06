@@ -11,6 +11,13 @@ const CrudEstado = () => {
 
   useEffect(() => {
     getAllEstado();
+
+    // Auto-refresh cada 15 segundos
+    const interval = setInterval(() => {
+      getAllEstado();
+    }, 15000);
+
+    return () => clearInterval(interval);
   }, []);
 
   const getAllEstado = async () => {
@@ -36,7 +43,6 @@ const CrudEstado = () => {
   });
 
   const columnsTable = [
-    { name: 'ID', selector: row => row.Id_Estado, sortable: true, width: '100px' },
     { name: 'ESTADO', selector: row => row.Tip_Estado, sortable: true, grow: 2 },
     {
       name: 'ACCIONES',
@@ -108,6 +114,7 @@ const CrudEstado = () => {
         <DataTable
           columns={columnsTable}
           data={newListEstado}
+          keyField="Id_Estado"
           pagination
           highlightOnHover
           noDataComponent={
