@@ -20,7 +20,8 @@ const UsuarioModel = db.define("usuarios", {
     primaryKey: true
   },
 
-  token: { type: DataTypes.STRING }
+  token: { type: DataTypes.STRING },
+  tokenExpiry: { type: DataTypes.DATE }
 
 }, {
   freezeTableName: true
