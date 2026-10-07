@@ -50,19 +50,17 @@ export const forgotPassword = async (req, res) => {
     console.log(`[FORGOT] Solicitud de recuperación recibida para: ${correo}`);
     
     // Llamar al servicio para generar token y enviar email
-    const result = await UsuarioService.forgotPassword(correo);
+    await UsuarioService.forgotPassword(correo);
     
     console.log(`[FORGOT] ✅ Proceso completado exitosamente para: ${correo}`);
 
-    // Si estamos en entorno local o si no hay credenciales SMTP configuradas, adjuntamos devLink para pruebas locales
-    const isDev = process.env.NODE_ENV !== 'production' || !process.env.SMTP_USER;
-    
+    // Siempre responder con mensaje genérico (no exponer si el correo existe o no)
     res.status(200).json({ 
-      message: "Si el correo está registrado, hemos enviado las instrucciones de recuperación.",
-      ...(isDev && result?.resetLink ? { devLink: result.resetLink } : {})
+      message: "Si el correo está registrado, hemos enviado las instrucciones de recuperación."
     });
   } catch (error) {
     console.error(`[FORGOT] ❌ Error inesperado para ${req.body?.correo}:`, error.message);
+    // Mismo mensaje genérico para no revelar información
     res.status(200).json({ message: "Si el correo está registrado, hemos enviado las instrucciones de recuperación." });
   }
 };

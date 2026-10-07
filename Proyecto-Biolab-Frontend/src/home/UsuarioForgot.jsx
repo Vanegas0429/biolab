@@ -7,7 +7,6 @@ const UsuarioForgot = () => {
     const [correo, setCorreo] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [showModal, setShowModal] = useState(false);
-    const [devLink, setDevLink] = useState("");
     const [errorMsg, setErrorMsg] = useState("");
     const navigate = useNavigate();
 
@@ -15,13 +14,9 @@ const UsuarioForgot = () => {
         e.preventDefault();
         setIsLoading(true);
         setErrorMsg("");
-        setDevLink("");
 
         try {
-            const res = await apiNode.post("/api/auth/forgot-password", { correo });
-            if (res.data?.devLink) {
-                setDevLink(res.data.devLink);
-            }
+            await apiNode.post("/api/auth/forgot-password", { correo });
             setIsLoading(false);
             setShowModal(true);
 
@@ -73,22 +68,35 @@ const UsuarioForgot = () => {
                                 onChange={(e) => setCorreo(e.target.value)}
                                 placeholder="Ej. usuario@sena.edu.co"
                                 required
+                                disabled={isLoading}
                             />
                         </div>
                     </div>
 
                     <button 
                         type="submit" 
-                        className="btn btn-primary w-100 py-2 mb-3 shadow-sm rounded-pill"
+                        className="btn btn-primary w-100 py-2 mb-3 shadow-sm rounded-pill d-flex align-items-center justify-content-center"
                         disabled={isLoading}
                     >
                         {isLoading ? (
-                            <span className="spinner-border spinner-border-sm me-2"></span>
+                            <>
+                                <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                <span>Enviando correo de recuperación...</span>
+                            </>
                         ) : (
-                            <i className="fa-solid fa-paper-plane me-2"></i>
+                            <>
+                                <i className="fa-solid fa-paper-plane me-2"></i>
+                                <span>Enviar Instrucciones</span>
+                            </>
                         )}
-                        Enviar Instrucciones
                     </button>
+
+                    {isLoading && (
+                        <p className="text-muted small text-center mb-3">
+                            <i className="fa-solid fa-circle-notch fa-spin me-1 text-primary"></i>
+                            Conectando con el servidor de correo, por favor espere un momento...
+                        </p>
+                    )}
 
                     <div className="text-center mt-3">
                         <Link to="/Login" className="text-decoration-none small fw-bold text-primary">
@@ -132,24 +140,6 @@ const UsuarioForgot = () => {
                                         Hemos enviado las instrucciones de recuperación a <strong>{correo}</strong>. 
                                         Revisa tu bandeja de entrada y sigue los pasos indicados.
                                     </p>
-
-                                    {devLink && (
-                                        <div className="alert alert-warning text-start mb-4 p-3 rounded-3" style={{ fontSize: '0.85rem' }}>
-                                            <div className="fw-bold mb-1">
-                                                <i className="fa-solid fa-flask me-2 text-warning"></i>
-                                                Entorno de Desarrollo / Pruebas Locales:
-                                            </div>
-                                            <p className="mb-2 text-muted" style={{ fontSize: '0.8rem' }}>
-                                                Al no haber credenciales SMTP de correo configuradas en <code>.env</code>, puedes usar el siguiente enlace para restablecer tu contraseña directamente:
-                                            </p>
-                                            <a 
-                                                href={devLink}
-                                                className="btn btn-sm btn-outline-warning w-100 fw-bold text-dark text-truncate"
-                                            >
-                                                🔑 Ir a Restablecer Contraseña
-                                            </a>
-                                        </div>
-                                    )}
 
                                     <button 
                                         className="btn btn-primary w-100 py-2 rounded-pill shadow-sm"

@@ -126,32 +126,29 @@ class UsuarioService {
     const usuario = await UsuarioModel.findOne({ where: { correo } });
     if (!usuario) {
       // Retornar éxito simulado para evitar la enumeración de usuarios
-      return { success: true, userExists: false };
+      return { success: true };
     }
 
     // Generar token único (UUID sin guiones)
     const resetToken = uuidv4().replace(/-/g, '');
 
-    // Guardar token en el usuario
+    // Guardar token con expiración de 15 minutos
     usuario.token = resetToken;
+    usuario.tokenExpiry = new Date(Date.now() + 15 * 60 * 1000); // 15 minutos
     await usuario.save();
 
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-    const resetLink = `${frontendUrl}/RestablecerPassword/${resetToken}`;
-
-    // Intentar enviar correo vía Nodemailer
+    // Enviar correo vía Nodemailer
     const emailEnviado = await EmailService.enviarCorreoRecuperacion(
       usuario.correo,
       usuario.nombre,
       resetToken
     );
 
-    return {
-      success: true,
-      userExists: true,
-      emailEnviado,
-      resetLink
-    };
+    if (!emailEnviado) {
+      console.error(`[FORGOT] ⚠️ No se pudo enviar el correo de recuperación a ${correo}`);
+    }
+
+    return { success: true };
   }
 
   async resetPassword(token, nuevaContraseña) {
@@ -170,12 +167,22 @@ class UsuarioService {
       throw new Error("El enlace de recuperación es inválido o ha expirado");
     }
 
+    // Verificar que el token no haya expirado
+    if (usuario.tokenExpiry && new Date() > new Date(usuario.tokenExpiry)) {
+      // Limpiar token expirado
+      usuario.token = null;
+      usuario.tokenExpiry = null;
+      await usuario.save();
+      throw new Error("El enlace de recuperación ha expirado. Solicite uno nuevo.");
+    }
+
     // Encriptar nueva contraseña
     const hashedContraseña = await bcrypt.hash(nuevaContraseña, 10);
 
     // Actualizar contraseña y limpiar token
     usuario.contraseña = hashedContraseña;
     usuario.token = null;
+    usuario.tokenExpiry = null;
     await usuario.save();
 
     return true;
