@@ -71,12 +71,6 @@ const CrudActividadEquipo = () => {
   // 🔹 Columnas
   const columnsTable = [
     {
-      name: 'ID',
-      selector: row => row.Id_Actividad,
-      sortable: true,
-      width: '100px'
-    },
-    {
       name: 'ACTIVIDAD',
       selector: row => row.Actividad?.Nom_Actividad,
       sortable: true,
@@ -279,11 +273,7 @@ const CrudActividadEquipo = () => {
                   )}
                 </div>
               </div>
-              <div className="modal-footer border-0 bg-light">
-                <button type="button" className="btn btn-secondary px-4 fw-bold" data-bs-toggle="modal" data-bs-target="#equiposListModal">
-                  Cerrar
-                </button>
-              </div>
+
             </div>
           </div>
         </div>

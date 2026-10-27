@@ -418,6 +418,54 @@ class ReservaService {
         throw new Error("Hor_Reserva es obligatoria");
       }
 
+      // ========================================
+      // Validar que no sea fin de semana
+      // ========================================
+      const fechaParts = String(Fec_Reserva).split('-');
+      if (fechaParts.length === 3) {
+        const fechaObj = new Date(Number(fechaParts[0]), Number(fechaParts[1]) - 1, Number(fechaParts[2]));
+        const diaSemana = fechaObj.getDay();
+        if (diaSemana === 0 || diaSemana === 6) {
+          throw new Error("No se pueden crear reservas los días sábados ni domingos. Solo de lunes a viernes.");
+        }
+      }
+
+      // ========================================
+      // Validar máximo 1 Práctica y 1 Visita por día
+      // ========================================
+      const reservasDelDia = await ReservaModel.findAll({
+        where: {
+          Fec_Reserva,
+          Booleano: 'Activo'
+        },
+        include: [{
+          model: ReservaEstadoModel,
+          as: 'ReservaEstados',
+          include: [{ model: EstadoModel, as: 'Estado' }]
+        }],
+        transaction
+      });
+
+      // Filtrar solo las que NO estén en estado Rechazado, Cancelado o Finalizado
+      const reservasActivasDelDia = reservasDelDia.filter(r => {
+        const estados = r.ReservaEstados || [];
+        if (estados.length === 0) return true;
+        const ultimoEstado = estados.sort((a, b) => b.Id_ReservaEstado - a.Id_ReservaEstado)[0];
+        const nombreEstado = ultimoEstado?.Estado?.Tip_Estado || '';
+        return !['Rechazado', 'Cancelado', 'Finalizado'].includes(nombreEstado);
+      });
+
+      const practicasDelDia = reservasActivasDelDia.filter(r => r.Tip_Reserva === 'Practica');
+      const visitasDelDia = reservasActivasDelDia.filter(r => r.Tip_Reserva === 'Visita');
+
+      if (Tip_Reserva === 'Practica' && practicasDelDia.length >= 1) {
+        throw new Error(`Ya existe una reserva de tipo Práctica para la fecha ${Fec_Reserva}. Solo se permite 1 reserva de tipo Práctica por día.`);
+      }
+
+      if (Tip_Reserva === 'Visita' && visitasDelDia.length >= 1) {
+        throw new Error(`Ya existe una reserva de tipo Visita para la fecha ${Fec_Reserva}. Solo se permite 1 reserva de tipo Visita por día.`);
+      }
+
       const actividadesIds = Array.isArray(actividades)
         ? [...new Set(actividades.map((id) => Number(id)).filter(Boolean))]
         : [];

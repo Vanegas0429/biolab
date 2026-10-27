@@ -19,6 +19,7 @@ const CrudMaterial = ({ userRol }) => {
 
   const toggleEstado = async (row) => {
     const estadoNuevo = row.Estado === 'Activo' ? 'Inactivo' : 'Activo';
+
     const result = await Swal.fire({
       title: `¿${estadoNuevo === 'Activo' ? 'Activar' : 'Inactivar'} material?`,
       text: row.Nom_Material,
@@ -29,19 +30,38 @@ const CrudMaterial = ({ userRol }) => {
       confirmButtonText: 'Sí, confirmar',
       cancelButtonText: 'Cancelar'
     });
+
     if (!result.isConfirmed) return;
+
     try {
-      await apiAxios.put(`/api/Material/${row.Id_Material}`, { ...row, Estado: estadoNuevo });
+      await apiAxios.put(`/api/Material/${row.Id_Material}`, {
+        ...row,
+        Estado: estadoNuevo
+      });
+
       getAllMaterial();
-      Swal.fire({ title: 'Estado actualizado', icon: 'success', timer: 1500, showConfirmButton: false });
+
+      Swal.fire({
+        title: 'Estado actualizado',
+        icon: 'success',
+        timer: 1500,
+        showConfirmButton: false
+      });
+
     } catch (error) {
       console.error("Error actualizando estado:", error);
-      Swal.fire('Error', 'No se pudo actualizar el estado', 'error');
+
+      Swal.fire(
+        'Error',
+        'No se pudo actualizar el estado',
+        'error'
+      );
     }
   };
 
   const parseImages = (imgField) => {
     if (!imgField) return [];
+
     try {
       const parsed = JSON.parse(imgField);
       return Array.isArray(parsed) ? parsed : [parsed];
@@ -52,26 +72,57 @@ const CrudMaterial = ({ userRol }) => {
 
   const openCarousel = (row, startIndex = 0) => {
     const imgs = parseImages(row.img_material);
+
     if (imgs.length === 0) return;
+
     setCarouselImages(imgs);
     setCarouselIndex(startIndex);
     setShowCarousel(true);
   };
 
-  const carouselPrev = () => setCarouselIndex((prev) => (prev === 0 ? carouselImages.length - 1 : prev - 1));
-  const carouselNext = () => setCarouselIndex((prev) => (prev === carouselImages.length - 1 ? 0 : prev + 1));
+  const carouselPrev = () =>
+    setCarouselIndex((prev) =>
+      prev === 0 ? carouselImages.length - 1 : prev - 1
+    );
+
+  const carouselNext = () =>
+    setCarouselIndex((prev) =>
+      prev === carouselImages.length - 1 ? 0 : prev + 1
+    );
 
   const uploadImagesToMaterial = async (row, files) => {
     if (!files || files.length === 0) return;
+
     const formData = new FormData();
-    Array.from(files).forEach(f => formData.append('img_material', f));
-    formData.append('Nom_Material', row.Nom_Material || '');
+
+    Array.from(files).forEach(f =>
+      formData.append('img_material', f)
+    );
+
+    formData.append(
+      'Nom_Material',
+      row.Nom_Material || ''
+    );
+
     try {
-      await apiAxios.put(`/api/Material/${row.Id_Material}`, formData, {
-        headers: { "Content-Type": "multipart/form-data" }
-      });
+      await apiAxios.put(
+        `/api/Material/${row.Id_Material}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data"
+          }
+        }
+      );
+
       await getAllMaterial();
-      Swal.fire('¡Éxito!', 'Imágenes subidas correctamente', 'success');
+
+      Swal.fire(
+        '¡Éxito!',
+        'Imágenes subidas correctamente',
+        'success'
+      );
+
     } catch (error) {
       console.error("Error subiendo imágenes:", error);
     }
@@ -79,10 +130,14 @@ const CrudMaterial = ({ userRol }) => {
 
   const triggerImageUpload = (row) => {
     const input = document.createElement('input');
+
     input.type = 'file';
     input.accept = 'image/*';
     input.multiple = true;
-    input.onchange = (e) => uploadImagesToMaterial(row, e.target.files);
+
+    input.onchange = (e) =>
+      uploadImagesToMaterial(row, e.target.files);
+
     input.click();
   };
 
@@ -96,19 +151,36 @@ const CrudMaterial = ({ userRol }) => {
       cancelButtonColor: '#3085d6',
       confirmButtonText: 'Sí, eliminar'
     });
+
     if (!result.isConfirmed) return;
 
     try {
-      await apiAxios.delete(`/api/Material/${materialId}/imagen/${filename}`);
+      await apiAxios.delete(
+        `/api/Material/${materialId}/imagen/${filename}`
+      );
+
       await getAllMaterial();
-      const remaining = carouselImages.filter(img => img !== filename);
+
+      const remaining = carouselImages.filter(
+        img => img !== filename
+      );
+
       if (remaining.length === 0) {
         setShowCarousel(false);
       } else {
         setCarouselImages(remaining);
-        setCarouselIndex((prev) => Math.min(prev, remaining.length - 1));
+
+        setCarouselIndex((prev) =>
+          Math.min(prev, remaining.length - 1)
+        );
       }
-      Swal.fire('Eliminada', 'La imagen ha sido eliminada.', 'success');
+
+      Swal.fire(
+        'Eliminada',
+        'La imagen ha sido eliminada.',
+        'success'
+      );
+
     } catch (error) {
       console.error("Error eliminando imagen:", error);
     }
@@ -117,71 +189,137 @@ const CrudMaterial = ({ userRol }) => {
   const findCarouselMaterial = () => {
     return Material.find(mat => {
       const imgs = parseImages(mat.img_material);
-      return imgs.some(img => carouselImages.includes(img));
+
+      return imgs.some(
+        img => carouselImages.includes(img)
+      );
     });
   };
 
   useEffect(() => {
     getAllMaterial();
+
+    // Auto-refresh cada 15 segundos
+    const interval = setInterval(() => {
+      getAllMaterial();
+    }, 15000);
+
+    return () => clearInterval(interval);
   }, []);
 
   const getAllMaterial = async () => {
     try {
       const response = await apiAxios.get('/api/Material');
+
       setMaterial(response.data);
       setLoading(false);
+
     } catch (error) {
-      console.error("Error cargando materiales:", error);
+      console.error(
+        "Error cargando materiales:",
+        error
+      );
+
       setLoading(false);
     }
   };
 
   const newListMaterial = Material.filter((uso) => {
     const textToSearch = filterText.toLowerCase();
-    return (uso.Nom_Material || '').toLowerCase().includes(textToSearch);
+
+    return (uso.Nom_Material || '')
+      .toLowerCase()
+      .includes(textToSearch);
   });
 
   const hideModal = () => {
-    const btn = document.getElementById('closeModal')
-    if (btn) btn.click()
+    const btn = document.getElementById('closeModal');
+
+    if (btn) btn.click();
   };
 
-  if (loading) return (
-    <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '60vh' }}>
-      <div className="spinner-border text-primary" role="status">
-        <span className="visually-hidden">Cargando...</span>
+  if (loading) {
+    return (
+      <div
+        className="d-flex justify-content-center align-items-center"
+        style={{ minHeight: '60vh' }}
+      >
+        <div
+          className="spinner-border text-primary"
+          role="status"
+        >
+          <span className="visually-hidden">
+            Cargando...
+          </span>
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
 
   return (
     <div className="container-fluid py-4 fade-in">
+
       {/* HEADER */}
       <div className="row mb-4 align-items-center g-3">
+
         <div className="col">
+
           <div className="d-flex align-items-center gap-3">
-            <div className="bg-primary text-white rounded-circle d-flex justify-content-center align-items-center shadow-sm" style={{ width: '50px', height: '50px' }}>
+
+            <div
+              className="bg-primary text-white rounded-circle d-flex justify-content-center align-items-center shadow-sm"
+              style={{
+                width: '50px',
+                height: '50px'
+              }}
+            >
               <i className="fa-solid fa-boxes-stacked fs-4"></i>
             </div>
+
             <div>
-              <h2 className="fw-bold mb-0" style={{ color: 'var(--secondary-color)' }}>Gestión de Materiales</h2>
-              <p className="text-muted mb-0 small">Inventario de insumos y materiales de laboratorio.</p>
+
+              <h2
+                className="fw-bold mb-0"
+                style={{
+                  color: 'var(--secondary-color)'
+                }}
+              >
+                Gestión de Materiales
+              </h2>
+
+              <p className="text-muted mb-0 small">
+                Inventario de insumos y materiales de laboratorio.
+              </p>
+
             </div>
+
           </div>
+
         </div>
+
         <div className="col-md-auto d-flex gap-2">
-          <div className="input-group shadow-sm rounded-pill overflow-hidden bg-white border" style={{ width: '300px' }}>
+
+          <div
+            className="input-group shadow-sm rounded-pill overflow-hidden bg-white border"
+            style={{ width: '300px' }}
+          >
+
             <span className="input-group-text border-0 bg-transparent ps-3">
               <i className="fa-solid fa-magnifying-glass text-muted"></i>
             </span>
+
             <input
               type="text"
               className="form-control border-0 py-2 shadow-none bg-transparent"
               placeholder="Buscar material..."
               value={filterText}
-              onChange={(e) => setFilterText(e.target.value)}
+              onChange={(e) =>
+                setFilterText(e.target.value)
+              }
             />
+
           </div>
+
           {userRol !== 'solicitante' && (
             <button
               className="btn btn-primary rounded-pill px-4 shadow-sm"
@@ -189,136 +327,268 @@ const CrudMaterial = ({ userRol }) => {
               data-bs-target="#exampleModal"
               onClick={() => setRowToEdit(null)}
             >
-              <i className="fa-solid fa-plus me-2"></i>Nuevo Material
+              <i className="fa-solid fa-plus me-2"></i>
+              Nuevo Material
             </button>
           )}
+
         </div>
+
       </div>
 
       {/* TABLA ESTILO PREMIUM CON DATATABLE */}
-      <div className="card border-0 shadow-lg overflow-hidden" style={{ borderRadius: '20px' }}>
+      <div
+        className="card border-0 shadow-lg overflow-hidden"
+        style={{
+          borderRadius: '20px'
+        }}
+      >
+
         <DataTable
+
           columns={[
-            ...(userRol !== 'solicitante' ? [{
-              name: 'ID',
-              selector: row => row.Id_Material,
-              sortable: true,
-              width: '100px'
-            }] : []),
+
+            /* =========================
+               MATERIAL
+            ========================= */
             {
               name: 'MATERIAL',
               sortable: true,
               grow: 2,
               minWidth: '200px',
+
               cell: (row) => {
-                const imgs = parseImages(row.img_material);
+
+                const imgs = parseImages(
+                  row.img_material
+                );
+
                 return (
                   <div className="d-flex align-items-center py-2">
+
                     <div
                       className="position-relative"
                       style={{
-                        marginRight: userRol === 'solicitante' ? '70px' : '16px'
+                        marginRight:
+                          userRol === 'solicitante'
+                            ? '70px'
+                            : '16px'
                       }}
                     >
+
                       {imgs.length > 0 ? (
+
                         <img
                           src={`${API_URL}/uploads/${imgs[0]}`}
                           alt={row.Nom_Material}
                           className="rounded shadow-sm border"
-                          style={{ width: '45px', height: '45px', objectFit: 'cover', cursor: 'pointer' }}
-                          onClick={() => openCarousel(row)}
+                          style={{
+                            width: '45px',
+                            height: '45px',
+                            objectFit: 'cover',
+                            cursor: 'pointer'
+                          }}
+                          onClick={() =>
+                            openCarousel(row)
+                          }
                         />
+
                       ) : (
+
                         <div
                           className="bg-light text-muted d-flex align-items-center justify-content-center rounded border"
-                          style={{ width: '45px', height: '45px', borderStyle: 'dashed !important', cursor: userRol !== 'solicitante' ? 'pointer' : 'default' }}
-                          onClick={() => userRol !== 'solicitante' && triggerImageUpload(row)}
+                          style={{
+                            width: '45px',
+                            height: '45px',
+                            borderStyle:
+                              'dashed !important',
+                            cursor:
+                              userRol !== 'solicitante'
+                                ? 'pointer'
+                                : 'default'
+                          }}
+                          onClick={() =>
+                            userRol !== 'solicitante' &&
+                            triggerImageUpload(row)
+                          }
                         >
                           <i className="fa-solid fa-camera opacity-50"></i>
                         </div>
+
                       )}
+
                       {imgs.length > 1 && (
-                        <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary border border-white" style={{ fontSize: '0.6rem' }}>
+
+                        <span
+                          className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary border border-white"
+                          style={{
+                            fontSize: '0.6rem'
+                          }}
+                        >
                           +{imgs.length - 1}
                         </span>
+
                       )}
+
                     </div>
-                    <div className="fw-bold text-dark">{row.Nom_Material}</div>
+
+                    <div className="fw-bold text-dark">
+                      {row.Nom_Material}
+                    </div>
+
                   </div>
                 );
               }
             },
+
+            /* =========================
+               CLASIFICACIÓN
+            ========================= */
             {
               name: 'CLASIFICACIÓN',
-              selector: row => row.clasificacion || 'Desechable',
+
+              selector: row =>
+                row.clasificacion || 'Desechable',
+
               sortable: true,
-              width: userRol === 'solicitante' ? '600px' : '180px',
+
+              // Centra la celda completa
+              center: true,
+
+              width:
+                userRol === 'solicitante'
+                  ? '400px'
+                  : '200px',
+
               cell: (row) => (
+
                 <div
+                  className="w-100 d-flex justify-content-center align-items-center"
                   style={{
-                    width: '100%',
-                    display: 'flex',
-                    justifyContent: userRol === 'solicitante'
-                      ? 'flex-start'
-                      : 'center',
-                    paddingLeft: userRol === 'solicitante' ? '20px' : '0px'
+                    textAlign: 'center'
                   }}
                 >
+
                   <span
                     className={`badge ${row.clasificacion === 'Reutilizable'
-                      ? 'bg-info text-dark'
-                      : 'bg-secondary'
+                        ? 'bg-info text-dark'
+                        : 'bg-secondary'
                       } rounded-pill px-3 py-2 fw-medium`}
                   >
                     {row.clasificacion || 'Desechable'}
                   </span>
+
                 </div>
+
               )
             },
-            ...(userRol !== 'solicitante' ? [{
-              name: 'ESTADO',
-              sortable: true,
-              center: true,
-              width: '250px',
-              cell: (row) => (
-                <span
-                  className={`status-badge ${row.Estado === 'Activo' ? 'status-badge-activo' : 'status-badge-inactivo'}`}
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => toggleEstado(row)}
-                >
-                  {row.Estado}
-                </span>
-              )
-            },
-            {
-              name: 'ACCIONES',
-              center: true,
-              width: '250px',
-              cell: (row) => (
-                <button
-                  className="btn-action btn-action-edit"
-                  onClick={() => setRowToEdit(row)}
-                  data-bs-toggle="modal"
-                  data-bs-target="#exampleModal"
-                  title="Editar"
-                >
-                  <i className="fa-solid fa-pencil"></i>
-                </button>
-              )
-            }] : [])
+
+            /* =========================
+               ESTADO
+            ========================= */
+            ...(userRol !== 'solicitante'
+              ? [
+
+                {
+                  name: 'ESTADO',
+
+                  sortable: true,
+
+                  center: true,
+
+                  width: '250px',
+
+                  cell: (row) => (
+
+                    <div
+                      className="w-100 d-flex justify-content-center align-items-center"
+                    >
+
+                      <span
+                        className={`status-badge ${row.Estado === 'Activo'
+                            ? 'status-badge-activo'
+                            : 'status-badge-inactivo'
+                          }`}
+                        style={{
+                          cursor: 'pointer'
+                        }}
+                        onClick={() =>
+                          toggleEstado(row)
+                        }
+                      >
+                        {row.Estado}
+                      </span>
+
+                    </div>
+
+                  )
+                },
+
+                /* =========================
+                   ACCIONES
+                ========================= */
+                {
+                  name: 'ACCIONES',
+
+                  center: true,
+
+                  width: '250px',
+
+                  cell: (row) => (
+
+                    <div
+                      className="w-100 d-flex justify-content-center align-items-center"
+                    >
+
+                      <button
+                        className="btn-action btn-action-edit"
+                        onClick={() =>
+                          setRowToEdit(row)
+                        }
+                        data-bs-toggle="modal"
+                        data-bs-target="#exampleModal"
+                        title="Editar"
+                      >
+                        <i className="fa-solid fa-pencil"></i>
+                      </button>
+
+                    </div>
+
+                  )
+                }
+
+              ]
+              : [])
+
           ]}
+
           data={newListMaterial}
+
+          keyField="Id_Material"
+
           pagination
+
           highlightOnHover
+
           noDataComponent={
+
             <div className="text-center py-5 text-muted">
-              <i className="fa-solid fa-box-open fs-1 mb-3 d-block opacity-25"></i>
+
+              <i
+                className="fa-solid fa-box-open fs-1 mb-3 d-block opacity-25"
+              ></i>
+
               No se encontraron materiales.
+
             </div>
+
           }
+
           conditionalRowStyles={[
             {
-              when: row => row.Estado === "Inactivo",
+              when: row =>
+                row.Estado === "Inactivo",
+
               style: {
                 backgroundColor: "#f8fafc",
                 color: "#94a3b8",
@@ -326,54 +596,183 @@ const CrudMaterial = ({ userRol }) => {
               }
             }
           ]}
+
         />
+
       </div>
 
-      {/* Modal formulario */}
-      <div className="modal fade" id="exampleModal" tabIndex="-1">
+      {/* =========================
+          MODAL FORMULARIO
+      ========================= */}
+
+      <div
+        className="modal fade"
+        id="exampleModal"
+        tabIndex="-1"
+      >
+
         <div className="modal-dialog modal-lg border-0">
-          <div className="modal-content shadow-lg border-0" style={{ borderRadius: '20px' }}>
-            <div className="modal-header bg-primary text-white border-0 py-3" style={{ borderTopLeftRadius: '20px', borderTopRightRadius: '20px' }}>
+
+          <div
+            className="modal-content shadow-lg border-0"
+            style={{
+              borderRadius: '20px'
+            }}
+          >
+
+            <div
+              className="modal-header bg-primary text-white border-0 py-3"
+              style={{
+                borderTopLeftRadius: '20px',
+                borderTopRightRadius: '20px'
+              }}
+            >
+
               <h5 className="modal-title fw-bold">
-                {rowToEdit ? "Editar Material" : "Agregar Nuevo Material"}
+
+                {rowToEdit
+                  ? "Editar Material"
+                  : "Agregar Nuevo Material"}
+
               </h5>
-              <button type="button" className="btn-close btn-close-white shadow-none" data-bs-dismiss="modal" id="closeModal"></button>
+
+              <button
+                type="button"
+                className="btn-close btn-close-white shadow-none"
+                data-bs-dismiss="modal"
+                id="closeModal"
+              ></button>
+
             </div>
+
             <div className="modal-body p-4">
+
               <MaterialForm
                 hideModal={hideModal}
                 refreshList={getAllMaterial}
                 rowToEdit={rowToEdit}
               />
+
             </div>
+
           </div>
+
         </div>
+
       </div>
 
-      {/* MODAL CARRUSEL */}
-      {showCarousel && carouselImages.length > 0 && (
-        <div className="carousel-overlay" onClick={() => setShowCarousel(false)}>
-          <div className="carousel-container" onClick={(e) => e.stopPropagation()}>
-            <button className="carousel-close" onClick={() => setShowCarousel(false)}><i className="fa-solid fa-xmark"></i></button>
-            <div className="carousel-counter">{carouselIndex + 1} / {carouselImages.length}</div>
-            {carouselImages.length > 1 && (
-              <button className="carousel-arrow carousel-arrow-left" onClick={carouselPrev}><i className="fa-solid fa-chevron-left"></i></button>
-            )}
-            <div className="carousel-image-wrapper">
-              <img src={`${API_URL}/uploads/${carouselImages[carouselIndex]}`} alt={`Imagen ${carouselIndex + 1}`} className="carousel-image shadow-lg" />
-            </div>
-            {carouselImages.length > 1 && (
-              <button className="carousel-arrow carousel-arrow-right" onClick={carouselNext}><i className="fa-solid fa-chevron-right"></i></button>
-            )}
-            {userRol !== 'solicitante' && (
-              <div className="carousel-actions">
-                <button className="carousel-action-btn add-btn" onClick={() => { const mat = findCarouselMaterial(); if (mat) triggerImageUpload(mat); }}><i className="fa-solid fa-plus me-2"></i>Agregar</button>
-                <button className="carousel-action-btn delete-btn" onClick={() => { const mat = findCarouselMaterial(); if (mat) deleteImage(mat.Id_Material, carouselImages[carouselIndex]); }}><i className="fa-solid fa-trash-can me-2"></i>Eliminar</button>
+      {/* =========================
+          MODAL CARRUSEL
+      ========================= */}
+
+      {showCarousel &&
+        carouselImages.length > 0 && (
+
+          <div
+            className="carousel-overlay"
+            onClick={() =>
+              setShowCarousel(false)
+            }
+          >
+
+            <div
+              className="carousel-container"
+              onClick={(e) =>
+                e.stopPropagation()
+              }
+            >
+
+              <button
+                className="carousel-close"
+                onClick={() =>
+                  setShowCarousel(false)
+                }
+              >
+                <i className="fa-solid fa-xmark"></i>
+              </button>
+
+              <div className="carousel-counter">
+                {carouselIndex + 1} / {carouselImages.length}
               </div>
-            )}
+
+              {carouselImages.length > 1 && (
+
+                <button
+                  className="carousel-arrow carousel-arrow-left"
+                  onClick={carouselPrev}
+                >
+                  <i className="fa-solid fa-chevron-left"></i>
+                </button>
+
+              )}
+
+              <div className="carousel-image-wrapper">
+
+                <img
+                  src={`${API_URL}/uploads/${carouselImages[carouselIndex]}`}
+                  alt={`Imagen ${carouselIndex + 1}`}
+                  className="carousel-image shadow-lg"
+                />
+
+              </div>
+
+              {carouselImages.length > 1 && (
+
+                <button
+                  className="carousel-arrow carousel-arrow-right"
+                  onClick={carouselNext}
+                >
+                  <i className="fa-solid fa-chevron-right"></i>
+                </button>
+
+              )}
+
+              {userRol !== 'solicitante' && (
+
+                <div className="carousel-actions">
+
+                  <button
+                    className="carousel-action-btn add-btn"
+                    onClick={() => {
+                      const mat =
+                        findCarouselMaterial();
+
+                      if (mat)
+                        triggerImageUpload(mat);
+                    }}
+                  >
+                    <i className="fa-solid fa-plus me-2"></i>
+                    Agregar
+                  </button>
+
+                  <button
+                    className="carousel-action-btn delete-btn"
+                    onClick={() => {
+                      const mat =
+                        findCarouselMaterial();
+
+                      if (mat) {
+                        deleteImage(
+                          mat.Id_Material,
+                          carouselImages[carouselIndex]
+                        );
+                      }
+                    }}
+                  >
+                    <i className="fa-solid fa-trash-can me-2"></i>
+                    Eliminar
+                  </button>
+
+                </div>
+
+              )}
+
+            </div>
+
           </div>
-        </div>
-      )}
+
+        )}
+
     </div>
   );
 };

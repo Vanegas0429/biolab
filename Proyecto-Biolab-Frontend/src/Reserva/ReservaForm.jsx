@@ -72,7 +72,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
     return `${year}-${month}-${day}`;
   };
 
-  const handleDateChange = (val) => {
+  const handleDateChange = async (val) => {
     if (!val) {
       setFec_Reserva("");
       return;
@@ -100,6 +100,49 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
       setFec_Reserva("");
       return;
     }
+
+    // Validar disponibilidad del día (máx 1 Práctica y 1 Visita)
+    if (!isEditing) {
+      try {
+        const res = await apiAxios.get("/api/Reserva");
+        const data = res.data;
+        const allReservas = Array.isArray(data) ? data : data?.data ?? [];
+
+        // Filtrar reservas activas del día seleccionado (excluir Rechazado, Cancelado, Finalizado)
+        const reservasDelDia = allReservas.filter(r => {
+          if (r.Fec_Reserva !== val) return false;
+          if (r.Booleano === 'Inactivo') return false;
+          const estado = r.Des_Estado || '';
+          return !['Rechazado', 'Cancelado', 'Finalizado'].includes(estado);
+        });
+
+        const practicas = reservasDelDia.filter(r => r.Tip_Reserva === 'Practica');
+        const visitas = reservasDelDia.filter(r => r.Tip_Reserva === 'Visita');
+
+        if (Tip_Reserva === 'Practica' && practicas.length >= 1) {
+          Swal.fire({
+            title: "Fecha no disponible",
+            text: `Ya existe una reserva de tipo Práctica para ${val}. Solo se permite 1 por día.`,
+            icon: "warning"
+          });
+          setFec_Reserva("");
+          return;
+        }
+
+        if (Tip_Reserva === 'Visita' && visitas.length >= 1) {
+          Swal.fire({
+            title: "Fecha no disponible",
+            text: `Ya existe una reserva de tipo Visita para ${val}. Solo se permite 1 por día.`,
+            icon: "warning"
+          });
+          setFec_Reserva("");
+          return;
+        }
+      } catch (error) {
+        console.warn("No se pudo validar disponibilidad del día:", error);
+      }
+    }
+
     setFec_Reserva(val);
   };
 
@@ -367,6 +410,45 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
   useEffect(() => {
     if (Tip_Reserva === "Visita") {
       limpiarActividadesYRecursos();
+    }
+
+    // Re-validar fecha si ya hay una seleccionada y estamos creando
+    if (Fec_Reserva && !isEditing) {
+      (async () => {
+        try {
+          const res = await apiAxios.get("/api/Reserva");
+          const data = res.data;
+          const allReservas = Array.isArray(data) ? data : data?.data ?? [];
+
+          const reservasDelDia = allReservas.filter(r => {
+            if (r.Fec_Reserva !== Fec_Reserva) return false;
+            if (r.Booleano === 'Inactivo') return false;
+            const estado = r.Des_Estado || '';
+            return !['Rechazado', 'Cancelado', 'Finalizado'].includes(estado);
+          });
+
+          const practicas = reservasDelDia.filter(r => r.Tip_Reserva === 'Practica');
+          const visitas = reservasDelDia.filter(r => r.Tip_Reserva === 'Visita');
+
+          if (Tip_Reserva === 'Practica' && practicas.length >= 1) {
+            Swal.fire({
+              title: "Fecha no disponible",
+              text: `Ya existe una reserva de tipo Práctica para ${Fec_Reserva}. Seleccione otra fecha.`,
+              icon: "warning"
+            });
+            setFec_Reserva("");
+          } else if (Tip_Reserva === 'Visita' && visitas.length >= 1) {
+            Swal.fire({
+              title: "Fecha no disponible",
+              text: `Ya existe una reserva de tipo Visita para ${Fec_Reserva}. Seleccione otra fecha.`,
+              icon: "warning"
+            });
+            setFec_Reserva("");
+          }
+        } catch (error) {
+          console.warn("No se pudo re-validar disponibilidad:", error);
+        }
+      })();
     }
   }, [Tip_Reserva]);
 
