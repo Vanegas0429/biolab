@@ -67,9 +67,11 @@ const EquiposForm = ({ hideModal, rowToEdit, refreshList, equipos = [] }) => {
     const gestionarForm = async (e) => {
         e.preventDefault();
 
-        // Validar unicidad de placa en el frontend
+        // Validar unicidad de placa en el frontend (solo si tiene una placa real)
         const placaLimpia = placa ? placa.trim() : "";
-        if (placaLimpia) {
+        const esSinPlaca = !placaLimpia || placaLimpia.toUpperCase() === "N/A" || placaLimpia.toUpperCase() === "SIN PLACA";
+
+        if (!esSinPlaca) {
             const idActual = rowToEdit?.Id_Equipo;
             const duplicado = (equipos || []).find(eq => 
                 eq.placa && 

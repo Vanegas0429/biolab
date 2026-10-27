@@ -34,11 +34,14 @@ class EquipoService {
             }
         }
 
-        // Validar que la placa no esté repetida si se envía
+        // Validar que la placa no esté repetida si se envía una placa real
         if (data.placa !== undefined && data.placa !== null) {
             const placaTrimmed = String(data.placa).trim();
-            data.placa = placaTrimmed;
-            if (placaTrimmed !== "") {
+            // Si está vacío o es indicativo de sin placa (ej: N/A), se guarda como null y no se valida unicidad
+            if (placaTrimmed === "" || placaTrimmed.toUpperCase() === "N/A" || placaTrimmed.toUpperCase() === "SIN PLACA") {
+                data.placa = null;
+            } else {
+                data.placa = placaTrimmed;
                 const existePlaca = await EquipoModel.findOne({
                     where: { placa: placaTrimmed }
                 });
@@ -68,8 +71,10 @@ class EquipoService {
         // Validar que la placa no pertenezca a otro equipo
         if (data.placa !== undefined && data.placa !== null) {
             const placaTrimmed = String(data.placa).trim();
-            data.placa = placaTrimmed;
-            if (placaTrimmed !== "") {
+            if (placaTrimmed === "" || placaTrimmed.toUpperCase() === "N/A" || placaTrimmed.toUpperCase() === "SIN PLACA") {
+                data.placa = null;
+            } else {
+                data.placa = placaTrimmed;
                 const existePlaca = await EquipoModel.findOne({
                     where: {
                         placa: placaTrimmed,
