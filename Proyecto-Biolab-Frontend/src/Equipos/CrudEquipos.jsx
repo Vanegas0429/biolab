@@ -557,6 +557,7 @@ const CrudEquipos = ({ userRol }) => {
                 hideModal={hideModal}
                 refreshList={getAllEquipos}
                 rowToEdit={rowToEdit}
+                equipos={equipos}
               />
             </div>
           </div>

@@ -1,6 +1,7 @@
 import EquipoModel from "../models/EquipoModel.js";
 import fs from 'fs';
 import path from 'path';
+import { Op } from "sequelize";
 
 class EquipoService {
 
@@ -32,6 +33,21 @@ class EquipoService {
                 data.linea = trimmed.charAt(0).toUpperCase() + trimmed.slice(1).toLowerCase();
             }
         }
+
+        // Validar que la placa no esté repetida si se envía
+        if (data.placa !== undefined && data.placa !== null) {
+            const placaTrimmed = String(data.placa).trim();
+            data.placa = placaTrimmed;
+            if (placaTrimmed !== "") {
+                const existePlaca = await EquipoModel.findOne({
+                    where: { placa: placaTrimmed }
+                });
+                if (existePlaca) {
+                    throw new Error(`Ya existe un equipo registrado con la placa "${placaTrimmed}". La placa debe ser única.`);
+                }
+            }
+        }
+
         return await EquipoModel.create(data);
     }
 
@@ -46,6 +62,23 @@ class EquipoService {
             const trimmed = data.linea.trim();
             if (trimmed) {
                 data.linea = trimmed.charAt(0).toUpperCase() + trimmed.slice(1).toLowerCase();
+            }
+        }
+
+        // Validar que la placa no pertenezca a otro equipo
+        if (data.placa !== undefined && data.placa !== null) {
+            const placaTrimmed = String(data.placa).trim();
+            data.placa = placaTrimmed;
+            if (placaTrimmed !== "") {
+                const existePlaca = await EquipoModel.findOne({
+                    where: {
+                        placa: placaTrimmed,
+                        Id_Equipo: { [Op.ne]: Id_Equipo }
+                    }
+                });
+                if (existePlaca) {
+                    throw new Error(`Ya existe otro equipo registrado con la placa "${placaTrimmed}". La placa debe ser única.`);
+                }
             }
         }
 

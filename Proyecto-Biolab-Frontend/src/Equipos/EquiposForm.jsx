@@ -3,7 +3,7 @@ import apiAxios from "../api/axiosConfig.js";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 
-const EquiposForm = ({ hideModal, rowToEdit, refreshList }) => {
+const EquiposForm = ({ hideModal, rowToEdit, refreshList, equipos = [] }) => {
 
     const Myswal = withReactContent(Swal);
 
@@ -66,6 +66,26 @@ const EquiposForm = ({ hideModal, rowToEdit, refreshList }) => {
 
     const gestionarForm = async (e) => {
         e.preventDefault();
+
+        // Validar unicidad de placa en el frontend
+        const placaLimpia = placa ? placa.trim() : "";
+        if (placaLimpia) {
+            const idActual = rowToEdit?.Id_Equipo;
+            const duplicado = (equipos || []).find(eq => 
+                eq.placa && 
+                eq.placa.trim().toLowerCase() === placaLimpia.toLowerCase() && 
+                String(eq.Id_Equipo) !== String(idActual)
+            );
+            if (duplicado) {
+                Myswal.fire({
+                    title: "Placa duplicada",
+                    text: `Ya existe un equipo ("${duplicado.nombre}") registrado con la placa "${placaLimpia}". La placa debe ser única.`,
+                    icon: "warning"
+                });
+                return;
+            }
+        }
+
         setIsSubmitting(true);
 
         const formData = new FormData();
@@ -74,7 +94,7 @@ const EquiposForm = ({ hideModal, rowToEdit, refreshList }) => {
         formData.append("grupo", grupo);
         formData.append("linea", linea);
         formData.append("centro_costos", centro_costos);
-        formData.append("placa", placa);
+        formData.append("placa", placaLimpia);
         formData.append("serial", serial);
         formData.append("vida_util", vida_util);
         formData.append("valor_unitario", valor_unitario ? String(Math.round(Number(valor_unitario))) : "0");
@@ -130,9 +150,10 @@ const EquiposForm = ({ hideModal, rowToEdit, refreshList }) => {
         } catch (error) {
             console.error("Error guardando equipo:", error.response?.data || error.message);
 
+            const mensaje = error.response?.data?.message || "Ocurrió un error al guardar";
             Myswal.fire({
-                title: "Error",
-                text: "Ocurrió un error al guardar",
+                title: "Error al guardar",
+                text: mensaje,
                 icon: "error"
             });
         } finally {
@@ -183,7 +204,7 @@ const EquiposForm = ({ hideModal, rowToEdit, refreshList }) => {
                         className="form-control rounded-pill shadow-sm px-3"
                         value={placa}
                         onChange={(e) => setPlaca(e.target.value)}
-                        placeholder="Ingrese Placa"
+                        placeholder="Ingrese Placa (Única)"
                     />
                 </div>
 
