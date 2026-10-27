@@ -12,6 +12,9 @@ export const verifyToken = (req, res, next) => {
     req.user = decoded;
     next();
   } catch (error) {
+    if (error.name === "TokenExpiredError") {
+      return res.status(401).json({ message: "Tu sesión ha expirado", expired: true });
+    }
     return res.status(401).json({ message: "Token inválido" });
   }
 };
