@@ -275,8 +275,7 @@ class ReservaService {
         Nom_Equipo: re.Equipo?.nombre,
         Uni_Medida: 'Unidades',
         ficha_tecnica: re.Equipo?.ficha_tecnica,
-        marca: re.Equipo?.marca,
-        img_equipo: re.Equipo?.img_equipo
+        marca: re.Equipo?.marca
       })) || [];
 
       const materiales = json.ReservaMateriales?.map(rm => ({
@@ -351,8 +350,7 @@ class ReservaService {
       Nom_Equipo: re.Equipo?.nombre,
       Uni_Medida: 'Unidades',
       ficha_tecnica: re.Equipo?.ficha_tecnica,
-      marca: re.Equipo?.marca,
-      img_equipo: re.Equipo?.img_equipo
+      marca: re.Equipo?.marca
     })) || [];
 
     const materiales = json.ReservaMateriales?.map(rm => ({
@@ -724,7 +722,7 @@ class ReservaService {
 
       const transicionesValidas = {
         Solicitado: ["Aprobado", "Rechazado"],
-        Aprobado: ["En proceso", "Cancelado"],
+        Aprobado: ["En proceso", "Cancelado", "Rechazado"],
         "En proceso": ["Finalizado"],
         Rechazado: [],
         Cancelado: [],

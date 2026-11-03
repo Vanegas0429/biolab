@@ -1,48 +1,49 @@
-import cron from 'node-cron';
 import { Op } from 'sequelize';
 import ReservaModel from './models/ReservaModel.js';
 import ReservaService from './services/ReservaService.js';
 import EstadoModel from './models/EstadoModel.js';
 import { enviarCorreoRechazo } from './services/EmailService.js';
 
-export const startCronJobs = () => {
-    // Ejecutar todos los días a la medianoche (00:00)
-    // Para probarlo, se podría usar '* * * * *' (cada minuto), pero lo dejaremos diario '0 0 * * *'
-    cron.schedule('0 0 * * *', async () => {
-        try {
-            console.log("[CRON] Ejecutando tarea de rechazo de reservas vencidas...");
-            
-            // Obtener la fecha de hoy en formato YYYY-MM-DD local
-            const tzoffset = (new Date()).getTimezoneOffset() * 60000; // offset in milliseconds
-            const today = (new Date(Date.now() - tzoffset)).toISOString().split('T')[0];
-            
-            // Buscar reservas activas cuya fecha sea anterior a hoy
-            const reservasVencidas = await ReservaModel.findAll({
-                where: {
-                    Fec_Reserva: { [Op.lt]: today },
-                    Booleano: 'Activo'
-                }
-            });
+export const verificarReservasVencidas = async () => {
+    try {
+        const tzoffset = (new Date()).getTimezoneOffset() * 60000;
+        const nowLocal = new Date(Date.now() - tzoffset);
+        const todayStr = nowLocal.toISOString().split('T')[0];
+        const currentHours = String(nowLocal.getUTCHours()).padStart(2, '0');
+        const currentMinutes = String(nowLocal.getUTCMinutes()).padStart(2, '0');
+        const currentTimeStr = `${currentHours}:${currentMinutes}:00`;
 
-            if(reservasVencidas.length > 0) {
-                console.log(`[CRON] Se encontraron ${reservasVencidas.length} reservas vencidas.`);
-                const estadoRechazado = await EstadoModel.findOne({ where: { Tip_Estado: 'Rechazado' }});
-                
-                const MOTIVO_VENCIMIENTO = "Reserva vencida automáticamente: no fue gestionada antes de la fecha solicitada. Por favor solicite una nueva reserva con otra fecha disponible.";
+        // Buscar reservas activas cuya fecha ya haya pasado o cuya hora haya pasado hoy
+        const reservasVencidas = await ReservaModel.findAll({
+            where: {
+                Booleano: 'Activo',
+                [Op.or]: [
+                    { Fec_Reserva: { [Op.lt]: todayStr } },
+                    {
+                        Fec_Reserva: todayStr,
+                        Hor_Reserva: { [Op.lt]: currentTimeStr }
+                    }
+                ]
+            }
+        });
 
-                if(estadoRechazado) {
-                    for(const reserva of reservasVencidas) {
+        if (reservasVencidas.length > 0) {
+            console.log(`[AUTO-RECHAZO] Se encontraron ${reservasVencidas.length} reservas vencidas.`);
+            const estadoRechazado = await EstadoModel.findOne({ where: { Tip_Estado: 'Rechazado' } });
+            const MOTIVO_VENCIMIENTO = "Reserva vencida automáticamente: no fue gestionada antes de la fecha y hora solicitada.";
+
+            if (estadoRechazado) {
+                for (const reserva of reservasVencidas) {
+                    try {
+                        await ReservaService.cambiarEstado(
+                            reserva.Id_Reserva,
+                            estadoRechazado.Id_Estado,
+                            MOTIVO_VENCIMIENTO
+                        );
+                        console.log(`[AUTO-RECHAZO] Reserva #${reserva.Id_Reserva} rechazada automáticamente.`);
+
                         try {
-                            // Usamos el servicio que ya maneja el cambio de estado y actualiza Booleano a Inactivo
-                            await ReservaService.cambiarEstado(
-                                reserva.Id_Reserva, 
-                                estadoRechazado.Id_Estado, 
-                                MOTIVO_VENCIMIENTO
-                            );
-                            console.log(`[CRON] Reserva ${reserva.Id_Reserva} rechazada automáticamente.`);
-
-                            // Enviar correo de notificación al solicitante
-                            try {
+                            if (reserva.Cor_Solicitante) {
                                 await enviarCorreoRechazo(
                                     reserva.Cor_Solicitante,
                                     reserva.Nom_Solicitante,
@@ -50,22 +51,29 @@ export const startCronJobs = () => {
                                     reserva.Fec_Reserva,
                                     MOTIVO_VENCIMIENTO
                                 );
-                            } catch (emailError) {
-                                console.error(`[CRON-EMAIL] Error enviando correo a ${reserva.Cor_Solicitante}:`, emailError.message);
                             }
-                        } catch(e) {
-                            console.error(`[CRON] Error al rechazar la reserva ${reserva.Id_Reserva}:`, e.message);
+                        } catch (emailErr) {
+                            console.warn(`[AUTO-RECHAZO-EMAIL] Advertencia al enviar correo para reserva #${reserva.Id_Reserva}:`, emailErr.message);
                         }
+                    } catch (e) {
+                        console.warn(`[AUTO-RECHAZO] No se pudo cambiar estado de reserva #${reserva.Id_Reserva}:`, e.message);
                     }
-                } else {
-                    console.error("[CRON] No se encontró el estado 'Rechazado' en la base de datos.");
                 }
-            } else {
-                console.log("[CRON] No hay reservas vencidas.");
             }
-        } catch (error) {
-            console.error("[CRON] Error general en la tarea cron:", error);
         }
-    });
+    } catch (error) {
+        console.error("[AUTO-RECHAZO] Error verificando reservas vencidas:", error.message);
+    }
 };
 
+export const startCronJobs = () => {
+    // Ejecutar inmediatamente al inicio
+    verificarReservasVencidas();
+
+    // Ejecutar cada 10 minutos de forma recurrente
+    setInterval(async () => {
+        await verificarReservasVencidas();
+    }, 10 * 60 * 1000);
+};
+
+export default { startCronJobs, verificarReservasVencidas };

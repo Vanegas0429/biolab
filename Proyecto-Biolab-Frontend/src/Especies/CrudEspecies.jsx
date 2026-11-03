@@ -1,15 +1,15 @@
-import { useState, useEffect, useMemo } from "react"
-import apiAxios from "../api/axiosConfig.js"
-import DataTable from 'react-data-table-component'
-import EspeciesForm from "./EspeciesForm.jsx"
-import Swal from 'sweetalert2'
+import { useState, useEffect, useMemo } from "react";
+import apiAxios from "../api/axiosConfig.js";
+import DataTable from 'react-data-table-component';
+import EspeciesForm from "./EspeciesForm.jsx";
+import Swal from 'sweetalert2';
 
 const API_URL = import.meta.env.VITE_API_URL || "";
 
-const CrudEspecie = () => {
+const CrudEspecie = ({ userRol }) => {
   const [rowToEdit, setRowToEdit] = useState(null);
-  const [Especie, setEspecie] = useState([])
-  const [filterText, setFilterText] = useState("")
+  const [Especie, setEspecie] = useState([]);
+  const [filterText, setFilterText] = useState("");
 
   // Estado para el carrusel modal
   const [carouselImages, setCarouselImages] = useState([]);
@@ -17,26 +17,28 @@ const CrudEspecie = () => {
   const [showCarousel, setShowCarousel] = useState(false);
 
   useEffect(() => {
-    getAllEspecies()
+    getAllEspecies();
 
     // Auto-refresh cada 15 segundos
     const interval = setInterval(() => {
-      getAllEspecies()
-    }, 15000)
+      getAllEspecies();
+    }, 15000);
 
-    return () => clearInterval(interval)
-  }, [])
+    return () => clearInterval(interval);
+  }, []);
 
   const getAllEspecies = async () => {
     try {
-      const response = await apiAxios.get('/api/Especie')
-      setEspecie(response.data)
+      const response = await apiAxios.get('/api/Especie');
+      setEspecie(response.data || []);
     } catch (error) {
-      console.error("Error cargando especies:", error)
+      console.error("Error cargando especies:", error);
     }
-  }
+  };
 
   const toggleEstado = async (row) => {
+    if (userRol === 'solicitante') return;
+
     const estadoNuevo = row.Estado === 'Activo' ? 'Inactivo' : 'Activo';
     const result = await Swal.fire({
       title: `¿${estadoNuevo === 'Activo' ? 'Activar' : 'Inactivar'} especie?`,
@@ -97,6 +99,7 @@ const CrudEspecie = () => {
   };
 
   const triggerImageUpload = (row) => {
+    if (userRol === 'solicitante') return;
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
@@ -141,14 +144,17 @@ const CrudEspecie = () => {
   };
 
   const newListEspecie = useMemo(() => {
-    const textToSearch = filterText.toLowerCase()
-    return Especie.filter((uso) => uso.Nom_especie?.toLowerCase().includes(textToSearch))
+    const textToSearch = filterText.toLowerCase();
+    return Especie.filter((uso) =>
+      uso.Nom_especie?.toLowerCase().includes(textToSearch) ||
+      uso.descripcion?.toLowerCase().includes(textToSearch)
+    );
   }, [Especie, filterText]);
 
   const hideModal = () => {
-    const btn = document.getElementById('closeModal')
-    if (btn) btn.click()
-  }
+    const btn = document.getElementById('closeModal');
+    if (btn) btn.click();
+  };
 
   return (
     <div className="container-fluid py-4 fade-in">
@@ -157,11 +163,11 @@ const CrudEspecie = () => {
         <div className="col">
           <div className="d-flex align-items-center gap-3">
             <div className="bg-primary text-white rounded-circle d-flex justify-content-center align-items-center shadow-sm" style={{ width: '50px', height: '50px' }}>
-              <i className="fa-solid fa-leaf fs-4"></i>
+              <i className="fa-solid fa-seedling fs-4"></i>
             </div>
             <div>
-              <h2 className="fw-bold mb-0" style={{ color: 'var(--secondary-color)' }}>Gestión de Especies</h2>
-              <p className="text-muted mb-0 small">Catálogo de especies vegetales y microorganismos.</p>
+              <h2 className="fw-bold mb-0" style={{ color: 'var(--secondary-color)' }}>Catálogo de Especies</h2>
+              <p className="text-muted mb-0 small">Catálogo de especies vegetales y microorganismos del laboratorio.</p>
             </div>
           </div>
         </div>
@@ -178,14 +184,16 @@ const CrudEspecie = () => {
               onChange={(e) => setFilterText(e.target.value)}
             />
           </div>
-          <button
-            className="btn btn-primary rounded-pill px-4 shadow-sm"
-            data-bs-toggle="modal"
-            data-bs-target="#exampleModal"
-            onClick={() => setRowToEdit(null)}
-          >
-            <i className="fa-solid fa-plus me-2"></i>Nueva Especie
-          </button>
+          {userRol !== 'solicitante' && (
+            <button
+              className="btn btn-primary rounded-pill px-4 shadow-sm"
+              data-bs-toggle="modal"
+              data-bs-target="#exampleModal"
+              onClick={() => setRowToEdit(null)}
+            >
+              <i className="fa-solid fa-plus me-2"></i>Nueva Especie
+            </button>
+          )}
         </div>
       </div>
 
@@ -194,38 +202,31 @@ const CrudEspecie = () => {
         <DataTable
           columns={[
             {
-              name: 'NOMBRE DE ESPECIE',
-              selector: row => row?.Nom_especie ?? "N/A",
+              name: 'ESPECIE',
               sortable: true,
               grow: 2,
-              cell: row => (
-                <div className="fw-bold text-dark py-2">{row?.Nom_especie ?? "N/A"}</div>
-              )
-            },
-            {
-              name: 'IMAGEN',
-              center: "true",
-              width: '400px',
+              minWidth: '260px',
               cell: (row) => {
                 const imgs = parseImages(row.img_especie);
                 return (
-                  <div className="d-flex align-items-center py-2">
-                    <div className="position-relative">
+                  <div className="d-flex align-items-center py-2 gap-3">
+                    <div className="position-relative flex-shrink-0">
                       {imgs.length > 0 ? (
                         <img
                           src={`${API_URL}/uploads/${imgs[0]}`}
                           alt={row.Nom_especie}
-                          className="rounded shadow-sm border"
-                          style={{ width: '45px', height: '45px', objectFit: 'cover', cursor: 'pointer' }}
+                          className="rounded-3 shadow-sm border"
+                          style={{ width: '48px', height: '48px', objectFit: 'cover', cursor: 'pointer' }}
                           onClick={() => openCarousel(row)}
                         />
                       ) : (
                         <div
-                          className="bg-light text-muted d-flex align-items-center justify-content-center rounded border"
-                          style={{ width: '45px', height: '45px', borderStyle: 'dashed !important', cursor: 'pointer' }}
-                          onClick={() => triggerImageUpload(row)}
+                          className="bg-light text-muted d-flex align-items-center justify-content-center rounded-3 border"
+                          style={{ width: '48px', height: '48px', borderStyle: 'dashed !important', cursor: userRol !== 'solicitante' ? 'pointer' : 'default' }}
+                          onClick={() => userRol !== 'solicitante' && triggerImageUpload(row)}
+                          title={userRol !== 'solicitante' ? 'Subir imagen' : ''}
                         >
-                          <i className="fa-solid fa-camera opacity-50"></i>
+                          <i className="fa-solid fa-seedling opacity-50 fs-5"></i>
                         </div>
                       )}
                       {imgs.length > 1 && (
@@ -234,41 +235,65 @@ const CrudEspecie = () => {
                         </span>
                       )}
                     </div>
+                    <div>
+                      <div className="fw-bold text-dark" style={{ fontSize: '0.95rem' }}>
+                        {row?.Nom_especie ?? "N/A"}
+                      </div>
+                    </div>
                   </div>
                 );
               }
             },
             {
-              name: 'ESTADO',
+              name: 'DESCRIPCIÓN',
               sortable: true,
-              center: "true",
-              width: '220px',
-              cell: row => (
-                <span
-                  className={`status-badge ${row.Estado === 'Activo' ? 'status-badge-activo' : 'status-badge-inactivo'}`}
-                  onClick={() => toggleEstado(row)}
-                  style={{ cursor: 'pointer' }}
-                >
-                  {row.Estado}
-                </span>
+              grow: 3,
+              minWidth: '280px',
+              wrap: true,
+              cell: (row) => (
+                <div style={{ whiteSpace: 'normal', wordBreak: 'break-word', padding: '10px 0', lineHeight: '1.4' }}>
+                  {row.descripcion ? (
+                    <span className="text-secondary">{row.descripcion}</span>
+                  ) : (
+                    <span className="text-muted fst-italic">Sin descripción</span>
+                  )}
+                </div>
               )
             },
-            {
-              name: 'ACCIONES',
-              center: "true",
-              width: '220px',
-              cell: row => (
-                <button
-                  className="btn-action btn-action-edit"
-                  onClick={() => setRowToEdit(row)}
-                  data-bs-toggle="modal"
-                  data-bs-target="#exampleModal"
-                  title="Editar"
-                >
-                  <i className="fa-solid fa-pencil"></i>
-                </button>
-              )
-            }
+            ...(userRol !== 'solicitante' ? [
+              {
+                name: 'ESTADO',
+                sortable: true,
+                center: "true",
+                width: '160px',
+                cell: (row) => (
+                  <span
+                    className={`status-badge ${row.Estado === 'Activo' ? 'status-badge-activo' : 'status-badge-inactivo'}`}
+                    onClick={() => toggleEstado(row)}
+                    style={{ cursor: 'pointer' }}
+                    title="Clic para cambiar estado"
+                  >
+                    {row.Estado}
+                  </span>
+                )
+              },
+              {
+                name: 'ACCIONES',
+                center: "true",
+                width: '140px',
+                cell: (row) => (
+                  <button
+                    className="btn-action btn-action-edit"
+                    onClick={() => setRowToEdit(row)}
+                    data-bs-toggle="modal"
+                    data-bs-target="#exampleModal"
+                    title="Editar"
+                  >
+                    <i className="fa-solid fa-pencil"></i>
+                  </button>
+                )
+              }
+            ] : [])
           ]}
           data={newListEspecie}
           keyField="Id_especie"
@@ -295,25 +320,27 @@ const CrudEspecie = () => {
       </div>
 
       {/* Modal */}
-      <div className="modal fade" id="exampleModal" tabIndex="-1">
-        <div className="modal-dialog modal-lg border-0">
-          <div className="modal-content shadow-lg border-0" style={{ borderRadius: '20px' }}>
-            <div className="modal-header bg-primary text-white border-0 py-3" style={{ borderTopLeftRadius: '20px', borderTopRightRadius: '20px' }}>
-              <h5 className="modal-title fw-bold">
-                {rowToEdit ? "Editar Especie" : "Agregar Nueva Especie"}
-              </h5>
-              <button type="button" className="btn-close btn-close-white shadow-none" data-bs-dismiss="modal" id="closeModal"></button>
-            </div>
-            <div className="modal-body p-4">
-              <EspeciesForm
-                hideModal={hideModal}
-                refreshList={getAllEspecies}
-                rowToEdit={rowToEdit}
-              />
+      {userRol !== 'solicitante' && (
+        <div className="modal fade" id="exampleModal" tabIndex="-1">
+          <div className="modal-dialog modal-lg border-0">
+            <div className="modal-content shadow-lg border-0" style={{ borderRadius: '20px' }}>
+              <div className="modal-header bg-primary text-white border-0 py-3" style={{ borderTopLeftRadius: '20px', borderTopRightRadius: '20px' }}>
+                <h5 className="modal-title fw-bold">
+                  {rowToEdit ? "Editar Especie" : "Agregar Nueva Especie"}
+                </h5>
+                <button type="button" className="btn-close btn-close-white shadow-none" data-bs-dismiss="modal" id="closeModal"></button>
+              </div>
+              <div className="modal-body p-4">
+                <EspeciesForm
+                  hideModal={hideModal}
+                  refreshList={getAllEspecies}
+                  rowToEdit={rowToEdit}
+                />
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* MODAL CARRUSEL */}
       {showCarousel && carouselImages.length > 0 && (
@@ -330,10 +357,12 @@ const CrudEspecie = () => {
             {carouselImages.length > 1 && (
               <button className="carousel-arrow carousel-arrow-right" onClick={carouselNext}><i className="fa-solid fa-chevron-right"></i></button>
             )}
-            <div className="carousel-actions">
-              <button className="carousel-action-btn add-btn" onClick={() => { const esp = findCarouselEspecie(); if (esp) triggerImageUpload(esp); }}><i className="fa-solid fa-plus me-2"></i>Agregar</button>
-              <button className="carousel-action-btn delete-btn" onClick={() => { const esp = findCarouselEspecie(); if (esp) deleteImage(esp.Id_especie, carouselImages[carouselIndex]); }}><i className="fa-solid fa-trash-can me-2"></i>Eliminar</button>
-            </div>
+            {userRol !== 'solicitante' && (
+              <div className="carousel-actions">
+                <button className="carousel-action-btn add-btn" onClick={() => { const esp = findCarouselEspecie(); if (esp) triggerImageUpload(esp); }}><i className="fa-solid fa-plus me-2"></i>Agregar</button>
+                <button className="carousel-action-btn delete-btn" onClick={() => { const esp = findCarouselEspecie(); if (esp) deleteImage(esp.Id_especie, carouselImages[carouselIndex]); }}><i className="fa-solid fa-trash-can me-2"></i>Eliminar</button>
+              </div>
+            )}
           </div>
         </div>
       )}

@@ -15,7 +15,7 @@
     "date-fns": "^4.1.0",
     "flatpickr": "^4.6.13",
     "jspdf": "^4.2.1",
-    "jspdf-autotable": "^5.0.8",
+    "jspdf-autotable": "^5.0.9",
     "moment": "^2.30.1",
     "react": "^19.1.1",
     "react-big-calendar": "^1.19.4",

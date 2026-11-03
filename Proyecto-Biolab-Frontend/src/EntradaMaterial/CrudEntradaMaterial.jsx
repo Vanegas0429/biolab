@@ -91,6 +91,25 @@ const CrudEntradaMaterial = ({ userRol }) => {
     });
   }, [entradas, filterText]);
 
+  // Alertas para materiales desechables con stock bajo o agotado
+  const alertasResumen = useMemo(() => {
+    const activasDesechables = entradas.filter(e =>
+      e.Estado === 'Activo' &&
+      (e.Material?.clasificacion || 'Desechable').toLowerCase() === 'desechable'
+    );
+    const agotados = activasDesechables.filter(e => (parseFloat(e.Can_Existente ?? e.Can_Inicial) || 0) <= 0);
+    const pocoStock = activasDesechables.filter(e => {
+      const val = parseFloat(e.Can_Existente ?? e.Can_Inicial) || 0;
+      return val > 0 && val <= 10;
+    });
+
+    return {
+      agotados,
+      pocoStock,
+      totalAlertas: agotados.length + pocoStock.length
+    };
+  }, [entradas]);
+
   if (loading) return (
     <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '60vh' }}>
       <div className="spinner-border text-primary" role="status">
@@ -138,6 +157,34 @@ const CrudEntradaMaterial = ({ userRol }) => {
         </div>
       </div>
 
+      {/* BANNER DE ALERTAS PARA MATERIALES DESECHABLES */}
+      {alertasResumen.totalAlertas > 0 && (
+        <div className="alert alert-warning border-0 shadow-sm rounded-4 p-3 mb-4 d-flex align-items-center justify-content-between flex-wrap gap-2">
+          <div className="d-flex align-items-center gap-3">
+            <div className="bg-warning text-dark rounded-circle d-flex align-items-center justify-content-center" style={{ width: '40px', height: '40px' }}>
+              <i className="fa-solid fa-triangle-exclamation fs-5"></i>
+            </div>
+            <div>
+              <h6 className="fw-bold mb-0 text-dark">Atención en Materiales Desechables</h6>
+              <div className="small text-muted d-flex gap-3 mt-1 flex-wrap">
+                {alertasResumen.agotados.length > 0 && (
+                  <span className="text-danger fw-semibold">
+                    <i className="fa-solid fa-circle-xmark me-1"></i>
+                    {alertasResumen.agotados.length} agotado{alertasResumen.agotados.length > 1 ? 's' : ''}
+                  </span>
+                )}
+                {alertasResumen.pocoStock.length > 0 && (
+                  <span className="text-warning-emphasis fw-semibold">
+                    <i className="fa-solid fa-triangle-exclamation me-1"></i>
+                    {alertasResumen.pocoStock.length} por acabarse (&le; 10 uds)
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* TABLA DATATABLE */}
       <div className="card border-0 shadow-lg overflow-hidden" style={{ borderRadius: '20px' }}>
         <DataTable
@@ -145,7 +192,7 @@ const CrudEntradaMaterial = ({ userRol }) => {
             {
               name: 'MATERIAL',
               sortable: true,
-              width: '350px',
+              width: '320px',
               cell: row => (
                 <div className="fw-bold text-dark py-2">
                   {row.Material?.Nom_Material || `Material #${row.Id_Material}`}
@@ -156,7 +203,7 @@ const CrudEntradaMaterial = ({ userRol }) => {
               name: 'CLASIFICACIÓN',
               selector: row => row.Material?.clasificacion || 'Desechable',
               sortable: true,
-              width: '250px',
+              width: '200px',
               cell: row => (
                 <span className={`badge ${row.Material?.clasificacion === 'Reutilizable' ? 'bg-info text-dark' : 'bg-secondary'} rounded-pill px-3 py-2 fw-medium`}>
                   {row.Material?.clasificacion || 'Desechable'}
@@ -168,16 +215,54 @@ const CrudEntradaMaterial = ({ userRol }) => {
               selector: row => row.Can_Inicial,
               sortable: true,
               center: true,
-              width: '180px',
+              width: '160px',
               cell: row => <span className="fw-normal">{row.Can_Inicial}</span>
             },
             {
               name: 'CANT. EXISTENTE',
-              selector: row => row.Can_Existente,
+              selector: row => parseFloat(row.Can_Existente ?? row.Can_Inicial) || 0,
               sortable: true,
               center: true,
-              width: '180px',
-              cell: row => <span className="fw-normal">{row.Can_Existente ?? row.Can_Inicial}</span>
+              width: '210px',
+              cell: row => {
+                const val = parseFloat(row.Can_Existente ?? row.Can_Inicial) || 0;
+                const isDesechable = (row.Material?.clasificacion || 'Desechable').toLowerCase() === 'desechable';
+                
+                if (!isDesechable) {
+                  return <span className="fw-medium text-dark">{val}</span>;
+                }
+
+                const isAgotado = val <= 0;
+                const isBajo = val > 0 && val <= 10;
+
+                let textColor = '#059669'; // verde normal
+                let badgeClass = '';
+                if (isAgotado) {
+                  textColor = '#dc2626'; // rojo
+                  badgeClass = 'badge bg-danger text-white rounded-pill px-2 py-1';
+                } else if (isBajo) {
+                  textColor = '#d97706'; // amarillo/naranja
+                  badgeClass = 'badge bg-warning text-dark rounded-pill px-2 py-1';
+                }
+
+                return (
+                  <div className="d-flex align-items-center justify-content-center gap-2 flex-wrap py-1">
+                    <span className="fw-bold" style={{ color: textColor, fontSize: '0.95rem' }}>
+                      {val}
+                    </span>
+                    {isAgotado && (
+                      <span className={badgeClass} style={{ fontSize: '0.72rem' }}>
+                        <i className="fa-solid fa-ban me-1"></i>Agotado
+                      </span>
+                    )}
+                    {isBajo && (
+                      <span className={badgeClass} style={{ fontSize: '0.72rem' }}>
+                        <i className="fa-solid fa-triangle-exclamation me-1"></i>Por acabarse
+                      </span>
+                    )}
+                  </div>
+                );
+              }
             },
             {
               name: 'ESTADO',

@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import { startCronJobs } from './cronJobs.js';
 import dotenv from 'dotenv';
 import db from './database/db.js';
 
@@ -201,6 +202,7 @@ try {
 // Servidor
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => {
+    startCronJobs();
     console.log(`Server up running in http://localhost:${PORT}`);
 });
 

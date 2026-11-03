@@ -20,7 +20,7 @@ const MovimientoReactivoModel = db.define('MovimientoReactivo', {
         allowNull: false 
     },
     Cantidad: { 
-        type: DataTypes.INTEGER, 
+        type: DataTypes.DECIMAL(10, 2), 
         allowNull: false 
     },
     Fecha: { 

@@ -1,3 +1,16 @@
+const formatTimeAMPM = (timeStr) => {
+  if (!timeStr) return 'N/A';
+  const parts = String(timeStr).split(':');
+  if (parts.length < 2) return timeStr;
+  let hours = parseInt(parts[0], 10);
+  const minutes = parts[1];
+  if (isNaN(hours)) return timeStr;
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12;
+  hours = hours ? hours : 12;
+  return `${String(hours).padStart(2, '0')}:${minutes} ${ampm}`;
+};
+
 import { useEffect, useMemo, useState } from "react";
 import apiAxios from "../api/axiosConfig.js";
 import Swal from "sweetalert2";
@@ -31,6 +44,13 @@ const abrirFicha = (ficha) => {
   }
   const url = `${API_URL}/uploads/${ficha}`;
   window.open(url, "_blank");
+};
+
+const parseDecimal = (val) => {
+  if (val === null || val === undefined || val === '') return 0;
+  const normalized = String(val).replace(',', '.').trim();
+  const num = parseFloat(normalized);
+  return isNaN(num) ? 0 : num;
 };
 
 const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = false }) => {
@@ -275,8 +295,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
           Can_Equipos: Number(item.Can_Equipos),
           Nom_Equipo: item.Nom_Equipo || item.nombre,
           ficha_tecnica: item.ficha_tecnica || item.Equipo?.ficha_tecnica,
-          marca: item.marca || item.Equipo?.marca,
-          img_equipo: item.img_equipo || item.Equipo?.img_equipo
+          marca: item.marca || item.Equipo?.marca
         })) || []);
         setMateriales(reserva.materiales?.map((item) => ({
           Id_Material: Number(item.Id_Material),
@@ -341,8 +360,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
           Can_Equipos: Number(item.Can_Equipos),
           Nom_Equipo: item.Nom_Equipo || item.nombre,
           ficha_tecnica: item.ficha_tecnica || item.Equipo?.ficha_tecnica,
-          marca: item.marca || item.Equipo?.marca,
-          img_equipo: item.img_equipo || item.Equipo?.img_equipo
+          marca: item.marca || item.Equipo?.marca
         }))
       );
 
@@ -633,14 +651,24 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
     const existe = reactivos.some((r) => Number(r.Id_Reactivo) === id);
     if (existe) return;
 
-    setReactivos((prev) => [...prev, { Id_Reactivo: id, Can_Reactivo: 1 }]);
+    setReactivos((prev) => [...prev, { Id_Reactivo: id, Can_Reactivo: 0.1 }]);
   };
 
   const actualizarCantidadReactivo = (idReactivo, cantidad) => {
+    const id = Number(idReactivo);
+    const cant = parseDecimal(cantidad);
+    const info = reactivosDisponibles.find(r => Number(r.Id_Reactivo) === id);
+    const stockDisponible = info && info.cantidad_existente !== undefined ? Number(info.cantidad_existente) : 99999;
+
+    if (cant > stockDisponible) {
+      Swal.fire("Atención", `La cantidad solicitada (${cant}) supera el stock disponible (${stockDisponible})`, "warning");
+      return;
+    }
+
     setReactivos((prev) =>
       prev.map((item) =>
-        Number(item.Id_Reactivo) === Number(idReactivo)
-          ? { ...item, Can_Reactivo: Number(cantidad) || 0 }
+        Number(item.Id_Reactivo) === id
+          ? { ...item, Can_Reactivo: cantidad }
           : item
       )
     );
@@ -722,7 +750,6 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
 
       const info = dbInfo || {
         nombre: e.Nom_Equipo || `Equipo ${e.Id_Equipo || ''}`,
-        img_equipo: e.img_equipo,
         ficha_tecnica: e.ficha_tecnica,
         marca: e.marca
       };
@@ -767,7 +794,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
   const seleccionarTodosReactivos = () => {
     const nuevosReactivos = reactivosDisponibles.map(reac => ({
       Id_Reactivo: Number(reac.Id_Reactivo),
-      Can_Reactivo: 1
+      Can_Reactivo: 0.1
     }));
     setReactivos(nuevosReactivos);
   };
@@ -822,7 +849,8 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
       // Validar cantidades de reactivos contra stock
       for (const reac of reactivos) {
         const info = reactivosDisponibles.find(r => Number(r.Id_Reactivo) === Number(reac.Id_Reactivo));
-        if (info && Number(reac.Can_Reactivo) > Number(info.cantidad_existente)) {
+        const cantReac = parseDecimal(reac.Can_Reactivo);
+        if (info && cantReac > Number(info.cantidad_existente)) {
           Swal.fire("Error de Stock", `El reactivo '${info.Nom_reactivo || info.Nom_Reactivo}' solo tiene ${info.cantidad_existente} ${info.Uni_Medida || ''} disponibles.`, "error");
           return;
         }
@@ -853,7 +881,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
           : [],
       reactivos:
         Tip_Reserva === "Practica"
-          ? reactivos.filter((r) => Number(r.Can_Reactivo) > 0)
+          ? reactivos.filter((r) => parseDecimal(r.Can_Reactivo) > 0).map(r => ({ ...r, Can_Reactivo: parseDecimal(r.Can_Reactivo) }))
           : [],
     };
 
@@ -903,7 +931,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
   };
 
   return (
-    <form onSubmit={gestionarForm} className="col-12">
+    <form onSubmit={gestionarForm} noValidate className="col-12">
       <div className="row">
         {/* Tipo de Institución: aparece PRIMERO */}
         <div className="col-md-6 mb-3">
@@ -1026,6 +1054,139 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
               className="form-control rounded-pill shadow-sm px-3"
               value={Mot_RecCan}
               onChange={(e) => setMot_RecCan(e.target.value)}
+              required
+              readOnly={isViewOnly}
+            />
+          </div>
+        )}
+
+        {/* Campo de nombre de institución - aparece siempre para Visita */}
+        {Tip_Reserva === "Visita" && (
+          <div className="col-md-6 mb-3">
+            <label className="form-label fw-bold">
+              {Tipo_Institucion === "SENA" && <span>Nombre de la visita / grupo:</span>}
+              {Tipo_Institucion === "Universidad" && <span>Nombre de la Universidad:</span>}
+              {Tipo_Institucion === "Institución Educativa" && <span>Nombre de la Institución Educativa:</span>}
+            </label>
+            <input
+              type="text"
+              className="form-control rounded-pill shadow-sm px-3"
+              value={Nom_Institucion}
+              onChange={(e) => setNom_Institucion(e.target.value)}
+              placeholder={
+                Tipo_Institucion === "SENA"
+                  ? "Ej: Visita Aprendices Agroindustria"
+                  : Tipo_Institucion === "Universidad"
+                  ? "Ej: Universidad Nacional"
+                  : "Ej: Colegio San José"
+              }
+              required
+              readOnly={isViewOnly}
+            />
+          </div>
+        )}
+
+        <div className="col-md-6 mb-3">
+          <label className="form-label fw-bold">Nombre del solicitante:</label>
+          <input
+            type="text"
+            className="form-control rounded-pill shadow-sm px-3"
+            value={Nom_Solicitante}
+            onChange={(e) => setNom_Solicitante(e.target.value)}
+            readOnly={isViewOnly || getLoggedUser()?.rol === 'solicitante'}
+            required
+          />
+        </div>
+
+        <div className="col-md-6 mb-3">
+          <label className="form-label fw-bold">Correo del solicitante:</label>
+          <input
+            type="email"
+            className="form-control rounded-pill shadow-sm px-3"
+            value={Cor_Solicitante}
+            onChange={(e) => setCor_Solicitante(e.target.value)}
+            readOnly={isViewOnly || getLoggedUser()?.rol === 'solicitante'}
+            required
+          />
+        </div>
+
+        <div className="col-md-6 mb-3">
+          <label className="form-label fw-bold">Teléfono del solicitante:</label>
+          <input
+            type="text"
+            className="form-control rounded-pill shadow-sm px-3"
+            value={Tel_Solicitante}
+            onChange={(e) => {
+              const val = e.target.value.replace(/[^0-9]/g, '');
+              if (val.length <= 10) setTel_Solicitante(val);
+            }}
+            maxLength="10"
+            required
+            readOnly={isViewOnly}
+          />
+        </div>
+
+        <div className="col-md-6 mb-3">
+          <label className="form-label fw-bold">
+            {(Tip_Reserva === "Visita" && (Tipo_Institucion === "Universidad" || Tipo_Institucion === "Institución Educativa"))
+              ? <span>Cantidad de personas:</span>
+              : <span>Cantidad de aprendices:</span>}
+          </label>
+          <input
+            type="number"
+            className="form-control rounded-pill shadow-sm px-3"
+            value={Can_Aprendices}
+            onChange={(e) => {
+              const val = e.target.value;
+              if (val === "" || (Number(val) <= 20 && val.length <= 2)) {
+                setCan_Aprendices(val);
+              }
+            }}
+            min={1}
+            max={20}
+            required
+            readOnly={isViewOnly}
+          />
+        </div>
+
+        <div className="col-md-6 mb-3">
+          <label className="form-label fw-bold">Fecha de la reserva:</label>
+          <input
+            type="date"
+            className="form-control rounded-pill shadow-sm px-3"
+            value={Fec_Reserva}
+            onChange={(e) => handleDateChange(e.target.value)}
+            min={getMinDate()}
+            required
+            readOnly={isViewOnly}
+          />
+          <small className="text-muted d-block mt-1 ms-2" style={{ fontSize: '0.75rem' }}>
+            <i className="fa-solid fa-info-circle me-1"></i>
+            No disponible sábados ni domingos. 
+            {getLoggedUser()?.rol === 'solicitante' && <span> Mínimo 4 días de antelación.</span>}
+          </small>
+        </div>
+
+        <div className="col-md-6 mb-3">
+          <label className="form-label fw-bold">Hora de la reserva:</label>
+          <input
+            type="time"
+            className="form-control rounded-pill shadow-sm px-3"
+            value={Hor_Reserva}
+            onChange={(e) => setHor_Reserva(e.target.value)}
+            required
+            readOnly={isViewOnly}
+          />
+        </div>
+
+        {(Tip_Reserva === "Practica" || (Tip_Reserva === "Visita" && Tipo_Institucion === "SENA")) && (
+          <div className="col-md-6 mb-3">
+            <label className="form-label fw-bold">Número de ficha:</label>
+            <input
+              type="text"
+              className="form-control rounded-pill shadow-sm px-3"
+              value={Num_Ficha}
+              onChange={(e) => setNum_Ficha(e.target.value)}
               required
               readOnly={isViewOnly}
             />
@@ -1179,76 +1340,51 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
                   {selectedEquiposAgrupados.map((group) => {
                     const availableGroup = equiposAgrupados.find(g => g.nombre === group.nombre);
                     const maxStock = availableGroup ? availableGroup.items.length : group.items.length;
+                    const firstItem = group.items[0];
 
                     return (
-                      <div key={group.nombre} className="border rounded p-2 mb-2 bg-light shadow-sm">
-                        <div className="d-flex align-items-center gap-3 mb-2">
+                      <div key={group.nombre} className="border rounded-3 p-3 mb-2 bg-light shadow-sm">
+                        <div className="d-flex justify-content-between align-items-start mb-2">
                           <div className="flex-grow-1 min-width-0">
-                            <div className="d-flex justify-content-between align-items-start">
-                              <strong className="small text-truncate d-block" title={group.nombre}>
-                                {group.nombre}
-                              </strong>
-                              {!isViewOnly && (
-                                <button
-                                  type="button"
-                                  className="btn btn-sm btn-link text-danger p-0 text-decoration-none"
-                                  onClick={() => eliminarEquipoPorNombre(group.nombre)}
-                                >
-                                  <i className="fa-solid fa-trash-can"></i>
-                                </button>
-                              )}
-                            </div>
+                            <strong className="small text-truncate d-block" title={group.nombre}>
+                              <i className="fa-solid fa-microscope text-primary me-2"></i>
+                              {group.nombre}
+                            </strong>
                             <span className="badge bg-primary-soft text-primary small mt-1">Disponibles: {maxStock}</span>
+                          </div>
+                          <div className="d-flex gap-1 align-items-center">
+                            {firstItem?.info?.ficha_tecnica && (
+                              <button
+                                type="button"
+                                className="btn btn-sm btn-outline-info"
+                                onClick={() => abrirFicha(firstItem.info?.ficha_tecnica)}
+                                title="Ver ficha técnica"
+                              >
+                                <i className="fa-solid fa-file-pdf"></i>
+                              </button>
+                            )}
+                            {!isViewOnly && (
+                              <button
+                                type="button"
+                                className="btn btn-sm btn-link text-danger p-0 text-decoration-none"
+                                onClick={() => eliminarEquipoPorNombre(group.nombre)}
+                                title="Eliminar equipo"
+                              >
+                                <i className="fa-solid fa-trash-can"></i>
+                              </button>
+                            )}
                           </div>
                         </div>
 
-                        {/* Contenedor de imágenes */}
-                        <div className="d-flex flex-wrap gap-2 mb-2">
-                          {group.items.map((item, idx) => {
-                            const imgs = parseImages(item.info?.img_equipo);
-                            return (
-                              <div key={`${item.Id_Equipo}-${idx}`} className="flex-shrink-0 text-center">
-                                {imgs.length > 0 ? (
-                                  <img
-                                    src={`${API_URL}/uploads/${imgs[0]}`}
-                                    alt={group.nombre}
-                                    className="rounded border"
-                                    style={{ width: '50px', height: '50px', objectFit: 'cover' }}
-                                    title={`Equipo ID: ${item.Id_Equipo}`}
-                                  />
-                                ) : (
-                                  <div className="bg-white border rounded d-flex align-items-center justify-content-center" style={{ width: '50px', height: '50px' }}>
-                                    <i className="fa-solid fa-microscope text-muted opacity-50"></i>
-                                  </div>
-                                )}
-                                <div className="mt-1">
-                                  <button
-                                    type="button"
-                                    className="btn btn-xs btn-outline-info p-0 px-1"
-                                    style={{ fontSize: '10px' }}
-                                    onClick={() => abrirFicha(item.info?.ficha_tecnica)}
-                                    title={`Ver ficha técnica`}
-                                  >
-                                    <i className="fa-solid fa-file-pdf"></i> Ficha
-                                  </button>
-                                  {item.info?.marca && (
-                                    <div className="text-muted" style={{ fontSize: '9px' }}></div>
-                                  )}
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-
                         {/* Selector de cantidad */}
-                        <div className="d-flex align-items-center gap-2">
-                          <label className="small text-muted">Cantidad:</label>
+                        <div className="d-flex align-items-center gap-2 mt-2">
+                          <label className="small text-muted fw-bold">Cantidad:</label>
                           <input
                             type="number"
                             min="1"
                             max={maxStock}
-                            className="form-control form-control-sm"
-                            style={{ width: '70px' }}
+                            className="form-control form-control-sm rounded-pill"
+                            style={{ width: '80px' }}
                             value={group.items.length}
                             onChange={(e) => actualizarCantidadEquipoPorNombre(group.nombre, e.target.value)}
                             readOnly={isViewOnly}
@@ -1265,49 +1401,48 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
                   {materiales.map((item) => {
                     const info = materialesDisponibles.find(m => Number(m.Id_Material) === Number(item.Id_Material));
                     const maxStock = info ? Number(info.Can_Material) : 0;
-                    const imgs = parseImages(info?.img_material || item.img_material);
 
                     return (
-                      <div key={item.Id_Material} className="border rounded p-2 mb-2 bg-light shadow-sm">
-                        <div className="d-flex align-items-center gap-3 mb-2">
-                          <div className="flex-shrink-0">
-                            {imgs.length > 0 ? (
-                              <img
-                                src={`${API_URL}/uploads/${imgs[0]}`}
-                                alt={info?.Nom_Material}
-                                className="rounded"
-                                style={{ width: '50px', height: '50px', objectFit: 'cover' }}
-                              />
-                            ) : (
-                              <div className="bg-white border rounded d-flex align-items-center justify-content-center" style={{ width: '50px', height: '50px' }}>
-                                <i className="fa-solid fa-flask text-muted opacity-50"></i>
-                              </div>
-                            )}
-                          </div>
+                      <div key={item.Id_Material} className="border rounded-3 p-3 mb-2 bg-light shadow-sm">
+                        <div className="d-flex justify-content-between align-items-start mb-2">
                           <div className="flex-grow-1 min-width-0">
-                            <div className="d-flex justify-content-between align-items-start">
-                              <strong className="small text-truncate d-block" title={info?.Nom_Material || item.Nom_Material}>{info?.Nom_Material || item.Nom_Material || `Material ${item.Id_Material}`}</strong>
-                              {!isViewOnly && (
-                                <button
-                                  type="button"
-                                  className="btn btn-sm btn-link text-danger p-0 text-decoration-none"
-                                  onClick={() => eliminarMaterial(item.Id_Material)}
-                                >
-                                  <i className="fa-solid fa-trash-can"></i>
-                                </button>
-                              )}
-                            </div>
+                            <strong className="small text-truncate d-block" title={info?.Nom_Material || item.Nom_Material}>
+                              <i className="fa-solid fa-boxes-stacked text-primary me-2"></i>
+                              {info?.Nom_Material || item.Nom_Material || `Material ${item.Id_Material}`}
+                            </strong>
                             <span className="badge bg-primary-soft text-primary small mt-1">Stock: {maxStock}</span>
                           </div>
+                          <div className="d-flex gap-1 align-items-center">
+                            {!isViewOnly && (
+                              <button
+                                type="button"
+                                className="btn btn-sm btn-link text-danger p-0 text-decoration-none"
+                                onClick={() => eliminarMaterial(item.Id_Material)}
+                                title="Eliminar material"
+                              >
+                                <i className="fa-solid fa-trash-can"></i>
+                              </button>
+                            )}
+                          </div>
                         </div>
-                        <div className="d-flex align-items-center gap-2">
+                        <div className="d-flex align-items-center gap-2 mt-2">
+                          <label className="small text-muted fw-bold">Cantidad:</label>
                           <input
                             type="number"
                             min="1"
                             max={maxStock}
-                            className="form-control form-control-sm"
+                            className="form-control form-control-sm rounded-pill"
+                            style={{ width: '80px' }}
                             value={item.Can_Materiales}
-                            onChange={(e) => actualizarCantidadMaterial(item.Id_Material, e.target.value)}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              if (val !== "" && Number(val) > maxStock) {
+                                Swal.fire("Atención", `La cantidad no puede superar el stock (${maxStock})`, "warning");
+                                actualizarCantidadMaterial(item.Id_Material, maxStock);
+                              } else {
+                                actualizarCantidadMaterial(item.Id_Material, val);
+                              }
+                            }}
                             readOnly={isViewOnly}
                           />
                         </div>
@@ -1360,11 +1495,23 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
                         <div className="d-flex align-items-center gap-2">
                           <input
                             type="number"
-                            min="1"
+                            step="0.1"
+                            min="0"
                             max={stockDisponible}
-                            className="form-control form-control-sm"
+                            className="form-control form-control-sm rounded-pill"
+                            style={{ width: '90px' }}
                             value={item.Can_Reactivo}
-                            onChange={(e) => actualizarCantidadReactivo(item.Id_Reactivo, e.target.value)}
+                            placeholder="0.0"
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              const numVal = parseDecimal(val);
+                              if (val !== "" && numVal > stockDisponible) {
+                                Swal.fire("Atención", `La cantidad no puede superar el stock (${stockDisponible})`, "warning");
+                                actualizarCantidadReactivo(item.Id_Reactivo, stockDisponible);
+                              } else {
+                                actualizarCantidadReactivo(item.Id_Reactivo, val);
+                              }
+                            }}
                             readOnly={isViewOnly}
                           />
                         </div>
@@ -1376,142 +1523,6 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
             </div>
           </>
         )}
-
-        {/* Campo de nombre de institución - aparece siempre para Visita */}
-        {Tip_Reserva === "Visita" && (
-          <div className="col-md-6 mb-3">
-            <label className="form-label fw-bold">
-              {Tipo_Institucion === "SENA" && <span>Nombre de la visita / grupo:</span>}
-              {Tipo_Institucion === "Universidad" && <span>Nombre de la Universidad:</span>}
-              {Tipo_Institucion === "Institución Educativa" && <span>Nombre de la Institución Educativa:</span>}
-            </label>
-            <input
-              type="text"
-              className="form-control rounded-pill shadow-sm px-3"
-              value={Nom_Institucion}
-              onChange={(e) => setNom_Institucion(e.target.value)}
-              placeholder={
-                Tipo_Institucion === "SENA"
-                  ? "Ej: Visita Aprendices Agroindustria"
-                  : Tipo_Institucion === "Universidad"
-                  ? "Ej: Universidad Nacional"
-                  : "Ej: Colegio San José"
-              }
-              required
-              readOnly={isViewOnly}
-            />
-          </div>
-        )}
-
-        <div className="col-md-6 mb-3">
-          <label className="form-label fw-bold">Nombre del solicitante:</label>
-          <input
-            type="text"
-            className="form-control rounded-pill shadow-sm px-3"
-            value={Nom_Solicitante}
-            onChange={(e) => setNom_Solicitante(e.target.value)}
-            readOnly={isViewOnly || getLoggedUser()?.rol === 'solicitante'}
-            required
-          />
-        </div>
-
-        <div className="col-md-6 mb-3">
-          <label className="form-label fw-bold">Correo del solicitante:</label>
-          <input
-            type="email"
-            className="form-control rounded-pill shadow-sm px-3"
-            value={Cor_Solicitante}
-            onChange={(e) => setCor_Solicitante(e.target.value)}
-            readOnly={isViewOnly || getLoggedUser()?.rol === 'solicitante'}
-            required
-          />
-        </div>
-
-        <div className="col-md-6 mb-3">
-          <label className="form-label fw-bold">Teléfono del solicitante:</label>
-          <input
-            type="text"
-            className="form-control rounded-pill shadow-sm px-3"
-            value={Tel_Solicitante}
-            onChange={(e) => {
-              const val = e.target.value.replace(/[^0-9]/g, '');
-              if (val.length <= 10) setTel_Solicitante(val);
-            }}
-            maxLength="10"
-            required
-            readOnly={isViewOnly}
-          />
-        </div>
-
-        <div className="col-md-6 mb-3">
-          <label className="form-label fw-bold">
-            {(Tip_Reserva === "Visita" && (Tipo_Institucion === "Universidad" || Tipo_Institucion === "Institución Educativa"))
-              ? <span>Cantidad de personas:</span>
-              : <span>Cantidad de aprendices:</span>}
-          </label>
-          <input
-            type="number"
-            className="form-control rounded-pill shadow-sm px-3"
-            value={Can_Aprendices}
-            onChange={(e) => {
-              const val = e.target.value;
-              if (val === "" || (Number(val) <= 20 && val.length <= 2)) {
-                setCan_Aprendices(val);
-              }
-            }}
-            min={1}
-            max={20}
-            required
-            readOnly={isViewOnly}
-          />
-        </div>
-
-        <div className="col-md-6 mb-3">
-          <label className="form-label fw-bold">Fecha de la reserva:</label>
-          <input
-            type="date"
-            className="form-control rounded-pill shadow-sm px-3"
-            value={Fec_Reserva}
-            onChange={(e) => handleDateChange(e.target.value)}
-            min={getMinDate()}
-            required
-            readOnly={isViewOnly}
-          />
-          <small className="text-muted d-block mt-1 ms-2" style={{ fontSize: '0.75rem' }}>
-            <i className="fa-solid fa-info-circle me-1"></i>
-            No disponible sábados ni domingos. 
-            {getLoggedUser()?.rol === 'solicitante' && <span> Mínimo 4 días de antelación.</span>}
-          </small>
-        </div>
-
-        <div className="col-md-6 mb-3">
-          <label className="form-label fw-bold">Hora de la reserva:</label>
-          <input
-            type="time"
-            className="form-control rounded-pill shadow-sm px-3"
-            value={Hor_Reserva}
-            onChange={(e) => setHor_Reserva(e.target.value)}
-            required
-            readOnly={isViewOnly}
-          />
-        </div>
-
-        {(Tip_Reserva === "Practica" || (Tip_Reserva === "Visita" && Tipo_Institucion === "SENA")) && (
-          <div className="col-md-6 mb-3">
-            <label className="form-label fw-bold">Número de ficha:</label>
-            <input
-              type="text"
-              className="form-control rounded-pill shadow-sm px-3"
-              value={Num_Ficha}
-              onChange={(e) => setNum_Ficha(e.target.value)}
-              required
-              readOnly={isViewOnly}
-            />
-          </div>
-        )}
-
-
-
 
         {!isViewOnly && (
           <div className="col-12 text-center mt-4">

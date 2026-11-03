@@ -1,8 +1,14 @@
 import ReservaService from "../services/ReservaService.js";
+import { verificarReservasVencidas } from "../cronJobs.js";
 
 // obtener todas las reservas
 export const getAllReserva = async (req, res) => {
     try {
+        try {
+            await verificarReservasVencidas();
+        } catch (autoErr) {
+            console.warn("Advertencia al verificar reservas vencidas:", autoErr.message);
+        }
         const Reserva = await ReservaService.getAll();
         res.status(200).json(Reserva);
     } catch (error) {

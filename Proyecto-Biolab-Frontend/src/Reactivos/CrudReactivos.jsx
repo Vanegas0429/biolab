@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import apiAxios from "../api/axiosConfig.js";
 import ReactivosForm from "./ReactivosForm.jsx";
 import Swal from 'sweetalert2';
@@ -18,6 +18,7 @@ const CrudReactivos = ({ userRol }) => {
   const [loadingPdf, setLoadingPdf] = useState(false);
 
   const toggleEstado = async (row) => {
+    if (userRol === 'solicitante') return;
     const estadoNuevo = row.Estado === 'Activo' ? 'Inactivo' : 'Activo';
     const result = await Swal.fire({
       title: `¿${estadoNuevo === 'Activo' ? 'Activar' : 'Inactivar'} reactivo?`,
@@ -41,6 +42,7 @@ const CrudReactivos = ({ userRol }) => {
   };
 
   const uploadFicha = (row) => {
+    if (userRol === 'solicitante') return;
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = '.pdf';
@@ -57,7 +59,6 @@ const CrudReactivos = ({ userRol }) => {
         
         await getAllReactivos();
         
-        // Abrir el modal automáticamente con el nuevo archivo
         if (response.data && response.data.Ficha_tecnica) {
           setPdfUrl(`${API_URL}/uploads/${response.data.Ficha_tecnica}`);
           setShowPdf(true);
@@ -92,7 +93,7 @@ const CrudReactivos = ({ userRol }) => {
   const getAllReactivos = async () => {
     try {
       const response = await apiAxios.get('/api/Reactivo');
-      setReactivo(response.data);
+      setReactivo(response.data || []);
       setLoading(false);
     } catch (error) {
       console.error("Error cargando reactivos:", error);
@@ -100,15 +101,18 @@ const CrudReactivos = ({ userRol }) => {
     }
   };
 
-  const newListReactivo = Reactivo.filter((uso) => {
+  const newListReactivo = useMemo(() => {
     const textToSearch = filterText.toLowerCase();
-    return (uso.Nom_reactivo || '').toLowerCase().includes(textToSearch) ||
-      (uso.Nomenclatura || '').toLowerCase().includes(textToSearch);
-  });
+    return Reactivo.filter((uso) =>
+      (uso.Nom_reactivo || '').toLowerCase().includes(textToSearch) ||
+      (uso.Nomenclatura || '').toLowerCase().includes(textToSearch) ||
+      (uso.Presentacion || '').toLowerCase().includes(textToSearch)
+    );
+  }, [Reactivo, filterText]);
 
   const hideModal = () => {
-    const btn = document.getElementById('closeModal')
-    if (btn) btn.click()
+    const btn = document.getElementById('closeModal');
+    if (btn) btn.click();
   };
 
   if (loading) return (
@@ -129,8 +133,8 @@ const CrudReactivos = ({ userRol }) => {
               <i className="fa-solid fa-flask fs-4"></i>
             </div>
             <div>
-              <h2 className="fw-bold mb-0" style={{ color: 'var(--secondary-color)' }}>Gestión de Reactivos</h2>
-              <p className="text-muted mb-0 small">Control de sustancias químicas y reactivos.</p>
+              <h2 className="fw-bold mb-0" style={{ color: 'var(--secondary-color)' }}>Catálogo de Reactivos</h2>
+              <p className="text-muted mb-0 small">Control y especificaciones de sustancias químicas y reactivos.</p>
             </div>
           </div>
         </div>
@@ -168,8 +172,10 @@ const CrudReactivos = ({ userRol }) => {
               name: 'REACTIVO',
               sortable: true,
               grow: 2,
+              minWidth: '220px',
               cell: (row) => (
                 <div className="fw-bold text-dark py-2">
+                  <i className="fa-solid fa-flask text-primary me-2"></i>
                   {row.Nom_reactivo}
                 </div>
               )
@@ -178,17 +184,18 @@ const CrudReactivos = ({ userRol }) => {
               name: 'NOMENCLATURA',
               selector: row => row.Nomenclatura || 'N/A',
               sortable: true,
-              width: '250px'
+              width: '200px'
             },
             {
               name: 'PRESENTACIÓN',
               selector: row => row.Presentacion || 'N/A',
               sortable: true,
-              width: '250px'
+              width: '180px'
             },
             {
               name: 'FICHA',
               center: true,
+              width: '140px',
               cell: (row) => (
                 row.Ficha_tecnica ? (
                   <button
@@ -198,14 +205,17 @@ const CrudReactivos = ({ userRol }) => {
                       setPdfUrl(`${API_URL}/uploads/${row.Ficha_tecnica}`);
                       setShowPdf(true);
                     }}
+                    title="Ver Ficha Técnica"
                   >
-                    <i className="fa-solid fa-file-pdf"></i>
+                    <i className="fa-solid fa-file-pdf me-1"></i>PDF
                   </button>
                 ) : (
-                  userRol !== 'solicitante' && (
-                    <button className="btn btn-sm text-muted opacity-50" onClick={() => uploadFicha(row)}>
-                      <i className="fa-solid fa-upload"></i>
+                  userRol !== 'solicitante' ? (
+                    <button className="btn btn-sm text-muted opacity-50" onClick={() => uploadFicha(row)} title="Subir Ficha Técnica">
+                      <i className="fa-solid fa-upload me-1"></i>Subir
                     </button>
+                  ) : (
+                    <span className="text-muted small fst-italic">Sin ficha</span>
                   )
                 )
               )
@@ -214,12 +224,13 @@ const CrudReactivos = ({ userRol }) => {
               name: 'ESTADO',
               sortable: true,
               center: true,
-              width: '200px',
+              width: '150px',
               cell: (row) => (
                 <span
                   className={`status-badge ${row.Estado === 'Activo' ? 'status-badge-activo' : 'status-badge-inactivo'}`}
                   style={{ cursor: 'pointer' }}
                   onClick={() => toggleEstado(row)}
+                  title="Clic para cambiar estado"
                 >
                   {row.Estado}
                 </span>
@@ -228,7 +239,7 @@ const CrudReactivos = ({ userRol }) => {
             {
               name: 'ACCIONES',
               center: true,
-              width: '200px',
+              width: '130px',
               cell: (row) => (
                 <button
                   className="btn-action btn-action-edit"
@@ -266,25 +277,27 @@ const CrudReactivos = ({ userRol }) => {
       </div>
 
       {/* Modal formulario */}
-      <div className="modal fade" id="exampleModal" tabIndex="-1">
-        <div className="modal-dialog modal-lg border-0">
-          <div className="modal-content shadow-lg border-0" style={{ borderRadius: '20px' }}>
-            <div className="modal-header bg-primary text-white border-0 py-3" style={{ borderTopLeftRadius: '20px', borderTopRightRadius: '20px' }}>
-              <h5 className="modal-title fw-bold">
-                {rowToEdit ? "Editar Reactivo" : "Agregar Nuevo Reactivo"}
-              </h5>
-              <button type="button" className="btn-close btn-close-white shadow-none" data-bs-dismiss="modal" id="closeModal"></button>
-            </div>
-            <div className="modal-body p-4">
-              <ReactivosForm
-                hideModal={hideModal}
-                refreshList={getAllReactivos}
-                rowToEdit={rowToEdit}
-              />
+      {userRol !== 'solicitante' && (
+        <div className="modal fade" id="exampleModal" tabIndex="-1">
+          <div className="modal-dialog modal-lg border-0">
+            <div className="modal-content shadow-lg border-0" style={{ borderRadius: '20px' }}>
+              <div className="modal-header bg-primary text-white border-0 py-3" style={{ borderTopLeftRadius: '20px', borderTopRightRadius: '20px' }}>
+                <h5 className="modal-title fw-bold">
+                  {rowToEdit ? "Editar Reactivo" : "Agregar Nuevo Reactivo"}
+                </h5>
+                <button type="button" className="btn-close btn-close-white shadow-none" data-bs-dismiss="modal" id="closeModal"></button>
+              </div>
+              <div className="modal-body p-4">
+                <ReactivosForm
+                  hideModal={hideModal}
+                  refreshList={getAllReactivos}
+                  rowToEdit={rowToEdit}
+                />
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* MODAL PDF */}
       {showPdf && (

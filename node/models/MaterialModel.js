@@ -2,14 +2,15 @@ import db from "../database/db.js";
 import { DataTypes } from "sequelize";
 
 const MaterialModel = db.define('material', {
-    Id_Material: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
-    Nom_Material: {type: DataTypes.STRING},
+    Id_Material: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+    Nom_Material: { type: DataTypes.STRING },
+    descripcion: { type: DataTypes.TEXT },
     img_material: { type: DataTypes.TEXT },
     Can_Material: { type: DataTypes.INTEGER },
     clasificacion: { type: DataTypes.ENUM('Desechable', 'Reutilizable'), defaultValue: 'Desechable' },
-    Estado: { type: DataTypes.ENUM('Activo','Inactivo')}
+    Estado: { type: DataTypes.ENUM('Activo', 'Inactivo') }
 }, {
     freezeTableName: true
-})
+});
 
 export default MaterialModel;
