@@ -13,7 +13,6 @@ const EquipoModel = db.define("equipo", {
     vida_util: { type: DataTypes.INTEGER },
     valor_unitario: { type: DataTypes.DECIMAL(10, 2) },
     fecha_adquisicion: { type: DataTypes.DATEONLY },
-    img_equipo: { type: DataTypes.TEXT },
     ficha_tecnica: { type: DataTypes.STRING },
     estado: { type: DataTypes.ENUM("Activo", "Inactivo") }
 }, {

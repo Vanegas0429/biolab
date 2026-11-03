@@ -1,15 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import apiAxios from "../api/axiosConfig.js";
-import Swal from 'sweetalert2'
-import withReactContent from 'sweetalert2-react-content'
+import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
 
-
-const MySwal = withReactContent(Swal)
+const MySwal = withReactContent(Swal);
 
 const Sup_PlantasForm = ({ hideModal, refreshList, rowToEdit, isViewOnly }) => {
   const [Estado, setEstado] = useState("Activo");
-
-
 
   // Campos del formulario
   const [Num_lote, setNum_lote] = useState('');
@@ -27,13 +24,24 @@ const Sup_PlantasForm = ({ hideModal, refreshList, rowToEdit, isViewOnly }) => {
   const [Num_endurecimiento, setNum_endurecimiento] = useState(0);
 
   const [Producciones, setProducciones] = useState([]);
-
   const [Id_produccion, setId_produccion] = useState('');
 
+  // Evitar que re-renders del padre o auto-refresh restablezcan los datos mientras el usuario escribe
+  const loadedKeyRef = useRef(null);
 
   useEffect(() => {
+    const currentKey = rowToEdit
+      ? `${rowToEdit.Id_supervision || 'new'}_prod_${rowToEdit.Id_produccion || ''}`
+      : 'empty';
+
+    // Si ya cargamos estos datos, no sobrescribir lo que el usuario está escribiendo
+    if (loadedKeyRef.current === currentKey) {
+      return;
+    }
+    loadedKeyRef.current = currentKey;
+
     if (rowToEdit) {
-      // EDITAR: llenar campos con los datos del registro
+      // Llenar campos con los datos del registro
       setNum_lote(rowToEdit.Num_lote ?? '');
       setMed_Cultivo(rowToEdit.Med_Cultivo ?? '');
       setMet_Propagacion(rowToEdit.Met_Propagacion ?? '');
@@ -49,7 +57,7 @@ const Sup_PlantasForm = ({ hideModal, refreshList, rowToEdit, isViewOnly }) => {
       setNum_endurecimiento(rowToEdit.Num_endurecimiento ?? 0);
       setId_produccion(rowToEdit.Id_produccion ?? '');
     } else {
-      // CREAR: limpiar todos los campos
+      // Limpiar todos los campos
       setEstado("Activo");
       setNum_lote('');
       setMed_Cultivo('');
@@ -67,8 +75,6 @@ const Sup_PlantasForm = ({ hideModal, refreshList, rowToEdit, isViewOnly }) => {
       setId_produccion('');
     }
   }, [rowToEdit]);
-
-
 
   const textFormButton = rowToEdit?.Id_supervision ? "Actualizar" : "Enviar";
 
@@ -89,7 +95,8 @@ const Sup_PlantasForm = ({ hideModal, refreshList, rowToEdit, isViewOnly }) => {
       console.log("No se pudo cargar Producción");
     }
   };
-  //CREAR
+
+  // CREAR
   const crearSup_Planta = async () => {
     return apiAxios.post('/api/Sup_Plantas', {
       Num_lote,
@@ -111,7 +118,7 @@ const Sup_PlantasForm = ({ hideModal, refreshList, rowToEdit, isViewOnly }) => {
     });
   };
 
-  //ACTUALIZAR
+  // ACTUALIZAR
   const actualizarSup_Planta = async () => {
     return apiAxios.put(
       `/api/Sup_Plantas/${rowToEdit.Id_supervision}`,
@@ -208,12 +215,13 @@ const Sup_PlantasForm = ({ hideModal, refreshList, rowToEdit, isViewOnly }) => {
       } else {
         await crearSup_Planta(); // ➕ NUEVO
         MySwal.fire({
-          title: "Registrado", text: "Supervisión registrada",
+          title: "Registrado",
+          text: "Supervisión registrada",
           icon: "success"
         });
       }
 
-
+      loadedKeyRef.current = null;
       if (refreshList) await refreshList();
       hideModal();
     } catch (error) {
@@ -222,36 +230,69 @@ const Sup_PlantasForm = ({ hideModal, refreshList, rowToEdit, isViewOnly }) => {
         title: "Error",
         text: "Error al guardar la supervisión",
         icon: "error"
-      })
+      });
     }
   };
-
 
   return (
     <form onSubmit={gestionarForm} className="container-fluid">
       <div className="row g-3">
         <div className="col-md-6">
           <label htmlFor="Num_lote" className="form-label fw-bold">Num de Lote:</label>
-          <select id="Num_lote" className="form-select rounded-pill shadow-sm" value={Num_lote} onChange={e => setNum_lote(e.target.value)} disabled={isViewOnly}>
+          <select 
+            id="Num_lote" 
+            className="form-select rounded-pill shadow-sm" 
+            value={Num_lote} 
+            onChange={e => setNum_lote(e.target.value)} 
+            disabled={isViewOnly}
+            required
+          >
             <option value="">Selecciona uno</option>
             {lotes.map(l => <option key={l} value={l}>{l}</option>)}
           </select>
         </div>
+
+        {/* Frascos Iniciales: cantidad actual no modificable */}
         <div className="col-md-6">
-          <label htmlFor="Fc_Iniciales" className="form-label fw-bold">Fc Iniciales:</label>
-          <input type="number" min="0" id="Fc_Iniciales" className="form-control rounded-pill shadow-sm" value={Fc_Iniciales} onChange={e => setFc_Iniciales(Math.max(0, Number(e.target.value)) || 0)} readOnly={isViewOnly} />
+          <label htmlFor="Fc_Iniciales" className="form-label fw-bold">
+            <i className="fa-solid fa-lock me-1 text-muted"></i>Frascos Iniciales:
+          </label>
+          <input 
+            type="number" 
+            min="0" 
+            id="Fc_Iniciales" 
+            className="form-control rounded-pill shadow-sm bg-light" 
+            value={Fc_Iniciales} 
+            readOnly={true}
+            title="Cantidad actual disponible en producción (fija, no modificable)"
+          />
         </div>
 
         <div className="col-md-6">
           <label htmlFor="Med_Cultivo" className="form-label fw-bold">Medio de Cultivo:</label>
-          <select id="Med_Cultivo" className="form-select rounded-pill shadow-sm" value={Med_Cultivo} onChange={e => setMed_Cultivo(e.target.value)} disabled={isViewOnly}>
+          <select 
+            id="Med_Cultivo" 
+            className="form-select rounded-pill shadow-sm" 
+            value={Med_Cultivo} 
+            onChange={e => setMed_Cultivo(e.target.value)} 
+            disabled={isViewOnly}
+            required
+          >
             <option value="">Selecciona uno</option>
             {mediosCultivo.map(m => <option key={m} value={m}>{m}</option>)}
           </select>
         </div>
+
         <div className="col-md-6">
           <label htmlFor="Met_Propagacion" className="form-label fw-bold">Método de Propagación:</label>
-          <select id="Met_Propagacion" className="form-select rounded-pill shadow-sm" value={Met_Propagacion} onChange={e => setMet_Propagacion(e.target.value)} disabled={isViewOnly}>
+          <select 
+            id="Met_Propagacion" 
+            className="form-select rounded-pill shadow-sm" 
+            value={Met_Propagacion} 
+            onChange={e => setMet_Propagacion(e.target.value)} 
+            disabled={isViewOnly}
+            required
+          >
             <option value="">Selecciona uno</option>
             {metPropagacion.map(m => <option key={m} value={m}>{m}</option>)}
           </select>
@@ -315,7 +356,7 @@ const Sup_PlantasForm = ({ hideModal, refreshList, rowToEdit, isViewOnly }) => {
         {!isViewOnly && (
           <div className="col-12 text-center mt-4">
             <button type="submit" className="btn btn-primary rounded-pill px-5 shadow-sm fw-bold">
-              <i className={`fa-solid ${rowToEdit ? 'fa-rotate' : 'fa-paper-plane'} me-2`}></i>
+              <i className={`fa-solid ${rowToEdit?.Id_supervision ? 'fa-rotate' : 'fa-paper-plane'} me-2`}></i>
               {textFormButton}
             </button>
           </div>

@@ -7,12 +7,20 @@ const UsuarioRegistroAdmin = () => {
   const [telefono, setTelefono] = useState("");
   const [correo, setCorreo] = useState("");
   const [contraseña, setContraseña] = useState("");
+  const [confirmarContraseña, setConfirmarContraseña] = useState("");
   const [rol, setRol] = useState("");
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const gestionarRegistro = async (e) => {
     e.preventDefault();
+
+    if (contraseña !== confirmarContraseña) {
+      setError("Las contraseñas no coinciden.");
+      return;
+    }
 
     const passwordRegex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
     if (!passwordRegex.test(contraseña)) {
@@ -114,17 +122,51 @@ const UsuarioRegistroAdmin = () => {
 
             <div className="mb-3">
               <label className="form-label">Contraseña</label>
-              <input
-                type="password"
-                className="form-control"
-                value={contraseña}
-                onChange={(e) => setContraseña(e.target.value)}
-                placeholder="Mínimo 8 caracteres, 1 mayúscula y 1 número"
-                required
-              />
+              <div className="input-group">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  className="form-control border-end-0"
+                  value={contraseña}
+                  onChange={(e) => setContraseña(e.target.value)}
+                  placeholder="Mínimo 8 caracteres, 1 mayúscula y 1 número"
+                  required
+                />
+                <button
+                  type="button"
+                  className="btn btn-outline-secondary border-start-0 bg-white"
+                  onClick={() => setShowPassword(!showPassword)}
+                  tabIndex={-1}
+                  style={{ borderColor: "#dee2e6" }}
+                >
+                  <i className={`fa-solid ${showPassword ? "fa-eye-slash" : "fa-eye"} text-muted`}></i>
+                </button>
+              </div>
               <small className="text-muted d-block mt-1">
                 Mínimo 8 caracteres, al menos 1 letra mayúscula y 1 número.
               </small>
+            </div>
+
+            <div className="mb-3">
+              <label className="form-label">Confirmar Contraseña</label>
+              <div className="input-group">
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  className="form-control border-end-0"
+                  value={confirmarContraseña}
+                  onChange={(e) => setConfirmarContraseña(e.target.value)}
+                  placeholder="Confirme su contraseña"
+                  required
+                />
+                <button
+                  type="button"
+                  className="btn btn-outline-secondary border-start-0 bg-white"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  tabIndex={-1}
+                  style={{ borderColor: "#dee2e6" }}
+                >
+                  <i className={`fa-solid ${showConfirmPassword ? "fa-eye-slash" : "fa-eye"} text-muted`}></i>
+                </button>
+              </div>
             </div>
 
             {/* ROL */}

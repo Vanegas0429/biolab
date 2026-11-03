@@ -209,8 +209,8 @@ function App() {
 
         {/* Rutas solo para roles operativos (MiddelWare X) */}
         <Route path='/Especie' element={
-          <ProtectedRoute isAuth={isAuth} userRol={userRol} allowedRoles={STAFF_ROLES}>
-            <CrudEspecie />
+          <ProtectedRoute isAuth={isAuth} userRol={userRol} allowedRoles={[...STAFF_ROLES, 'solicitante']}>
+            <CrudEspecie userRol={userRol} />
           </ProtectedRoute>
         } />
         <Route path='/Sup_Plantas' element={

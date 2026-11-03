@@ -16,18 +16,18 @@ const ReservaReactivoModel = db.define('ReservaReactivo', {
         allowNull: false
     },
     Can_Reactivo: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.DECIMAL(10, 2),
         allowNull: false
     },
     Reac_Utilizados: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.DECIMAL(10, 2),
         allowNull: true,
-        defaultValue: 0
+        defaultValue: 0.00
     },
     Reac_Devueltos: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.DECIMAL(10, 2),
         allowNull: true,
-        defaultValue: 0
+        defaultValue: 0.00
     }
 }, {
     tableName: 'reservareactivo',

@@ -7,6 +7,12 @@ import Swal from "sweetalert2"
 import { jsPDF } from "jspdf"
 import autoTable from "jspdf-autotable"
 
+const formatDateClean = (dateStr) => {
+  if (!dateStr) return 'N/A';
+  const s = String(dateStr);
+  return s.includes('T') ? s.split('T')[0] : s;
+};
+
 const CrudProduccion = () => {
   const [rowToEdit, setRowToEdit] = useState(null)
   const [Produccion, setProduccion] = useState([])
@@ -15,6 +21,7 @@ const CrudProduccion = () => {
 
   // Estados para supervisión y resumen
   const [selectedProdSupervision, setSelectedProdSupervision] = useState(null)
+  const [supervisionRowData, setSupervisionRowData] = useState(null)
   const [summaryData, setSummaryData] = useState(null)
   const [loadingSummary, setLoadingSummary] = useState(false)
   const [selectedSupDetail, setSelectedSupDetail] = useState(null)
@@ -27,7 +34,7 @@ const CrudProduccion = () => {
     try {
       setIsLoading(true)
       const response = await apiAxios.get('/api/Produccion')
-      setProduccion(response.data)
+      setProduccion(response.data || [])
     } catch (error) {
       console.error("Error cargando producción:", error)
     } finally {
@@ -38,16 +45,25 @@ const CrudProduccion = () => {
   useEffect(() => {
     getAllProduccion()
 
-    // Auto-refresh cada 15 segundos
+    // Auto-refresh cada 15 segundos SOLO si el usuario no tiene ningún modal abierto
     const interval = setInterval(() => {
-      getAllProduccion()
-    }, 15000)
+      const modalOpen = document.querySelector('.modal.show');
+      if (!modalOpen) {
+        getAllProduccion();
+      }
+    }, 15000);
 
     return () => clearInterval(interval)
   }, [])
 
   const handleOpenSupervision = (row) => {
-    setSelectedProdSupervision(row)
+    setSelectedProdSupervision(row);
+    // Asignar el objeto una sola vez en el estado para evitar re-creación inline en cada render
+    setSupervisionRowData({
+      Id_produccion: row.Id_produccion,
+      Num_lote: row.Lote,
+      Fc_Iniciales: row.Can_Existente ?? row.Can_Produccion
+    });
   }
 
   const handleOpenResumen = async (row) => {
@@ -103,8 +119,11 @@ const CrudProduccion = () => {
   }
 
   const hideSupervisionModal = () => {
+    setSelectedProdSupervision(null);
+    setSupervisionRowData(null);
     const btn = document.getElementById('closeSupervisionModal')
     if (btn) btn.click()
+    getAllProduccion()
   }
 
   return (
@@ -114,11 +133,11 @@ const CrudProduccion = () => {
         <div className="col">
           <div className="d-flex align-items-center gap-3">
             <div className="bg-primary text-white rounded-circle d-flex justify-content-center align-items-center shadow-sm" style={{ width: '50px', height: '50px' }}>
-              <i className="fa-solid fa-seedling fs-4"></i>
+              <i className="fa-solid fa-industry fs-4"></i>
             </div>
             <div>
               <h2 className="fw-bold mb-0" style={{ color: 'var(--secondary-color)' }}>Gestión de Producción</h2>
-              <p className="text-muted mb-0 small">Seguimiento y control de lotes de producción vegetal.</p>
+              <p className="text-muted mb-0 small">Registro y seguimiento de lotes de producción vegetal.</p>
             </div>
           </div>
         </div>
@@ -130,7 +149,7 @@ const CrudProduccion = () => {
             <input
               type="text"
               className="form-control border-0 py-2 shadow-none bg-transparent"
-              placeholder="Buscar producción..."
+              placeholder="Buscar por lote o especie..."
               value={filterText}
               onChange={(e) => setFilterText(e.target.value)}
             />
@@ -161,11 +180,11 @@ const CrudProduccion = () => {
             },
             { name: 'LOTE', selector: row => row.Lote, sortable: true, width: '100px' },
             { name: 'TIPO PRODUCCIÓN', selector: row => row.Tip_produccion, sortable: true, grow: 1 },
-            { name: 'CANT. PRODUC. INCIAL', selector: row => row.Can_Produccion || 0, sortable: true, width: '180px', center: true },
+            { name: 'CANT. PRODUC. INICIAL', selector: row => row.Can_Produccion || 0, sortable: true, width: '180px', center: true },
             { name: 'CANT. PRODUC. ACTUAL', selector: row => row.Can_Existente ?? row.Can_Produccion ?? 0, sortable: true, width: '180px', center: true },
             {
               name: 'FECHA PRODUC.',
-              selector: row => row.Fec_produccion ? row.Fec_produccion.split('T')[0] : '',
+              selector: row => formatDateClean(row.Fec_produccion),
               sortable: true,
               width: '170px'
             },
@@ -283,15 +302,11 @@ const CrudProduccion = () => {
               <button type="button" className="btn-close btn-close-white shadow-none" data-bs-dismiss="modal" id="closeSupervisionModal"></button>
             </div>
             <div className="modal-body p-4">
-              {selectedProdSupervision && (
+              {supervisionRowData && (
                 <Sup_PlantasForm
                   hideModal={hideSupervisionModal}
                   refreshList={getAllProduccion}
-                  rowToEdit={{
-                    Id_produccion: selectedProdSupervision.Id_produccion,
-                    Num_lote: selectedProdSupervision.Lote,
-                    Fc_Iniciales: selectedProdSupervision.Can_Existente ?? selectedProdSupervision.Can_Produccion
-                  }}
+                  rowToEdit={supervisionRowData}
                 />
               )}
             </div>
@@ -318,7 +333,7 @@ const CrudProduccion = () => {
                 </div>
               ) : summaryData ? (
                 <div>
-                  {/* Ficha rápida de producción */}
+                  {/* Ficha rápida de producción con fecha limpia sin ISO timestamp */}
                   <div className="row g-3 mb-4 p-3 bg-light rounded-3 border">
                     <div className="col-md-4">
                       <small className="text-muted d-block">Especie:</small>
@@ -330,7 +345,7 @@ const CrudProduccion = () => {
                     </div>
                     <div className="col-md-4">
                       <small className="text-muted d-block">Fecha de Producción:</small>
-                      <strong className="text-dark fs-6">{summaryData.produccion?.Fec_produccion}</strong>
+                      <strong className="text-dark fs-6">{formatDateClean(summaryData.produccion?.Fec_produccion)}</strong>
                     </div>
                   </div>
 
@@ -345,10 +360,11 @@ const CrudProduccion = () => {
                       doc.setFontSize(10);
                       doc.text(`Especie: ${summaryData.produccion?.Especie?.Nom_especie || 'N/A'}`, 14, 22);
                       doc.text(`Tipo de Producción: ${summaryData.produccion?.Tip_produccion}`, 14, 28);
-                      doc.text(`Fecha de Producción: ${summaryData.produccion?.Fec_produccion}`, 14, 34);
+                      doc.text(`Fecha de Producción: ${formatDateClean(summaryData.produccion?.Fec_produccion)}`, 14, 34);
 
                       const tableHead = [
                         [
+                          { content: 'Fecha', rowSpan: 2, styles: { halign: 'center', valign: 'middle' } },
                           { content: 'Lote Sup.', rowSpan: 2, styles: { halign: 'center', valign: 'middle' } },
                           { content: 'Medio Cultivo', rowSpan: 2, styles: { halign: 'center', valign: 'middle' } },
                           { content: 'Propagación', rowSpan: 2, styles: { halign: 'center', valign: 'middle' } },
@@ -373,6 +389,7 @@ const CrudProduccion = () => {
 
                       summaryData.supervisiones.forEach(sup => {
                         const supData = [
+                          formatDateClean(sup.createdAt || sup.createdat || sup.Fec_supervision),
                           sup.Num_lote || 'N/A',
                           sup.Med_Cultivo || 'N/A',
                           sup.Met_Propagacion || 'N/A',
@@ -422,6 +439,7 @@ const CrudProduccion = () => {
                       <table className="table table-hover align-middle border rounded-3 overflow-hidden">
                         <thead className="table-light">
                           <tr>
+                            <th>Fecha</th>
                             <th># Lote Sup.</th>
                             <th>Medio Cultivo</th>
                             <th>Frascos Iniciales</th>
@@ -431,33 +449,41 @@ const CrudProduccion = () => {
                           </tr>
                         </thead>
                         <tbody>
-                          {summaryData.supervisiones.map((sup, idx) => (
-                            <tr key={sup.Id_sup_plantas || idx}>
-                              <td className="fw-bold">{sup.Num_lote || 'N/A'}</td>
-                              <td>{sup.Med_Cultivo || 'N/A'}</td>
-                              <td><span className="badge bg-primary rounded-pill px-3">{sup.Fc_Iniciales || 0}</span></td>
-                              <td>
-                                <span className="text-danger small">
-                                  Bacterias: {sup.Fc_Bacterias || 0} | Hongos: {sup.Fc_Hongos || 0}
-                                </span>
-                              </td>
-                              <td>
-                                <span className="badge bg-success rounded-pill px-3">
-                                  {(Number(sup.Fd_BR || 0) + Number(sup.Fd_RA || 0) + Number(sup.Fd_CA || 0) + Number(sup.Fd_MOR || 0) + Number(sup.Fd_GER || 0))} desarrollados
-                                </span>
-                              </td>
-                              <td>
-                                <button
-                                  className="btn btn-sm btn-outline-primary rounded-pill px-3 shadow-sm"
-                                  data-bs-toggle="modal"
-                                  data-bs-target="#verSupervisionModal"
-                                  onClick={() => handleViewSupervisionDetail(sup)}
-                                >
-                                  <i className="fa-solid fa-eye me-1"></i>Ver Detalle
-                                </button>
-                              </td>
-                            </tr>
-                          ))}
+                          {summaryData.supervisiones.map((sup, idx) => {
+                            const fechaSup = formatDateClean(sup.createdAt || sup.createdat || sup.Fec_supervision);
+                            return (
+                              <tr key={sup.Id_sup_plantas || sup.Id_supervision || idx}>
+                                <td>
+                                  <span className="badge bg-light text-dark border">
+                                    <i className="fa-solid fa-calendar-day me-1 text-primary"></i>{fechaSup}
+                                  </span>
+                                </td>
+                                <td className="fw-bold">{sup.Num_lote || 'N/A'}</td>
+                                <td>{sup.Med_Cultivo || 'N/A'}</td>
+                                <td><span className="badge bg-primary rounded-pill px-3">{sup.Fc_Iniciales || 0}</span></td>
+                                <td>
+                                  <span className="text-danger small">
+                                    Bacterias: {sup.Fc_Bacterias || 0} | Hongos: {sup.Fc_Hongos || 0}
+                                  </span>
+                                </td>
+                                <td>
+                                  <span className="badge bg-success rounded-pill px-3">
+                                    {(Number(sup.Fd_BR || 0) + Number(sup.Fd_RA || 0) + Number(sup.Fd_CA || 0) + Number(sup.Fd_MOR || 0) + Number(sup.Fd_GER || 0))} desarrollados
+                                  </span>
+                                </td>
+                                <td>
+                                  <button
+                                    className="btn btn-sm btn-outline-primary rounded-pill px-3 shadow-sm"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#verSupervisionModal"
+                                    onClick={() => handleViewSupervisionDetail(sup)}
+                                  >
+                                    <i className="fa-solid fa-eye me-1"></i>Ver Detalle
+                                  </button>
+                                </td>
+                              </tr>
+                            );
+                          })}
                         </tbody>
                       </table>
                     </div>
@@ -469,34 +495,29 @@ const CrudProduccion = () => {
         </div>
       </div>
 
-      {/* Modal Ver Detalle de Supervisión (Lectura) */}
+      {/* Modal Ver Detalle de Supervisión */}
       <div className="modal fade" id="verSupervisionModal" tabIndex="-1">
         <div className="modal-dialog modal-xl border-0">
           <div className="modal-content shadow-lg border-0" style={{ borderRadius: '20px' }}>
             <div className="modal-header bg-secondary text-white border-0 py-3" style={{ borderTopLeftRadius: '20px', borderTopRightRadius: '20px' }}>
-              <h5 className="modal-title fw-bold">
-                <i className="fa-solid fa-eye me-2"></i>
-                Detalle de Supervisión (Lote Sup: {selectedSupDetail?.Num_lote})
-              </h5>
-              <button type="button" className="btn-close btn-close-white shadow-none" data-bs-toggle="modal" data-bs-target="#resumenModal"></button>
+              <h5 className="modal-title fw-bold">Detalle de Supervisión (Lote Sup: {selectedSupDetail?.Num_lote})</h5>
+              <button type="button" className="btn-close btn-close-white shadow-none" data-bs-dismiss="modal"></button>
             </div>
-            <div className="modal-body p-4">
+            <div className="modal-body p-4 position-relative">
               {selectedSupDetail && (
                 <Sup_PlantasForm
+                  hideModal={() => {
+                    const btn = document.querySelector("#verSupervisionModal .btn-close");
+                    if (btn) btn.click();
+                  }}
                   rowToEdit={selectedSupDetail}
                   isViewOnly={true}
                 />
               )}
             </div>
-            <div className="modal-footer border-0 bg-light p-3">
-              <button type="button" className="btn btn-secondary rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#resumenModal">
-                Volver al Historial
-              </button>
-            </div>
           </div>
         </div>
       </div>
-
     </div>
   );
 };

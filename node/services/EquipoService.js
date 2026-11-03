@@ -1,6 +1,4 @@
 import EquipoModel from "../models/EquipoModel.js";
-import fs from 'fs';
-import path from 'path';
 
 class EquipoService {
 
@@ -9,7 +7,6 @@ class EquipoService {
     }
 
     async getById(Id_Equipo) {
-
         const equipo = await EquipoModel.findOne({
             where: { Id_Equipo: Id_Equipo }
         });
@@ -64,43 +61,11 @@ class EquipoService {
     }
 
     async delete(Id_Equipo) {
-
         const deleted = await EquipoModel.destroy({
             where: { Id_Equipo: Id_Equipo }
         });
 
         if (!deleted) throw new Error("Equipo no encontrado");
-
-        return true;
-    }
-
-    // Eliminar una imagen específica del array de imágenes de un equipo
-    async removeImage(Id_Equipo, filename) {
-        const equipo = await this.getById(Id_Equipo);
-
-        let imagenes = [];
-        try {
-            imagenes = JSON.parse(equipo.img_equipo || '[]');
-        } catch {
-            if (equipo.img_equipo) {
-                imagenes = [equipo.img_equipo];
-            }
-        }
-
-        // Filtrar la imagen a eliminar
-        const nuevasImagenes = imagenes.filter(img => img !== filename);
-
-        // Actualizar en BD
-        await EquipoModel.update(
-            { img_equipo: nuevasImagenes.length > 0 ? JSON.stringify(nuevasImagenes) : null },
-            { where: { Id_Equipo: Id_Equipo } }
-        );
-
-        // Eliminar archivo físico
-        const filePath = path.join('public', 'uploads', filename);
-        if (fs.existsSync(filePath)) {
-            fs.unlinkSync(filePath);
-        }
 
         return true;
     }

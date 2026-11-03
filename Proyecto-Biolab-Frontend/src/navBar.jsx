@@ -34,13 +34,11 @@ const NavBar = ({ isAuth, logOut, userRol }) => {
         )}
         <li className="nav-item"><Link className="nav-link px-3 py-2" onClick={() => navigateTo("/Reserva")}><i className="fa-solid fa-calendar-days me-3 w-20px text-center"></i>Mis Reservas</Link></li>
 
-        {/* Solo administradores ven Plantas */}
+        {/* Plantas */}
+        <li className="nav-item mt-3 px-3 text-uppercase text-secondary fw-bold" style={{ fontSize: '0.75rem', letterSpacing: '1px' }}>Plantas</li>
+        <li className="nav-item"><Link className="nav-link px-3 py-2" onClick={() => navigateTo("/Especie")}><i className="fa-solid fa-seedling me-3 w-20px text-center"></i>Especies</Link></li>
         {userRol !== 'solicitante' && (
-          <>
-            <li className="nav-item mt-3 px-3 text-uppercase text-secondary fw-bold" style={{ fontSize: '0.75rem', letterSpacing: '1px' }}>Plantas</li>
-            <li className="nav-item"><Link className="nav-link px-3 py-2" onClick={() => navigateTo("/Especie")}><i className="fa-solid fa-seedling me-3 w-20px text-center"></i>Especies</Link></li>
-            <li className="nav-item"><Link className="nav-link px-3 py-2" onClick={() => navigateTo("/Produccion")}><i className="fa-solid fa-industry me-3 w-20px text-center"></i>Producciones</Link></li>
-          </>
+          <li className="nav-item"><Link className="nav-link px-3 py-2" onClick={() => navigateTo("/Produccion")}><i className="fa-solid fa-industry me-3 w-20px text-center"></i>Producciones</Link></li>
         )}
 
         {/* SUBMENÚ INVENTARIO */}

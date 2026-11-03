@@ -63,6 +63,41 @@ async function runMigration() {
       console.log("- Columnas de institución ya existen en reserva.");
     }
 
+    // 6. Agregar descripcion a especie
+    const [espDescCols] = await db.query("SHOW COLUMNS FROM especie LIKE 'descripcion'");
+    if (espDescCols.length === 0) {
+      console.log("Agregando columna descripcion a tabla especie...");
+      await db.query("ALTER TABLE especie ADD COLUMN descripcion TEXT DEFAULT NULL");
+      console.log("✓ Columna descripcion agregada a especie.");
+    }
+
+    // 7. Agregar descripcion y ficha_tecnica a material
+    const [matDescCols] = await db.query("SHOW COLUMNS FROM material LIKE 'descripcion'");
+    if (matDescCols.length === 0) {
+      console.log("Agregando columna descripcion a tabla material...");
+      await db.query("ALTER TABLE material ADD COLUMN descripcion TEXT DEFAULT NULL");
+      console.log("✓ Columna descripcion agregada a material.");
+    }
+    const [matFichaCols] = await db.query("SHOW COLUMNS FROM material LIKE 'ficha_tecnica'");
+    if (matFichaCols.length === 0) {
+      console.log("Agregando columna ficha_tecnica a tabla material...");
+      await db.query("ALTER TABLE material ADD COLUMN ficha_tecnica VARCHAR(255) DEFAULT NULL");
+      console.log("✓ Columna ficha_tecnica agregada a material.");
+    }
+
+    // 8. Permitir decimales en reactivos (entrada, reservareactivo, movimientoreactivo)
+    try {
+      await db.query("ALTER TABLE entrada MODIFY COLUMN Can_Inicial DECIMAL(10,2) NOT NULL DEFAULT 0.00");
+      await db.query("ALTER TABLE entrada MODIFY COLUMN Can_Salida DECIMAL(10,2) NOT NULL DEFAULT 0.00");
+      await db.query("ALTER TABLE reservareactivo MODIFY COLUMN Can_Reactivo DECIMAL(10,2) NOT NULL DEFAULT 0.00");
+      await db.query("ALTER TABLE reservareactivo MODIFY COLUMN Reac_Utilizados DECIMAL(10,2) DEFAULT 0.00");
+      await db.query("ALTER TABLE reservareactivo MODIFY COLUMN Reac_Devueltos DECIMAL(10,2) DEFAULT 0.00");
+      await db.query("ALTER TABLE movimientoreactivo MODIFY COLUMN Cantidad DECIMAL(10,2) NOT NULL DEFAULT 0.00");
+      console.log("✓ Columnas de reactivos actualizadas a DECIMAL(10,2).");
+    } catch (decErr) {
+      console.warn("Nota sobre actualización a decimal:", decErr.message);
+    }
+
     console.log("¡Migración completada exitosamente!");
     process.exit(0);
   } catch (error) {

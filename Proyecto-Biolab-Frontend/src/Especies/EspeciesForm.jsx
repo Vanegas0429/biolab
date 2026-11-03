@@ -1,29 +1,29 @@
 import { useState, useEffect } from "react";
 import apiAxios from "../api/axiosConfig.js";
-import Swal from 'sweetalert2'
-import withReactContent from 'sweetalert2-react-content'
+import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
 
-
-const MySwal = withReactContent(Swal)
+const MySwal = withReactContent(Swal);
 
 const EspeciesForm = ({ hideModal, refreshList, rowToEdit }) => {
     const [Estado, setEstado] = useState("Activo");
 
-
-
-    //Campos del formulario
+    // Campos del formulario
     const [Nom_especie, setNom_especie] = useState("");
+    const [descripcion, setDescripcion] = useState("");
     const [imagenes, setImagenes] = useState([]);
     const [textFormButton, setTextFormButton] = useState("Enviar");
 
     useEffect(() => {
         if (rowToEdit) {
             setNom_especie(rowToEdit.Nom_especie || "");
+            setDescripcion(rowToEdit.descripcion || "");
             setEstado(rowToEdit.Estado || "Activo");
             setTextFormButton("Actualizar");
         } else {
             setEstado("Activo");
             setNom_especie("");
+            setDescripcion("");
             setTextFormButton("Enviar");
         }
         setImagenes([]);
@@ -35,7 +35,7 @@ const EspeciesForm = ({ hideModal, refreshList, rowToEdit }) => {
         if (!Nom_especie) {
             MySwal.fire({
                 title: "Error",
-                text: "Por favor completa todos los campos obligatorios",
+                text: "Por favor completa el nombre de la especie",
                 icon: "error"
             });
             return;
@@ -43,6 +43,7 @@ const EspeciesForm = ({ hideModal, refreshList, rowToEdit }) => {
 
         const formData = new FormData();
         formData.append("Nom_especie", Nom_especie);
+        formData.append("descripcion", descripcion);
         formData.append("Estado", Estado);
         
         if (imagenes.length > 0) {
@@ -68,7 +69,8 @@ const EspeciesForm = ({ hideModal, refreshList, rowToEdit }) => {
                     headers: { "Content-Type": "multipart/form-data" }
                 });
                 MySwal.fire({
-                    title: "Registrado", text: "Especie registrada",
+                    title: "Registrado",
+                    text: "Especie registrada",
                     icon: "success",
                     timer: 2000,
                     showConfirmButton: false
@@ -100,7 +102,22 @@ const EspeciesForm = ({ hideModal, refreshList, rowToEdit }) => {
                     value={Nom_especie}
                     onChange={(e) => setNom_especie(e.target.value)}
                     placeholder="Ej: Solanum lycopersicum"
+                    required
                 />
+            </div>
+
+            <div className="col-md-12">
+                <label htmlFor="descripcion" className="form-label fw-bold">
+                    Descripción de la Especie:
+                </label>
+                <textarea
+                    id="descripcion"
+                    className="form-control rounded-4 px-3 py-2 shadow-sm"
+                    rows="3"
+                    value={descripcion}
+                    onChange={(e) => setDescripcion(e.target.value)}
+                    placeholder="Descripción taxonómica, características, variedades o notas especiales..."
+                ></textarea>
             </div>
 
             <div className="col-md-12">

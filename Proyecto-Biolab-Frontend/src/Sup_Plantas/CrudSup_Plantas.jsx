@@ -115,6 +115,7 @@ const CrudSup_Plantas = () => {
       <div className="card border-0 shadow-lg overflow-hidden table-responsive-custom" style={{ borderRadius: '20px' }}>
         <DataTable
           columns={[
+            { name: 'FECHA', selector: row => row.createdAt ? row.createdAt.split('T')[0] : 'N/A', sortable: true, width: '120px' },
             { name: 'LOTE', selector: row => row?.Num_lote ?? "N/A", sortable: true, width: '100px' },
             { name: 'MEDIO CULTIVO', selector: row => row?.Med_Cultivo ?? "N/A", sortable: true, width: '150px' },
             { name: 'MÉTODO PROPAGACION.', selector: row => row?.Met_Propagacion ?? "N/A", sortable: true, width: '150px' },
