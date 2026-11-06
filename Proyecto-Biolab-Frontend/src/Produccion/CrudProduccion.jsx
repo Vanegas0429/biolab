@@ -30,28 +30,32 @@ const CrudProduccion = () => {
     setSelectedSupDetail(sup)
   }
 
-  const getAllProduccion = async () => {
+  const getAllProduccion = async (isSilent = false) => {
     try {
-      setIsLoading(true)
+      if (!isSilent && Produccion.length === 0) {
+        setIsLoading(true)
+      }
       const response = await apiAxios.get('/api/Produccion')
       setProduccion(response.data || [])
     } catch (error) {
       console.error("Error cargando producción:", error)
     } finally {
-      setIsLoading(false)
+      if (!isSilent) {
+        setIsLoading(false)
+      }
     }
   }
 
   useEffect(() => {
     getAllProduccion()
 
-    // Auto-refresh cada 15 segundos SOLO si el usuario no tiene ningún modal abierto
+    // Auto-refresh silencioso en tiempo real (cada 8 segundos) sin recargar la pantalla
     const interval = setInterval(() => {
-      const modalOpen = document.querySelector('.modal.show');
-      if (!modalOpen) {
-        getAllProduccion();
+      if (document.body.classList.contains('modal-open') || document.querySelector('.modal.show') || document.querySelector('.swal2-container')) {
+        return;
       }
-    }, 15000);
+      getAllProduccion(true);
+    }, 8000);
 
     return () => clearInterval(interval)
   }, [])

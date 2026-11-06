@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useLocation } from "react-router-dom";
 import apiAxios from "../api/axiosConfig.js";
 import Swal from "sweetalert2";
 import ReservaForm from "./ReservaForm.jsx";
@@ -29,6 +30,9 @@ const GestionReservas = () => {
   const [estados, setEstados] = useState([]);
   // Estado para desplegar información de cada reserva
   const [expandedReservas, setExpandedReservas] = useState({});
+  const [highlightId, setHighlightId] = useState(null);
+
+  const location = useLocation();
 
   const toggleExpand = (id) => {
     setExpandedReservas(prev => ({
@@ -39,15 +43,19 @@ const GestionReservas = () => {
 
   const loggedUser = JSON.parse(localStorage.getItem('UsuarioLaboratorio'));
 
-  const fetchReservas = async () => {
+  const fetchReservas = async (isSilent = false) => {
     try {
-      setIsLoading(true);
+      if (!isSilent && reservas.length === 0) {
+        setIsLoading(true);
+      }
       const response = await apiAxios.get("/api/Reserva");
       setReservas(response.data || []);
     } catch (error) {
       console.error("Error cargando reservas:", error);
     } finally {
-      setIsLoading(false);
+      if (!isSilent) {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -63,7 +71,46 @@ const GestionReservas = () => {
   useEffect(() => {
     fetchReservas();
     fetchEstados();
+
+    // Sincronización silenciosa en tiempo real (cada 8 segundos) sin recargar la página ni interrumpir al usuario
+    const interval = setInterval(() => {
+      // Si hay un modal de edición/creación abierto o una alerta activa, no actualizar para no estorbar
+      if (document.body.classList.contains('modal-open') || document.querySelector('.modal.show') || document.querySelector('.swal2-container')) {
+        return;
+      }
+      fetchReservas(true);
+    }, 8000);
+
+    return () => clearInterval(interval);
   }, []);
+
+  // Manejar navegación desde notificaciones: cambiar tab y resaltar reserva
+  useEffect(() => {
+    if (location.state?.highlightId && reservas.length > 0) {
+      const targetId = location.state.highlightId;
+      setHighlightId(targetId);
+      // Encontrar el estado de esa reserva para cambiar al tab correcto
+      const targetReserva = reservas.find(r => r.Id_Reserva === targetId);
+      if (targetReserva) {
+        const estado = targetReserva.Des_Estado;
+        if (estado === "Solicitado") setActiveTab("Solicitado");
+        else if (estado === "En proceso" || estado === "Aprobado") setActiveTab("En proceso");
+        else if (estado === "Finalizado") setActiveTab("Finalizado");
+        else if (estado === "Cancelado" || estado === "Rechazado") setActiveTab("Cancelado");
+        // Expandir la reserva
+        setExpandedReservas(prev => ({ ...prev, [targetId]: true }));
+      }
+      // Scroll al elemento después de un breve delay
+      setTimeout(() => {
+        const el = document.getElementById(`reserva-card-${targetId}`);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 400);
+      // Quitar highlight después de 4 segundos
+      setTimeout(() => setHighlightId(null), 4000);
+      // Limpiar el state de navegación
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state, reservas]);
 
   const filteredReservas = useMemo(() => {
     // Primero filtrar por tab
@@ -484,10 +531,13 @@ const GestionReservas = () => {
               return (
                 <div key={reserva.Id_Reserva} className="col-12">
                   <div 
+                    id={`reserva-card-${reserva.Id_Reserva}`}
                     className="card border shadow-sm transition-all overflow-hidden" 
                     style={{ 
                       borderRadius: '16px', 
-                      borderLeft: '5px solid var(--primary-color) !important' 
+                      borderLeft: '5px solid var(--primary-color) !important',
+                      transition: 'box-shadow 0.5s ease, background-color 0.5s ease',
+                      ...(highlightId === reserva.Id_Reserva ? { boxShadow: '0 0 0 3px var(--primary-color), 0 8px 24px rgba(5,150,105,0.25)', backgroundColor: 'rgba(5,150,105,0.04)' } : {})
                     }}
                   >
                     {/* EN LA GESTIÓN DE RESERVAS SOLO APARECE: ID, NOMBRE DEL SOLICITANTE, FECHA Y HORA, Y COSITA PARA DESPLEGAR */}

@@ -67,9 +67,11 @@ const CrudReserva = () => {
   };
 
   // 🔹 Obtener reservas
-  const fetchReservas = async () => {
+  const fetchReservas = async (isSilent = false) => {
     try {
-      setIsLoading(true);
+      if (!isSilent && Reserva.length === 0) {
+        setIsLoading(true);
+      }
       const response = await apiAxios.get("/api/Reserva");
       const data = response.data;
       const list = Array.isArray(data) ? data : data?.data ?? [];
@@ -85,7 +87,9 @@ const CrudReserva = () => {
     } catch (error) {
       console.error("Error cargando reservas:", error);
     } finally {
-      setIsLoading(false);
+      if (!isSilent) {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -105,10 +109,13 @@ const CrudReserva = () => {
     fetchReservas();
     fetchEstados();
 
-    // Auto-refresh cada 15 segundos para sincronizar cambios de otros usuarios
+    // Auto-refresh silencioso en tiempo real (cada 8 segundos) sin recargar la página
     const interval = setInterval(() => {
-      fetchReservas();
-    }, 15000);
+      if (document.body.classList.contains('modal-open') || document.querySelector('.modal.show') || document.querySelector('.swal2-container')) {
+        return;
+      }
+      fetchReservas(true);
+    }, 8000);
 
     return () => clearInterval(interval);
   }, []);

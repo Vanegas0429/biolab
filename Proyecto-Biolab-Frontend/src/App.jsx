@@ -126,6 +126,8 @@ function App() {
         }
       };
       fetchNotificaciones();
+      const notifTimer = setInterval(fetchNotificaciones, 10000);
+      return () => clearInterval(notifTimer);
     }
   }, [isAuth, userRol]);
 
@@ -179,7 +181,7 @@ function App() {
                         ) : (
                           notificaciones.map((notif, idx) => (
                             <li key={idx} className="border-bottom last-child-border-0">
-                              <div className="dropdown-item d-flex flex-column p-3" onClick={() => navigate('/Reserva', { state: { highlightId: notif.Id_Reserva } })} style={{ cursor: 'pointer', whiteSpace: 'normal' }}>
+                              <div className="dropdown-item d-flex flex-column p-3" onClick={() => navigate('/GestionReservas', { state: { highlightId: notif.Id_Reserva } })} style={{ cursor: 'pointer', whiteSpace: 'normal' }}>
                                 <span className="fw-bold text-primary" style={{ fontSize: '0.85rem' }}>Nueva Reserva: {notif.Tip_Reserva}</span>
                                 <span className="text-dark mt-1" style={{ fontSize: '0.8rem' }}>{notif.Nom_Solicitante}</span>
                                 <span className="text-muted mt-1" style={{ fontSize: '0.75rem' }}><i className="fa-regular fa-calendar me-1"></i>{notif.Fec_Reserva}</span>
@@ -203,10 +205,16 @@ function App() {
                       {userProfile.nombre ? userProfile.nombre.charAt(0).toUpperCase() : 'U'}
                     </div>
                   </div>
-                  <ul className="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
+                  <ul className="dropdown-menu dropdown-menu-end shadow border-0 mt-2" style={{ minWidth: '220px' }}>
                     <li><h6 className="dropdown-header">Perfil</h6></li>
                     <li><span className="dropdown-item-text text-muted small"><i className="fa-solid fa-phone me-2"></i>{userProfile.telefono || 'Sin teléfono'}</span></li>
                     <li><span className="dropdown-item-text text-muted small"><i className="fa-regular fa-envelope me-2"></i>{userProfile.correo}</span></li>
+                    <li><hr className="dropdown-divider" /></li>
+                    <li>
+                      <button className="dropdown-item text-danger fw-bold d-flex align-items-center gap-2" onClick={logOut}>
+                        <i className="fa-solid fa-power-off"></i>Cerrar Sesión
+                      </button>
+                    </li>
                   </ul>
                 </div>
               </div>

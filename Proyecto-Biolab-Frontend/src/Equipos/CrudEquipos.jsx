@@ -20,10 +20,13 @@ const CrudEquipos = ({ userRol }) => {
   useEffect(() => {
     getAllEquipos();
 
-    // Auto-refresh cada 15 segundos
+    // Auto-refresh silencioso en tiempo real (cada 8 segundos) sin interrumpir modales
     const interval = setInterval(() => {
+      if (document.body.classList.contains('modal-open') || document.querySelector('.modal.show') || document.querySelector('.carousel-overlay') || document.querySelector('.swal2-container')) {
+        return;
+      }
       getAllEquipos();
-    }, 15000);
+    }, 8000);
 
     return () => clearInterval(interval);
   }, []);
