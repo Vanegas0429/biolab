@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import apiAxios from "../api/axiosConfig.js";
 import Swal from "sweetalert2";
+import SearchableSelect from "../components/SearchableSelect.jsx";
 
 const FormReserva = ({ hideModal, rowToEdit = {}, estados = [] }) => {
   const reservaId = rowToEdit?.Id_Reserva;
@@ -480,6 +481,24 @@ const FormReserva = ({ hideModal, rowToEdit = {}, estados = [] }) => {
     setReactivos((prev) => prev.filter((item) => Number(item.Id_Reactivo) !== Number(idReactivo)));
   };
 
+  const nombreEquipo = (id) => {
+    const list = recursosActividad?.resumen?.equiposDetalle || [];
+    const eq = list.find((e) => Number(e.Id_Equipo) === Number(id));
+    return eq ? `${eq.nombre}${eq.marca ? ` (${eq.marca})` : ''}` : `Equipo ${id}`;
+  };
+
+  const nombreMaterial = (id) => {
+    const list = recursosActividad?.resumen?.materialesDetalle || [];
+    const mat = list.find((m) => Number(m.Id_Material) === Number(id));
+    return mat ? `${mat.Nom_Material}${mat.clasificacion ? ` (${mat.clasificacion})` : ''}` : `Material ${id}`;
+  };
+
+  const nombreReactivo = (id) => {
+    const list = recursosActividad?.resumen?.reactivosDetalle || [];
+    const reac = list.find((r) => Number(r.Id_Reactivo) === Number(id));
+    return reac ? `${reac.Nom_reactivo}${reac.Uni_Medida ? ` [${reac.Uni_Medida}]` : ''}` : `Reactivo ${id}`;
+  };
+
   const nombreActividad = (id) => {
     const item = actividadesDisponibles.find((a) => Number(a.Id_Actividad) === Number(id));
     return item?.Nom_Actividad ?? `Actividad ${id}`;
@@ -652,184 +671,47 @@ const FormReserva = ({ hideModal, rowToEdit = {}, estados = [] }) => {
       <div className="row">
         <div className="col-md-6 mb-3">
           <label className="form-label">Tipo de reserva:</label>
-          <select
-            className="form-control"
-            value={Tip_Reserva}
-            onChange={(e) => setTip_Reserva(e.target.value)}
-            required
-          >
-            <option value="Practica">Practica</option>
-            <option value="Visita">Visita</option>
-          </select>
-        </div>
-
-        {isEditing && (
-          <div className="col-md-6 mb-3">
-            <label className="form-label">Estado:</label>
-            <select
-              className="form-control"
-              value={Id_Estado || ""}
-              onChange={(e) => {
-                setId_Estado(Number(e.target.value));
-                setMot_RecCan("");
-              }}
-              disabled={esEstadoFinal}
-            >
-              {!nombreEstadoActual && <option value="">Selecciona uno</option>}
-
-              {nombreEstadoActual && (
-                <option value={obtenerIdEstadoPorNombre(nombreEstadoActual) || Id_EstadoActual || ""}>
-                  {nombreEstadoActual}
-                </option>
-              )}
-
-              {estadosPermitidos.map((estado) => (
-                <option key={estado.Id_Estado} value={estado.Id_Estado}>
-                  {estado.Tip_Estado}
-                </option>
-              ))}
-            </select>
-
-            {!esEstadoFinal && estadosPermitidos.length > 0 && (
-              <small className="text-muted">
-                Solo se muestran los estados permitidos según el flujo actual.
-              </small>
-            )}
-
-            {!esEstadoFinal && nombreEstadoActual && estadosPermitidos.length === 0 && (
-              <small className="text-muted">
-                No hay más transiciones disponibles para este estado.
-              </small>
-            )}
-
-            {esEstadoFinal && (
-              <small className="text-muted">
-                Esta reserva ya terminó su flujo y no admite más cambios de estado.
-              </small>
-            )}
-          </div>
-        )}
-
-        {isEditing &&
-          ["Rechazado", "Cancelado"].includes(
-            obtenerNombreEstado(Id_Estado) || nombreEstadoActual
-          ) && (
-            <div className="col-md-12 mb-3">
-              <label className="form-label">Motivo Rechazo o Cancelación:</label>
-              <input
-                type="text"
-                className="form-control"
-                value={Mot_RecCan}
-                onChange={(e) => setMot_RecCan(e.target.value)}
-                required
-              />
-            </div>
-          )}
-
-        {Tip_Reserva === "Practica" && !isEditing && (
-          <div className="col-md-12 mb-3">
-            <label className="form-label d-block">Actividades (mínimo 1, máximo 3):</label>
-
-            <div className="border rounded p-3" style={{ maxHeight: "220px", overflowY: "auto" }}>
-              {actividadesDisponibles.map((actividad) => {
-                const id = Number(actividad.Id_Actividad);
-                const checked = actividadesSeleccionadas.includes(id);
-                const deshabilitada = !checked && actividadesSeleccionadas.length >= 3;
-
-                return (
-                  <div key={actividad.Id_Actividad} className="form-check mb-2">
-                    <input
-                      className="form-check-input"
-                      type="checkbox"
-                      id={`actividad-${id}`}
-                      checked={checked}
-                      disabled={deshabilitada}
-                      onChange={() => toggleActividad(id)}
-                    />
-                    <label
-                      className="form-check-label"
-                      htmlFor={`actividad-${id}`}
-                      style={{ cursor: deshabilitada ? "not-allowed" : "pointer" }}
-                    >
-                      {actividad.Nom_Actividad}
-                    </label>
-                  </div>
-                );
-              })}
-            </div>
-
-            <small className="text-muted d-block mt-2">
-              Selecciona entre 1 y 3 actividades.
-            </small>
-          </div>
-        )}
-
-        {Tip_Reserva === "Practica" && actividadesSeleccionadas.length > 0 && (
-          <div className="col-md-12 mb-3">
-            <div className="alert alert-secondary">
-              <strong>Actividades seleccionadas:</strong>{" "}
-              {actividadesSeleccionadas.map((id) => nombreActividad(id)).join(", ")}
-            </div>
-          </div>
-        )}
-
-        {Tip_Reserva === "Practica" && !isEditing && (
-          <>
-            <div className="col-md-4 mb-3">
-              <label className="form-label">Equipos requeridos por actividades:</label>
-              <select
-                className="form-control"
-                onChange={(e) => {
-                  agregarEquipo(e.target.value);
-                  e.target.value = "";
-                }}
+          <SearchableSelect
+                options={equiposDisponibles.map((id) => ({
+                  value: id,
+                  label: nombreEquipo(id)
+                }))}
+                value=""
+                onChange={(val) => val && agregarEquipo(val)}
+                placeholder="Selecciona un equipo"
+                searchPlaceholder="Buscar equipo..."
                 disabled={loadingRecursos || equiposDisponibles.length === 0}
-              >
-                <option value="">Selecciona un equipo</option>
-                {equiposDisponibles.map((id) => (
-                  <option key={id} value={id}>
-                    Equipo {id}
-                  </option>
-                ))}
-              </select>
+              />
             </div>
 
             <div className="col-md-4 mb-3">
               <label className="form-label">Materiales requeridos por actividades:</label>
-              <select
-                className="form-control"
-                onChange={(e) => {
-                  agregarMaterial(e.target.value);
-                  e.target.value = "";
-                }}
+              <SearchableSelect
+                options={materialesDisponibles.map((id) => ({
+                  value: id,
+                  label: nombreMaterial(id)
+                }))}
+                value=""
+                onChange={(val) => val && agregarMaterial(val)}
+                placeholder="Selecciona un material"
+                searchPlaceholder="Buscar material..."
                 disabled={loadingRecursos || materialesDisponibles.length === 0}
-              >
-                <option value="">Selecciona un material</option>
-                {materialesDisponibles.map((id) => (
-                  <option key={id} value={id}>
-                    Material {id}
-                  </option>
-                ))}
-              </select>
+              />
             </div>
 
             <div className="col-md-4 mb-3">
               <label className="form-label">Reactivos requeridos por actividades:</label>
-              <select
-                className="form-control"
-                onChange={(e) => {
-                  agregarReactivo(e.target.value);
-                  e.target.value = "";
-                }}
+              <SearchableSelect
+                options={reactivosDisponibles.map((id) => ({
+                  value: id,
+                  label: nombreReactivo(id)
+                }))}
+                value=""
+                onChange={(val) => val && agregarReactivo(val)}
+                placeholder="Selecciona un reactivo"
+                searchPlaceholder="Buscar reactivo..."
                 disabled={loadingRecursos || reactivosDisponibles.length === 0}
-              >
-                <option value="">Selecciona un reactivo</option>
-                {reactivosDisponibles.map((id) => (
-                  <option key={id} value={id}>
-                    Reactivo {id}
-                  </option>
-                ))}
-              </select>
+              />
             </div>
 
             <div className="col-md-12 mb-3">
@@ -840,7 +722,7 @@ const FormReserva = ({ hideModal, rowToEdit = {}, estados = [] }) => {
                   {equipos.map((item) => (
                     <div key={item.Id_Equipo} className="border rounded p-2 mb-2">
                       <div className="d-flex justify-content-between align-items-center mb-2">
-                        <strong>Equipo {item.Id_Equipo}</strong>
+                        <strong>{nombreEquipo(item.Id_Equipo)}</strong>
                         <button
                           type="button"
                           className="btn btn-sm btn-danger"
@@ -866,7 +748,7 @@ const FormReserva = ({ hideModal, rowToEdit = {}, estados = [] }) => {
                   {materiales.map((item) => (
                     <div key={item.Id_Material} className="border rounded p-2 mb-2">
                       <div className="d-flex justify-content-between align-items-center mb-2">
-                        <strong>Material {item.Id_Material}</strong>
+                        <strong>{nombreMaterial(item.Id_Material)}</strong>
                         <button
                           type="button"
                           className="btn btn-sm btn-danger"
@@ -892,7 +774,7 @@ const FormReserva = ({ hideModal, rowToEdit = {}, estados = [] }) => {
                   {reactivos.map((item) => (
                     <div key={item.Id_Reactivo} className="border rounded p-2 mb-2">
                       <div className="d-flex justify-content-between align-items-center mb-2">
-                        <strong>Reactivo {item.Id_Reactivo}</strong>
+                        <strong>{nombreReactivo(item.Id_Reactivo)}</strong>
                         <button
                           type="button"
                           className="btn btn-sm btn-danger"

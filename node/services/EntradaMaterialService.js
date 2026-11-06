@@ -1,15 +1,34 @@
 import EntradaMaterialModel from "../models/EntradaMaterialModel.js";
 import MaterialModel from "../models/MaterialModel.js";
 import MovimientoMaterialModel from "../models/MovimientoMaterialModel.js";
+import { Op } from "sequelize";
 
 class EntradaMaterialService {
     async getAll() {
+        // Auto-inactivar entradas con cantidad existente <= 0
+        try {
+            await EntradaMaterialModel.update(
+                { Estado: 'Inactivo' },
+                {
+                    where: {
+                        Estado: 'Activo',
+                        Can_Existente: { [Op.lte]: 0 }
+                    }
+                }
+            );
+        } catch (err) {
+            console.error("Error auto-inactivando entradas de materiales:", err);
+        }
+
+        // Siempre ordenar descendente para que la nueva entrada aparezca en el primer registro
         return await EntradaMaterialModel.findAll({
             include: [{
                 model: MaterialModel,
                 as: 'Material'
             }],
-            order: [['createdAt', 'DESC']]
+            order: [
+                ['Id_Entrada_Material', 'DESC']
+            ]
         });
     }
 
@@ -25,6 +44,12 @@ class EntradaMaterialService {
         if (data.Can_Existente === undefined || data.Can_Existente === null || data.Can_Existente === '') {
             data.Can_Existente = data.Can_Inicial;
         }
+
+        // Inactivar automáticamente si la cantidad es 0
+        if (Number(data.Can_Existente) <= 0) {
+            data.Estado = 'Inactivo';
+        }
+
         const newEntrada = await EntradaMaterialModel.create(data);
 
         // Log movement
@@ -52,6 +77,11 @@ class EntradaMaterialService {
         const oldQty = Number(oldEntrada.Can_Existente ?? oldEntrada.Can_Inicial ?? 0);
         const newQty = data.Can_Existente !== undefined && data.Can_Existente !== null ? Number(data.Can_Existente) : oldQty;
         const diff = oldQty - newQty;
+
+        // Inactivar automáticamente si la cantidad existente es 0
+        if (newQty <= 0) {
+            data.Estado = 'Inactivo';
+        }
 
         await EntradaMaterialModel.update(data, { where: { Id_Entrada_Material: id } });
 
@@ -98,18 +128,23 @@ class EntradaMaterialService {
     }
 
     async recalcularStockMaterial(idMaterial) {
-        if (!idMaterial) return;
-        const entradas = await EntradaMaterialModel.findAll({
-            where: {
-                Id_Material: idMaterial,
-                Estado: 'Activo'
-            }
-        });
-        const totalStock = entradas.reduce((sum, item) => sum + Number(item.Can_Existente || 0), 0);
-        await MaterialModel.update(
-            { Can_Material: totalStock },
-            { where: { Id_Material: idMaterial } }
-        );
+        try {
+            const entradas = await EntradaMaterialModel.findAll({
+                where: {
+                    Id_Material: idMaterial,
+                    Estado: 'Activo'
+                }
+            });
+
+            const totalStock = entradas.reduce((sum, item) => sum + Number(item.Can_Existente ?? item.Can_Inicial ?? 0), 0);
+
+            await MaterialModel.update(
+                { Can_Material: totalStock },
+                { where: { Id_Material: idMaterial } }
+            );
+        } catch (e) {
+            console.error(`Error recalculando stock de material ${idMaterial}:`, e);
+        }
     }
 }
 

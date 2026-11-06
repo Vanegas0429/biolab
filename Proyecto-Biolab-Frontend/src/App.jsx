@@ -1,6 +1,6 @@
 import { Routes, Route, useNavigate, Navigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import apiAxios from './api/axiosConfig.js';
+import apiAxios, { handleSessionExpired } from './api/axiosConfig.js';
 
 import NavBar from './navBar';
 import Home from './home/home';
@@ -77,6 +77,36 @@ function App() {
       setIsAuth(false);
     }
     setIsLoading(false);
+  }, []);
+
+  // Monitoreo proactivo de expiración de sesión (JWT)
+  useEffect(() => {
+    const checkTokenExpiration = () => {
+      const stored = localStorage.getItem('UsuarioLaboratorio');
+      if (!stored) return;
+      try {
+        const user = JSON.parse(stored);
+        if (!user?.token) return;
+
+        const parts = user.token.split('.');
+        if (parts.length === 3) {
+          const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+          const payload = JSON.parse(decodeURIComponent(escape(atob(base64))));
+          if (payload.exp) {
+            const currentTime = Math.floor(Date.now() / 1000);
+            if (currentTime >= payload.exp) {
+              handleSessionExpired();
+            }
+          }
+        }
+      } catch (e) {
+        // Ignorar posibles tokens corruptos
+      }
+    };
+
+    checkTokenExpiration();
+    const timer = setInterval(checkTokenExpiration, 15000);
+    return () => clearInterval(timer);
   }, []);
 
   useEffect(() => {

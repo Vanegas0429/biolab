@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import apiAxios from "../api/axiosConfig.js";
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
+import SearchableSelect from "../components/SearchableSelect.jsx";
 
 const MySwal = withReactContent(Swal);
 
@@ -115,19 +116,18 @@ const EntradaMaterialForm = ({ hideModal, refreshList, rowToEdit, userRol }) => 
         {/* Material */}
         <div className="col-md-7">
           <label className="form-label fw-bold">Material:</label>
-          <select
-            className="form-select rounded-pill shadow-sm px-3"
+          <SearchableSelect
+            options={materiales.map(m => ({
+              value: m.Id_Material,
+              label: m.Nom_Material,
+              subLabel: `(${m.clasificacion || 'Desechable'})`
+            }))}
             value={Id_Material}
-            onChange={e => setId_Material(Number(e.target.value))}
+            onChange={val => setId_Material(val ? Number(val) : '')}
+            placeholder="Selecciona un material"
+            searchPlaceholder="Buscar material por nombre..."
             required
-          >
-            <option value="">Selecciona un material</option>
-            {materiales.map(m => (
-              <option key={m.Id_Material} value={m.Id_Material}>
-                {m.Nom_Material} ({m.clasificacion || 'Desechable'})
-              </option>
-            ))}
-          </select>
+          />
         </div>
 
         {/* Cantidad Inicial */}

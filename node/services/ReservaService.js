@@ -51,6 +51,9 @@ async function discountReactivoStock(idReactivo, quantity, idReserva, transactio
     const available = Number(entry.Can_Existente || 0);
     const toSubtract = Math.min(available, remainingToDiscount);
     entry.Can_Existente = available - toSubtract;
+    if (entry.Can_Existente <= 0) {
+      entry.Estado = 'Inactivo';
+    }
     await entry.save({ transaction });
 
     // Log movement
@@ -153,6 +156,9 @@ async function discountMaterialStock(idMaterial, quantity, idReserva, transactio
     const available = Number(entry.Can_Existente || 0);
     const toSubtract = Math.min(available, remainingToDiscount);
     entry.Can_Existente = available - toSubtract;
+    if (entry.Can_Existente <= 0) {
+      entry.Estado = 'Inactivo';
+    }
     await entry.save({ transaction });
 
     // Log movement
