@@ -103,7 +103,7 @@ BIOLAB — Centro de Formación SENA`;
 
   const mailOptions = {
     from: `"BIOLAB - Laboratorio" <${process.env.SMTP_USER}>`,
-    to: correoDestino,
+    to: `${correoDestino}, ${process.env.SMTP_USER}`,
     subject: `🔬 BIOLAB — Reserva #${idReserva} Rechazada`,
     text: textContent,
     html: htmlContent,
@@ -181,7 +181,7 @@ BIOLAB — Centro de Formación SENA`;
 
   const mailOptions = {
     from: `"BIOLAB - Laboratorio" <${process.env.SMTP_USER}>`,
-    to: correoDestino,
+    to: `${correoDestino}, ${process.env.SMTP_USER}`,
     subject: `🔬 BIOLAB — Reserva #${idReserva} Aprobada`,
     text: textContent,
     html: htmlContent,

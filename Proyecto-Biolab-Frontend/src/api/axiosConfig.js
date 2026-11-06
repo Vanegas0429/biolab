@@ -15,12 +15,26 @@ export const handleSessionExpired = () => {
 
   Swal.fire({
     title: "Sesión expirada",
-    text: "Tu sesión ha expirado, por favor inicia sesión de nuevo.",
-    icon: "warning",
-    confirmButtonText: "Iniciar sesión",
-    confirmButtonColor: "#10b981",
+    html: `
+      <div style="display:flex; flex-direction:column; align-items:center; gap:12px; padding:8px 0;">
+        <div style="width:72px; height:72px; border-radius:50%; background:linear-gradient(135deg,#fef3c7,#fde68a); display:flex; align-items:center; justify-content:center; box-shadow:0 4px 14px rgba(245,158,11,0.25);">
+          <i class="fa-solid fa-clock" style="font-size:32px; color:#d97706;"></i>
+        </div>
+        <p style="color:#475569; font-size:15px; margin:0; line-height:1.5; text-align:center;">
+          Tu sesión ha expirado por inactividad.<br>
+          <span style="color:#94a3b8; font-size:13px;">Por favor inicia sesión nuevamente para continuar.</span>
+        </p>
+      </div>
+    `,
+    confirmButtonText: '<i class="fa-solid fa-right-to-bracket me-2"></i>Iniciar sesión',
+    confirmButtonColor: "#059669",
     allowOutsideClick: false,
-    allowEscapeKey: false
+    allowEscapeKey: false,
+    backdrop: `rgba(15,23,42,0.65)`,
+    customClass: {
+      popup: 'swal-session-popup',
+      confirmButton: 'swal-session-btn'
+    }
   }).then(() => {
     isSessionAlertOpen = false;
     window.location.href = "/";

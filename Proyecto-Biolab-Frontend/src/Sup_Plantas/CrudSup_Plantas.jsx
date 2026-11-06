@@ -12,25 +12,32 @@ const CrudSup_Plantas = () => {
   const [rowToViewProduccion, setRowToViewProduccion] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const getAllSup_Plantas = async () => {
+  const getAllSup_Plantas = async (isSilent = false) => {
     try {
-      setIsLoading(true);
+      if (!isSilent && Sup_Plantas.length === 0) {
+        setIsLoading(true);
+      }
       const response = await apiAxios.get("/api/Sup_Plantas?include=Produccion");
-      setSup_Plantas(response.data);
+      setSup_Plantas(response.data || []);
     } catch (error) {
       console.error("Error cargando supervisión de plantas:", error);
     } finally {
-      setIsLoading(false);
+      if (!isSilent) {
+        setIsLoading(false);
+      }
     }
   };
 
   useEffect(() => {
     getAllSup_Plantas();
 
-    // Auto-refresh cada 15 segundos
+    // Auto-refresh silencioso en tiempo real (cada 8 segundos) sin recargar la pantalla
     const interval = setInterval(() => {
-      getAllSup_Plantas();
-    }, 15000);
+      if (document.body.classList.contains('modal-open') || document.querySelector('.modal.show') || document.querySelector('.swal2-container')) {
+        return;
+      }
+      getAllSup_Plantas(true);
+    }, 8000);
 
     return () => clearInterval(interval);
   }, []);
