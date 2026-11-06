@@ -2,7 +2,49 @@ import { Op } from 'sequelize';
 import ReservaModel from './models/ReservaModel.js';
 import ReservaService from './services/ReservaService.js';
 import EstadoModel from './models/EstadoModel.js';
+import EntradaModel from './models/EntradaModel.js';
+import EntradaMaterialModel from './models/EntradaMaterialModel.js';
 import { enviarCorreoRechazo } from './services/EmailService.js';
+
+export const verificarEntradasVencidasYAgotadas = async () => {
+    try {
+        const tzoffset = (new Date()).getTimezoneOffset() * 60000;
+        const todayStr = (new Date(Date.now() - tzoffset)).toISOString().split('T')[0];
+
+        // 1. Inactivar entradas de reactivos vencidas o con stock existente <= 0
+        const [numReactivos] = await EntradaModel.update(
+            { Estado: 'Inactivo' },
+            {
+                where: {
+                    Estado: 'Activo',
+                    [Op.or]: [
+                        { Can_Existente: { [Op.lte]: 0 } },
+                        { Fec_Vencimiento: { [Op.lt]: todayStr } }
+                    ]
+                }
+            }
+        );
+        if (numReactivos > 0) {
+            console.log(`[AUTO-INACTIVAR] ${numReactivos} entradas de reactivos inactivadas (vencidas o agotadas).`);
+        }
+
+        // 2. Inactivar entradas de materiales con stock existente <= 0
+        const [numMateriales] = await EntradaMaterialModel.update(
+            { Estado: 'Inactivo' },
+            {
+                where: {
+                    Estado: 'Activo',
+                    Can_Existente: { [Op.lte]: 0 }
+                }
+            }
+        );
+        if (numMateriales > 0) {
+            console.log(`[AUTO-INACTIVAR] ${numMateriales} entradas de materiales inactivadas (agotadas).`);
+        }
+    } catch (error) {
+        console.error("[AUTO-INACTIVAR] Error verificando entradas:", error.message || error);
+    }
+};
 
 export const verificarReservasVencidas = async () => {
     try {
@@ -69,11 +111,13 @@ export const verificarReservasVencidas = async () => {
 export const startCronJobs = () => {
     // Ejecutar inmediatamente al inicio
     verificarReservasVencidas();
+    verificarEntradasVencidasYAgotadas();
 
     // Ejecutar cada 10 minutos de forma recurrente
     setInterval(async () => {
         await verificarReservasVencidas();
+        await verificarEntradasVencidasYAgotadas();
     }, 10 * 60 * 1000);
 };
 
-export default { startCronJobs, verificarReservasVencidas };
+export default { startCronJobs, verificarReservasVencidas, verificarEntradasVencidasYAgotadas };

@@ -270,32 +270,48 @@ const Sup_PlantasForm = ({ hideModal, refreshList, rowToEdit, isViewOnly }) => {
 
         <div className="col-md-6">
           <label htmlFor="Med_Cultivo" className="form-label fw-bold">Medio de Cultivo:</label>
-          <select 
-            id="Med_Cultivo" 
-            className="form-select rounded-pill shadow-sm" 
-            value={Med_Cultivo} 
-            onChange={e => setMed_Cultivo(e.target.value)} 
+          <input
+            type="text"
+            id="Med_Cultivo"
+            list="mediosCultivoList"
+            maxLength={255}
+            className="form-control rounded-pill shadow-sm px-3"
+            value={Med_Cultivo}
+            onChange={e => setMed_Cultivo(e.target.value)}
+            placeholder="Ingrese o seleccione el medio de cultivo"
             disabled={isViewOnly}
             required
-          >
-            <option value="">Selecciona uno</option>
-            {mediosCultivo.map(m => <option key={m} value={m}>{m}</option>)}
-          </select>
+          />
+          <datalist id="mediosCultivoList">
+            <option value="MyS" />
+            <option value="MyS carbon" />
+            <option value="Murashige and Skoog (MS)" />
+            <option value="Woody Plant Medium (WPM)" />
+            <option value="Knudson C" />
+          </datalist>
         </div>
 
         <div className="col-md-6">
           <label htmlFor="Met_Propagacion" className="form-label fw-bold">Método de Propagación:</label>
-          <select 
-            id="Met_Propagacion" 
-            className="form-select rounded-pill shadow-sm" 
-            value={Met_Propagacion} 
-            onChange={e => setMet_Propagacion(e.target.value)} 
+          <input
+            type="text"
+            id="Met_Propagacion"
+            list="metPropagacionList"
+            maxLength={255}
+            className="form-control rounded-pill shadow-sm px-3"
+            value={Met_Propagacion}
+            onChange={e => setMet_Propagacion(e.target.value)}
+            placeholder="Ingrese o seleccione el método de propagación"
             disabled={isViewOnly}
             required
-          >
-            <option value="">Selecciona uno</option>
-            {metPropagacion.map(m => <option key={m} value={m}>{m}</option>)}
-          </select>
+          />
+          <datalist id="metPropagacionList">
+            <option value="Siembra" />
+            <option value="Repique" />
+            <option value="Enraizamiento" />
+            <option value="Multiplicacion" />
+            <option value="Aclimatacion" />
+          </datalist>
         </div>
 
         <div className="col-12 mt-3 mb-1">

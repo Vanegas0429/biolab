@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import apiAxios from "../api/axiosConfig.js";
 import DataTable from 'react-data-table-component';
 import EntradaForm from "./EntradaForm.jsx";
@@ -8,6 +8,7 @@ const CrudEntrada = ({ userRol }) => {
   const [rowToEdit, setRowToEdit] = useState(null);
   const [Entrada, setEntrada] = useState([]);
   const [filterText, setFilterText] = useState("");
+  const [alertaFiltro, setAlertaFiltro] = useState("todos");
 
   const [selectedRowForHistory, setSelectedRowForHistory] = useState(null);
   const [historyLogs, setHistoryLogs] = useState([]);
@@ -99,7 +100,9 @@ const CrudEntrada = ({ userRol }) => {
   const getAllEntradas = async () => {
     try {
       const response = await apiAxios.get('/api/Entrada');
-      setEntrada(response.data ?? []);
+      const list = response.data ?? [];
+      list.sort((a, b) => Number(b.Id_Entrada || 0) - Number(a.Id_Entrada || 0));
+      setEntrada(list);
     } catch (error) {
       console.error("Error cargando entradas:", error);
     }
@@ -109,32 +112,66 @@ const CrudEntrada = ({ userRol }) => {
 
   const filteredEntradas = useMemo(() => {
     const text = filterText.toLowerCase();
-    return Entrada.filter(e =>
-      e.Lote?.toLowerCase().includes(text) ||
-      e.Reactivo?.Nom_reactivo?.toLowerCase().includes(text) ||
-      e.Uni_Medida?.toLowerCase().includes(text)
-    );
-  }, [Entrada, filterText]);
+    return Entrada.filter(e => {
+      const matchText =
+        e.Lote?.toLowerCase().includes(text) ||
+        e.Reactivo?.Nom_reactivo?.toLowerCase().includes(text) ||
+        e.Uni_Medida?.toLowerCase().includes(text);
+
+      if (!matchText) return false;
+
+      const vInfo = getVencimientoInfo(e.Fec_Vencimiento);
+      const val = parseFloat(e.Can_Existente) || 0;
+
+      if (alertaFiltro === 'porAgotarse') {
+        // Excluir lotes que ya están vencidos
+        return val <= 5 && vInfo.estado !== 'vencido';
+      }
+      if (alertaFiltro === 'porVencer') {
+        return vInfo.estado === 'por_vencer';
+      }
+      if (alertaFiltro === 'vencidos') {
+        return vInfo.estado === 'vencido';
+      }
+
+      return true;
+    });
+  }, [Entrada, filterText, alertaFiltro]);
 
   // Alertas generales de vencimiento y stock
   const alertasResumen = useMemo(() => {
-    const activas = Entrada.filter(e => e.Estado === 'Activo');
-    const vencidos = activas.filter(e => getVencimientoInfo(e.Fec_Vencimiento).estado === 'vencido');
-    const porVencer = activas.filter(e => getVencimientoInfo(e.Fec_Vencimiento).estado === 'por_vencer');
-    const agotados = activas.filter(e => (parseFloat(e.Can_Existente) || 0) <= 0);
-    const pocoStock = activas.filter(e => {
+    const vencidos = Entrada.filter(e => getVencimientoInfo(e.Fec_Vencimiento).estado === 'vencido');
+    const porVencer = Entrada.filter(e => getVencimientoInfo(e.Fec_Vencimiento).estado === 'por_vencer');
+    const porAgotarse = Entrada.filter(e => {
       const val = parseFloat(e.Can_Existente) || 0;
-      return val > 0 && val <= 5;
+      const v = getVencimientoInfo(e.Fec_Vencimiento);
+      return val <= 5 && v.estado !== 'vencido';
     });
 
     return {
       vencidos,
       porVencer,
-      agotados,
-      pocoStock,
-      totalAlertas: vencidos.length + porVencer.length + agotados.length + pocoStock.length
+      porAgotarse,
+      totalAlertas: vencidos.length + porVencer.length + porAgotarse.length
     };
   }, [Entrada]);
+
+  // Alerta interactiva tipo Toast para lotes que están por vencerse
+  const hasNotifiedVencimientoRef = useRef(false);
+  useEffect(() => {
+    if (alertasResumen.porVencer.length > 0 && !hasNotifiedVencimientoRef.current) {
+      hasNotifiedVencimientoRef.current = true;
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'warning',
+        title: `¡Atención! Hay ${alertasResumen.porVencer.length} lote(s) que están por vencerse`,
+        showConfirmButton: false,
+        timer: 4500,
+        timerProgressBar: true
+      });
+    }
+  }, [alertasResumen.porVencer.length]);
 
   return (
     <div className="container-fluid py-4 fade-in">
@@ -146,7 +183,7 @@ const CrudEntrada = ({ userRol }) => {
               <i className="fa-solid fa-box-open fs-4"></i>
             </div>
             <div>
-              <h2 className="fw-bold mb-0" style={{ color: 'var(--secondary-color)' }}>Gestión de Entradas</h2>
+              <h2 className="fw-bold mb-0" style={{ color: 'var(--secondary-color)' }}>Entradas de Reactivos</h2>
               <p className="text-muted mb-0 small">Control de entradas, lotes y fechas de vencimiento de reactivos.</p>
             </div>
           </div>
@@ -176,42 +213,146 @@ const CrudEntrada = ({ userRol }) => {
       </div>
 
       {/* BANNER DE ALERTAS */}
-      {alertasResumen.totalAlertas > 0 && (
-        <div className="alert alert-warning border-0 shadow-sm rounded-4 mb-4 d-flex align-items-start gap-3">
-          <div className="bg-warning text-dark rounded-circle p-2 d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: '40px', height: '40px' }}>
+      <div className="alert alert-warning border-0 shadow-sm rounded-4 mb-4 p-3 d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
+        <div className="d-flex align-items-center gap-3">
+          <div className="bg-warning text-dark rounded-circle p-2 d-flex align-items-center justify-content-center flex-shrink-0 shadow-sm" style={{ width: '42px', height: '42px' }}>
             <i className="fa-solid fa-triangle-exclamation fs-5"></i>
           </div>
-          <div className="flex-grow-1">
-            <h6 className="fw-bold mb-1 text-dark">
-              Alertas de Lotes de Reactivos ({alertasResumen.totalAlertas} atención requerida)
-            </h6>
-            <div className="d-flex flex-wrap gap-2 mt-2">
-              {alertasResumen.vencidos.length > 0 && (
-                <span className="badge bg-danger rounded-pill px-3 py-2">
-                  <i className="fa-solid fa-ban me-1"></i>
-                  {alertasResumen.vencidos.length} lote(s) Vencido(s)
-                </span>
-              )}
+          <div>
+            <h6 className="fw-bold mb-1 text-dark d-flex align-items-center gap-2 flex-wrap">
+              <span>Alertas de Lotes de Reactivos</span>
               {alertasResumen.porVencer.length > 0 && (
-                <span className="badge bg-warning text-dark rounded-pill px-3 py-2">
-                  <i className="fa-solid fa-clock me-1"></i>
-                  {alertasResumen.porVencer.length} lote(s) Por Vencer (&le; 30 días)
+                <span className="badge bg-warning text-dark border border-warning-subtle rounded-pill fw-semibold shadow-sm">
+                  <i className="fa-solid fa-bell me-1"></i>
+                  {alertasResumen.porVencer.length} por vencerse
                 </span>
               )}
-              {alertasResumen.agotados.length > 0 && (
-                <span className="badge bg-danger text-white rounded-pill px-3 py-2">
-                  <i className="fa-solid fa-triangle-exclamation me-1"></i>
-                  {alertasResumen.agotados.length} lote(s) Agotado(s)
-                </span>
-              )}
-              {alertasResumen.pocoStock.length > 0 && (
-                <span className="badge bg-warning-subtle text-dark border border-warning rounded-pill px-3 py-2">
-                  <i className="fa-solid fa-battery-quarter me-1"></i>
-                  {alertasResumen.pocoStock.length} lote(s) con Poco Stock (&le; 5)
-                </span>
-              )}
-            </div>
+            </h6>
+            <p className="text-muted small mb-0">
+              Selecciona una opción para filtrar los lotes en la tabla:
+            </p>
           </div>
+        </div>
+
+        <div className="d-flex flex-wrap gap-2">
+          {/* BOTÓN 1: Lotes por agotarse (no vencidos) */}
+          <button
+            type="button"
+            className={`btn btn-sm rounded-pill px-3 py-2 fw-semibold shadow-sm transition-all d-flex align-items-center gap-2 ${
+              alertaFiltro === 'porAgotarse'
+                ? 'btn-warning text-dark border-warning'
+                : 'btn-outline-dark bg-white'
+            }`}
+            style={{
+              transform: alertaFiltro === 'porAgotarse' ? 'scale(1.04)' : 'scale(1)',
+              boxShadow: alertaFiltro === 'porAgotarse' ? '0 0 0 3px rgba(255,193,7,0.4)' : undefined
+            }}
+            onClick={() => {
+              setFilterText('');
+              setAlertaFiltro(prev => prev === 'porAgotarse' ? 'todos' : 'porAgotarse');
+            }}
+            title="Filtrar lotes con stock bajo o agotado que no estén vencidos"
+          >
+            <i className="fa-solid fa-battery-quarter"></i>
+            <span>Lotes por agotarse ({alertasResumen.porAgotarse.length})</span>
+            {alertaFiltro === 'porAgotarse' && <i className="fa-solid fa-check ms-1"></i>}
+          </button>
+
+          {/* BOTÓN 2: Lotes por vencerse */}
+          <button
+            type="button"
+            className={`btn btn-sm rounded-pill px-3 py-2 fw-semibold shadow-sm transition-all d-flex align-items-center gap-2 ${
+              alertaFiltro === 'porVencer'
+                ? 'btn-warning text-dark border-warning'
+                : 'btn-outline-warning text-dark bg-white'
+            }`}
+            style={{
+              transform: alertaFiltro === 'porVencer' ? 'scale(1.04)' : 'scale(1)',
+              boxShadow: alertaFiltro === 'porVencer' ? '0 0 0 3px rgba(255,193,7,0.4)' : undefined
+            }}
+            onClick={() => {
+              setFilterText('');
+              setAlertaFiltro(prev => prev === 'porVencer' ? 'todos' : 'porVencer');
+            }}
+            title="Filtrar lotes que están próximos a vencerse (&le; 30 días)"
+          >
+            <i className="fa-solid fa-clock"></i>
+            <span>Lotes por vencerse ({alertasResumen.porVencer.length})</span>
+            {alertaFiltro === 'porVencer' && <i className="fa-solid fa-check ms-1"></i>}
+          </button>
+
+          {/* BOTÓN 3: Lotes vencidos */}
+          <button
+            type="button"
+            className={`btn btn-sm rounded-pill px-3 py-2 fw-semibold shadow-sm transition-all d-flex align-items-center gap-2 ${
+              alertaFiltro === 'vencidos'
+                ? 'btn-danger text-white'
+                : 'btn-outline-danger bg-white'
+            }`}
+            style={{
+              transform: alertaFiltro === 'vencidos' ? 'scale(1.04)' : 'scale(1)',
+              boxShadow: alertaFiltro === 'vencidos' ? '0 0 0 3px rgba(220,53,69,0.3)' : undefined
+            }}
+            onClick={() => {
+              setFilterText('');
+              setAlertaFiltro(prev => prev === 'vencidos' ? 'todos' : 'vencidos');
+            }}
+            title="Filtrar lotes que ya están vencidos"
+          >
+            <i className="fa-solid fa-ban"></i>
+            <span>Lotes vencidos ({alertasResumen.vencidos.length})</span>
+            {alertaFiltro === 'vencidos' && <i className="fa-solid fa-check ms-1"></i>}
+          </button>
+        </div>
+      </div>
+
+      {/* AVISO ESPECIAL DE ALERTA PARA LOTES POR VENCERSE */}
+      {alertasResumen.porVencer.length > 0 && alertaFiltro === 'todos' && (
+        <div className="alert alert-warning py-2 px-3 rounded-4 d-flex align-items-center justify-content-between mb-3 shadow-sm border border-warning">
+          <div className="d-flex align-items-center gap-2">
+            <i className="fa-solid fa-bell text-warning fs-5"></i>
+            <span className="small">
+              <strong>¡Atención!</strong> Hay <strong>{alertasResumen.porVencer.length} lote(s)</strong> que están por vencerse en los próximos 30 días.
+            </span>
+          </div>
+          <button
+            type="button"
+            className="btn btn-sm btn-dark rounded-pill py-1 px-3 fw-semibold small"
+            onClick={() => {
+              setFilterText('');
+              setAlertaFiltro('porVencer');
+            }}
+          >
+            <i className="fa-solid fa-eye me-1"></i>Ver lotes por vencerse
+          </button>
+        </div>
+      )}
+
+      {/* BARRA DE FILTRO ACTIVO */}
+      {alertaFiltro !== 'todos' && (
+        <div className="alert alert-info py-2 px-3 rounded-pill d-flex align-items-center justify-content-between mb-3 shadow-sm border-0">
+          <span className="small">
+            <i className="fa-solid fa-filter me-2 text-primary"></i>
+            Filtrando tabla por:{' '}
+            <strong className="text-uppercase">
+              {alertaFiltro === 'porAgotarse'
+                ? 'Lotes por agotarse'
+                : alertaFiltro === 'porVencer'
+                ? 'Lotes por vencerse'
+                : 'Lotes vencidos'}
+            </strong>{' '}
+            ({filteredEntradas.length} registro(s) mostrado(s))
+          </span>
+          <button
+            type="button"
+            className="btn btn-sm btn-outline-dark rounded-pill py-0 px-3 fw-bold small"
+            onClick={() => {
+              setAlertaFiltro('todos');
+              setFilterText('');
+            }}
+          >
+            <i className="fa-solid fa-xmark me-1"></i>Mostrar todos
+          </button>
         </div>
       )}
 
@@ -294,10 +435,10 @@ const CrudEntrada = ({ userRol }) => {
                     );
                   } else if (info.estado === 'por_vencer') {
                     return (
-                      <div className="p-1 px-2 rounded-3 border border-warning text-dark bg-warning-subtle fw-bold d-inline-block text-center" style={{ fontSize: '0.82rem' }}>
-                        <i className="fa-solid fa-clock me-1 text-warning"></i>
+                      <div className="p-1 px-2 rounded-3 border border-warning text-dark bg-warning-subtle fw-bold d-inline-block text-center shadow-sm" style={{ fontSize: '0.82rem' }}>
+                        <i className="fa-solid fa-bell me-1 text-warning"></i>
                         {info.texto}
-                        <small className="d-block text-warning-emphasis fw-bold" style={{ fontSize: '0.68rem' }}>Vence en {info.dias}d</small>
+                        <small className="d-block text-warning-emphasis fw-bold" style={{ fontSize: '0.68rem' }}>⚠️ ¡Por vencerse ({info.dias}d)!</small>
                       </div>
                     );
                   }
@@ -476,8 +617,7 @@ const CrudEntrada = ({ userRol }) => {
             </div>
           </div>
         </div>
-      </div>
-    </div>
+      </div></div>
   );
 };
 

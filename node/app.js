@@ -93,6 +93,12 @@ app.use('/uploads', express.static('uploads'));
 try {
     await db.authenticate();
     console.log('Conexión a la base de datos establecida correctamente.');
+    try {
+        await db.query('ALTER TABLE sup_plantas MODIFY COLUMN Med_Cultivo VARCHAR(255) NULL;');
+        await db.query('ALTER TABLE sup_plantas MODIFY COLUMN Met_Propagacion VARCHAR(255) NULL;');
+    } catch (e) {
+        // En caso de que ya estuvieran modificadas o la tabla no exista aún
+    }
 } catch (error) {
     console.error('Error al conectar la base de datos: ', error);
     process.exit(1);

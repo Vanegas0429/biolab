@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import apiAxios from "../api/axiosConfig.js";
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
+import SearchableSelect from "../components/SearchableSelect.jsx";
 
 const MySwal = withReactContent(Swal);
 
@@ -143,22 +144,21 @@ const EntradaForm = ({ hideModal, refreshList, rowToEdit, userRol }) => {
   return (
     <form onSubmit={gestionarForm} noValidate className="container-fluid">
       <div className="row g-3">
-        {/* Reactivo */}
+        {/* Reactivo con búsqueda */}
         <div className="col-md-6">
           <label className="form-label fw-bold">Reactivo:</label>
-          <select
-            className="form-select rounded-pill shadow-sm"
+          <SearchableSelect
+            options={Reactivos.map(p => ({
+              value: p.Id_Reactivo,
+              label: p.Nom_reactivo,
+              subLabel: p.Presentacion ? `(${p.Presentacion})` : ''
+            }))}
             value={Id_Reactivo}
-            onChange={e => setId_Reactivo(Number(e.target.value))}
+            onChange={val => setId_Reactivo(val ? Number(val) : '')}
+            placeholder="Selecciona un reactivo"
+            searchPlaceholder="Buscar reactivo por nombre..."
             required
-          >
-            <option value="">Selecciona un reactivo</option>
-            {Reactivos.map(p => (
-              <option key={p.Id_Reactivo} value={p.Id_Reactivo}>
-                {p.Nom_reactivo}
-              </option>
-            ))}
-          </select>
+          />
         </div>
 
         {/* Lote */}

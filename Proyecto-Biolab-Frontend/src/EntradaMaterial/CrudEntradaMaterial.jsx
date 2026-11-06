@@ -8,6 +8,7 @@ const CrudEntradaMaterial = ({ userRol }) => {
   const [rowToEdit, setRowToEdit] = useState(null);
   const [entradas, setEntradas] = useState([]);
   const [filterText, setFilterText] = useState("");
+  const [alertaFiltro, setAlertaFiltro] = useState("todos");
   const [loading, setLoading] = useState(true);
 
   const [selectedRowForHistory, setSelectedRowForHistory] = useState(null);
@@ -43,7 +44,9 @@ const CrudEntradaMaterial = ({ userRol }) => {
   const getAllEntradasMaterial = async () => {
     try {
       const response = await apiAxios.get('/api/EntradaMaterial');
-      setEntradas(response.data ?? []);
+      const list = response.data ?? [];
+      list.sort((a, b) => Number(b.Id_Entrada_Material || 0) - Number(a.Id_Entrada_Material || 0));
+      setEntradas(list);
       setLoading(false);
     } catch (error) {
       console.error("Error cargando entradas de material:", error);
@@ -87,26 +90,33 @@ const CrudEntradaMaterial = ({ userRol }) => {
     return entradas.filter(e => {
       const nom = e.Material?.Nom_Material?.toLowerCase() || '';
       const clas = e.Material?.clasificacion?.toLowerCase() || '';
-      return nom.includes(text) || clas.includes(text);
+      const matchesText = nom.includes(text) || clas.includes(text);
+
+      if (!matchesText) return false;
+
+      const isDesechable = (e.Material?.clasificacion || 'Desechable').toLowerCase() === 'desechable';
+      const val = parseFloat(e.Can_Existente ?? e.Can_Inicial) || 0;
+
+      if (alertaFiltro === 'porAgotarse') {
+        return isDesechable && val <= 10;
+      }
+
+      return true;
     });
-  }, [entradas, filterText]);
+  }, [entradas, filterText, alertaFiltro]);
 
   // Alertas para materiales desechables con stock bajo o agotado
   const alertasResumen = useMemo(() => {
-    const activasDesechables = entradas.filter(e =>
-      e.Estado === 'Activo' &&
-      (e.Material?.clasificacion || 'Desechable').toLowerCase() === 'desechable'
-    );
-    const agotados = activasDesechables.filter(e => (parseFloat(e.Can_Existente ?? e.Can_Inicial) || 0) <= 0);
-    const pocoStock = activasDesechables.filter(e => {
+    const activas = entradas.filter(e => e.Estado === 'Activo');
+    const porAgotarse = activas.filter(e => {
+      const isDesechable = (e.Material?.clasificacion || 'Desechable').toLowerCase() === 'desechable';
       const val = parseFloat(e.Can_Existente ?? e.Can_Inicial) || 0;
-      return val > 0 && val <= 10;
+      return isDesechable && val <= 10;
     });
 
     return {
-      agotados,
-      pocoStock,
-      totalAlertas: agotados.length + pocoStock.length
+      porAgotarse,
+      totalAlertas: porAgotarse.length
     };
   }, [entradas]);
 
@@ -159,29 +169,60 @@ const CrudEntradaMaterial = ({ userRol }) => {
 
       {/* BANNER DE ALERTAS PARA MATERIALES DESECHABLES */}
       {alertasResumen.totalAlertas > 0 && (
-        <div className="alert alert-warning border-0 shadow-sm rounded-4 p-3 mb-4 d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div className="alert alert-warning border-0 shadow-sm rounded-4 p-3 mb-4 d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
           <div className="d-flex align-items-center gap-3">
-            <div className="bg-warning text-dark rounded-circle d-flex align-items-center justify-content-center" style={{ width: '40px', height: '40px' }}>
+            <div className="bg-warning text-dark rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: '42px', height: '42px' }}>
               <i className="fa-solid fa-triangle-exclamation fs-5"></i>
             </div>
             <div>
-              <h6 className="fw-bold mb-0 text-dark">Atención en Materiales Desechables</h6>
-              <div className="small text-muted d-flex gap-3 mt-1 flex-wrap">
-                {alertasResumen.agotados.length > 0 && (
-                  <span className="text-danger fw-semibold">
-                    <i className="fa-solid fa-circle-xmark me-1"></i>
-                    {alertasResumen.agotados.length} agotado{alertasResumen.agotados.length > 1 ? 's' : ''}
-                  </span>
-                )}
-                {alertasResumen.pocoStock.length > 0 && (
-                  <span className="text-warning-emphasis fw-semibold">
-                    <i className="fa-solid fa-triangle-exclamation me-1"></i>
-                    {alertasResumen.pocoStock.length} por acabarse (&le; 10 uds)
-                  </span>
-                )}
-              </div>
+              <h6 className="fw-bold mb-1 text-dark">Atención en Materiales Desechables</h6>
+              <p className="text-muted small mb-0">
+                Selecciona la opción para filtrar materiales en la tabla:
+              </p>
             </div>
           </div>
+
+          <button
+            type="button"
+            className={`btn btn-sm rounded-pill px-3 py-2 fw-semibold shadow-sm transition-all d-flex align-items-center gap-2 ${
+              alertaFiltro === 'porAgotarse'
+                ? 'btn-warning text-dark border-warning'
+                : 'btn-outline-dark bg-white'
+            }`}
+            style={{
+              transform: alertaFiltro === 'porAgotarse' ? 'scale(1.04)' : 'scale(1)',
+              boxShadow: alertaFiltro === 'porAgotarse' ? '0 0 0 3px rgba(255,193,7,0.4)' : undefined
+            }}
+            onClick={() => {
+              setFilterText('');
+              setAlertaFiltro(prev => prev === 'porAgotarse' ? 'todos' : 'porAgotarse');
+            }}
+            title="Filtrar materiales por agotarse o agotados"
+          >
+            <i className="fa-solid fa-battery-quarter"></i>
+            <span>Materiales por agotarse ({alertasResumen.porAgotarse.length})</span>
+            {alertaFiltro === 'porAgotarse' && <i className="fa-solid fa-check ms-1"></i>}
+          </button>
+        </div>
+      )}
+
+      {/* BARRA DE FILTRO ACTIVO */}
+      {alertaFiltro !== 'todos' && (
+        <div className="alert alert-info py-2 px-3 rounded-pill d-flex align-items-center justify-content-between mb-3 shadow-sm border-0">
+          <span className="small">
+            <i className="fa-solid fa-filter me-2 text-primary"></i>
+            Filtrando tabla por: <strong className="text-uppercase">Materiales por agotarse</strong> ({filteredEntradas.length} material(es) mostrado(s))
+          </span>
+          <button
+            type="button"
+            className="btn btn-sm btn-outline-dark rounded-pill py-0 px-3 fw-bold small"
+            onClick={() => {
+              setAlertaFiltro('todos');
+              setFilterText('');
+            }}
+          >
+            <i className="fa-solid fa-xmark me-1"></i>Mostrar todos
+          </button>
         </div>
       )}
 
@@ -439,9 +480,7 @@ const CrudEntradaMaterial = ({ userRol }) => {
 
           </div>
         </div>
-      </div>
-
-    </div>
+      </div></div>
   );
 };
 

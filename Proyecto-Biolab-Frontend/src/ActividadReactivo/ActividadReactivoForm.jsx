@@ -1,65 +1,84 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import apiAxios from "../api/axiosConfig.js";
-import Swal from 'sweetalert2'
-import withReactContent from 'sweetalert2-react-content'
+import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
+import SearchableSelect from "../components/SearchableSelect.jsx";
 
-const MySwal = withReactContent(Swal)
+const MySwal = withReactContent(Swal);
+
+const normalizeText = (text) => {
+    if (!text) return '';
+    return String(text).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+};
 
 const ActividadReactivoForm = ({ hideModal, refreshList, rowToEdit }) => {
 
-    const [Estado, setEstado] = useState("Activo")
-    const [textFormButton, setTextFormButton] = useState('Enviar')
+    const [Estado, setEstado] = useState("Activo");
+    const [textFormButton, setTextFormButton] = useState('Enviar');
 
-    const [Actividades, setActividades] = useState([])
-    const [Id_Actividad, setId_Actividad] = useState('')
-    const [Reactivos, setReactivos] = useState([])
-    const [reactivosSeleccionados, setReactivosSeleccionados] = useState([])
+    const [Actividades, setActividades] = useState([]);
+    const [Id_Actividad, setId_Actividad] = useState('');
+    const [Reactivos, setReactivos] = useState([]);
+    const [reactivosSeleccionados, setReactivosSeleccionados] = useState([]);
+    const [filtroReactivo, setFiltroReactivo] = useState('');
 
-    // 🔹 Cargar Actividades
+    // 🔹 Cargar Actividades y Reactivos
     useEffect(() => {
-        getActividad()
-        getReactivo()
-    }, [])
+        getActividad();
+        getReactivo();
+    }, []);
 
     const getActividad = async () => {
         try {
-            const res = await apiAxios.get('/api/Actividad')
-            setActividades(res.data)
+            const res = await apiAxios.get('/api/Actividad');
+            setActividades(res.data || []);
         } catch (error) {
-            console.log("No se pudo cargar Actividades")
+            console.log("No se pudo cargar Actividades");
         }
-    }
+    };
 
     const getReactivo = async () => {
         try {
-            const res = await apiAxios.get('/api/Reactivo')
-            setReactivos(res.data)
+            const res = await apiAxios.get('/api/Reactivo');
+            setReactivos(res.data || []);
         } catch (error) {
-            console.log("No se pudo cargar Reactivos")
+            console.log("No se pudo cargar Reactivos");
         }
-    }
+    };
 
     // 🔹 Cargar datos si es edición
     useEffect(() => {
         if (rowToEdit) {
-            setId_Actividad(rowToEdit.Id_Actividad || '')
+            setId_Actividad(rowToEdit.Id_Actividad || '');
             const selectedReact = rowToEdit.reactivosList ? rowToEdit.reactivosList.map(r => r.Id_Reactivo) : [];
-            setReactivosSeleccionados(selectedReact)
-            setEstado(rowToEdit.Estado || 'Activo')
-            setTextFormButton('Actualizar')
+            setReactivosSeleccionados(selectedReact);
+            setEstado(rowToEdit.Estado || 'Activo');
+            setTextFormButton('Actualizar');
         } else {
-            setId_Actividad('')
-            setReactivosSeleccionados([])
-            setEstado('Activo')
-            setTextFormButton('Enviar')
+            setId_Actividad('');
+            setReactivosSeleccionados([]);
+            setFiltroReactivo('');
+            setEstado('Activo');
+            setTextFormButton('Enviar');
         }
-    }, [rowToEdit])
+    }, [rowToEdit]);
 
     const handleCheckboxChange = (id) => {
         setReactivosSeleccionados(prev => 
             prev.includes(id) ? prev.filter(r => r !== id) : [...prev, id]
         );
-    }
+    };
+
+    // Filtrar reactivos activos y por texto de búsqueda
+    const reactivosActivos = useMemo(() => {
+        return Reactivos.filter(r => r.Estado === 'Activo');
+    }, [Reactivos]);
+
+    const reactivosFiltrados = useMemo(() => {
+        if (!filtroReactivo.trim()) return reactivosActivos;
+        const q = normalizeText(filtroReactivo);
+        return reactivosActivos.filter(r => normalizeText(r.Nom_reactivo).includes(q));
+    }, [reactivosActivos, filtroReactivo]);
 
     // 🔹 CREAR
     const crearActividadReactivo = async () => {
@@ -71,7 +90,7 @@ const ActividadReactivoForm = ({ hideModal, refreshList, rowToEdit }) => {
             });
         });
         return Promise.all(promises);
-    }
+    };
 
     // 🔹 ACTUALIZAR
     const actualizarActividadReactivo = async () => {
@@ -96,82 +115,109 @@ const ActividadReactivoForm = ({ hideModal, refreshList, rowToEdit }) => {
         }
 
         return Promise.all(promises);
-    }
+    };
 
     const gestionarForm = async (e) => {
-        e.preventDefault()
+        e.preventDefault();
 
         if (!Id_Actividad || reactivosSeleccionados.length === 0) {
             MySwal.fire({
                 title: "Error",
                 text: "Por favor completa todos los campos obligatorios y selecciona al menos un reactivo",
                 icon: "error"
-            })
-            return
+            });
+            return;
         }
 
         try {
-
             if (rowToEdit) {
-                await actualizarActividadReactivo()
-
+                await actualizarActividadReactivo();
                 MySwal.fire({
-                    title: "Actualizado", text: "Actividad Reactivo actualizada",
-                    icon: "success"
-                })
-
+                    title: "Actualizado",
+                    text: "Actividad Reactivo actualizada",
+                    icon: "success",
+                    timer: 2000,
+                    showConfirmButton: false
+                });
             } else {
-
-                await crearActividadReactivo()
-
+                await crearActividadReactivo();
                 MySwal.fire({
                     title: "Registrado",
                     text: "Actividad Reactivos creados correctamente",
-                    icon: "success"
-                })
+                    icon: "success",
+                    timer: 2000,
+                    showConfirmButton: false
+                });
             }
 
-            refreshList && refreshList()
-            hideModal && hideModal()
+            refreshList && refreshList();
+            hideModal && hideModal();
 
         } catch (error) {
-
             console.error("Error al guardar Actividad Reactivo:", error.response ? error.response.data : error.message);
-
             MySwal.fire({
                 title: "Error",
                 text: "Ocurrió un error al guardar la Actividad Reactivo",
                 icon: "error"
-            })
+            });
         }
-    }
+    };
 
     return (
         <form onSubmit={gestionarForm} className="row g-3">
             {/* Actividad */}
             <div className="col-md-6">
                 <label className="form-label fw-bold">Actividad:</label>
-                <select
-                    className="form-select rounded-pill px-3 shadow-sm"
+                <SearchableSelect
+                    options={Actividades.filter(a => a.Estado === 'Activo').map(e => ({
+                        value: e.Id_Actividad,
+                        label: e.Nom_Actividad
+                    }))}
                     value={Id_Actividad}
-                    onChange={(e) => setId_Actividad(Number(e.target.value))}
+                    onChange={val => setId_Actividad(val ? Number(val) : '')}
+                    placeholder="Selecciona una actividad"
+                    searchPlaceholder="Buscar actividad..."
                     disabled={!!rowToEdit}
-                >
-                    <option value="">Selecciona una actividad</option>
-                    {Actividades.filter(a => a.Estado === 'Activo').map(e => (
-                        <option key={e.Id_Actividad} value={e.Id_Actividad}>
-                            {e.Nom_Actividad}
-                        </option>
-                    ))}
-                </select>
+                    required
+                />
             </div>
 
-            {/* Reactivos con Checkboxes */}
+            {/* Reactivos con Checkboxes y Buscador */}
             <div className="col-md-6">
-                <label className="form-label fw-bold">Reactivos (Múltiple):</label>
+                <div className="d-flex justify-content-between align-items-center mb-1">
+                    <label className="form-label fw-bold m-0">Reactivos (Múltiple):</label>
+                    <span className="badge bg-success-subtle text-success border border-success-subtle rounded-pill">
+                        {reactivosSeleccionados.length} seleccionado(s)
+                    </span>
+                </div>
+
+                {/* Barra de búsqueda de reactivos */}
+                <div className="input-group input-group-sm mb-2 shadow-sm">
+                    <span className="input-group-text bg-white border-end-0 rounded-start-pill text-muted px-3">
+                        <i className="fa-solid fa-magnifying-glass"></i>
+                    </span>
+                    <input
+                        type="text"
+                        className="form-control border-start-0 rounded-end-pill px-2"
+                        placeholder="Buscar reactivo por nombre..."
+                        value={filtroReactivo}
+                        onChange={(e) => setFiltroReactivo(e.target.value)}
+                    />
+                    {filtroReactivo && (
+                        <button
+                            type="button"
+                            className="btn btn-sm btn-light border border-start-0 rounded-end-pill text-muted px-2"
+                            onClick={() => setFiltroReactivo('')}
+                        >
+                            <i className="fa-solid fa-xmark"></i>
+                        </button>
+                    )}
+                </div>
+
+                {/* Lista de reactivos */}
                 <div className="border rounded-4 p-3 bg-light shadow-sm custom-scroll" style={{ maxHeight: '200px', overflowY: 'auto' }}>
-                    {Reactivos.filter(r => r.Estado === 'Activo').map(r => (
-                        <div className="form-check" key={r.Id_Reactivo}>
+                    {reactivosFiltrados.map(r => (
+                        <div className="form-check my-1" key={r.Id_Reactivo}>
                             <input 
                                 className="form-check-input" 
                                 type="checkbox" 
@@ -180,16 +226,21 @@ const ActividadReactivoForm = ({ hideModal, refreshList, rowToEdit }) => {
                                 checked={reactivosSeleccionados.includes(r.Id_Reactivo)}
                                 onChange={() => handleCheckboxChange(r.Id_Reactivo)}
                             />
-                            <label className="form-check-label" htmlFor={`react-${r.Id_Reactivo}`}>
+                            <label className="form-check-label user-select-none" htmlFor={`react-${r.Id_Reactivo}`}>
                                 {r.Nom_reactivo}
                             </label>
                         </div>
                     ))}
-                    {Reactivos.filter(r => r.Estado === 'Activo').length === 0 && (
-                        <small className="text-muted">No hay reactivos activos disponibles.</small>
+                    {reactivosFiltrados.length === 0 && (
+                        <div className="text-center text-muted py-3 small">
+                            <i className="fa-solid fa-circle-exclamation me-1"></i>
+                            {reactivosActivos.length === 0 ? "No hay reactivos activos disponibles." : `No se encontraron reactivos para "${filtroReactivo}".`}
+                        </div>
                     )}
                 </div>
-                <small className="text-muted d-block mt-1 ps-2">{reactivosSeleccionados.length} seleccionado(s)</small>
+                <small className="text-muted d-block mt-1 ps-2">
+                    Mostrando {reactivosFiltrados.length} de {reactivosActivos.length} reactivos activos
+                </small>
             </div>
 
             {/* Botón */}
@@ -203,7 +254,7 @@ const ActividadReactivoForm = ({ hideModal, refreshList, rowToEdit }) => {
                 </button>
             </div>
         </form>
-    )
-}
+    );
+};
 
-export default ActividadReactivoForm
+export default ActividadReactivoForm;
