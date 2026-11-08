@@ -888,9 +888,9 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
     try {
       if (!isEditing) {
         await apiAxios.post("/api/Reserva", payload);
-        await Swal.fire("Registrado", "Reserva registrada", "success");
-        resetForm();
         try { hideModal?.(); } catch (modalErr) { console.warn("Error cerrando modal:", modalErr); }
+        resetForm();
+        Swal.fire({ title: "Registrado", text: "Reserva registrada con éxito", icon: "success", timer: 2000, showConfirmButton: false });
       } else {
         await apiAxios.put(`/api/Reserva/${reservaId}`, payload);
 
@@ -917,8 +917,8 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
           });
         }
 
-        await Swal.fire("OK", "Reserva actualizada correctamente", "success");
         try { hideModal?.(); } catch (modalErr) { console.warn("Error cerrando modal:", modalErr); }
+        Swal.fire({ title: "Actualizado", text: "Reserva actualizada correctamente", icon: "success", timer: 2000, showConfirmButton: false });
       }
     } catch (error) {
       console.error("Error:", error.response ? error.response.data : error.message);

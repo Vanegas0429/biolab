@@ -1,6 +1,7 @@
 import { Routes, Route, useNavigate, Navigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import apiAxios, { handleSessionExpired } from './api/axiosConfig.js';
+import { forceCleanupModals } from './utils/modalHelper.js';
 
 import NavBar from './navBar';
 import Home from './home/home';
@@ -139,6 +140,30 @@ function App() {
     }
   }, [isAuth]);
 
+  // Guardián global contra modales y backdrops pegados
+  useEffect(() => {
+    // Escuchar evento estándar de Bootstrap cuando un modal termina de ocultarse
+    const onModalHidden = () => {
+      // Esperar un tick para que Bootstrap termine su limpieza interna
+      setTimeout(forceCleanupModals, 100);
+    };
+    document.addEventListener('hidden.bs.modal', onModalHidden);
+
+    // Monitoreo pasivo cada 3 segundos (menos agresivo que 800ms para no interferir con animaciones)
+    const modalWatcher = setInterval(forceCleanupModals, 3000);
+
+    return () => {
+      document.removeEventListener('hidden.bs.modal', onModalHidden);
+      clearInterval(modalWatcher);
+    };
+  }, []);
+
+  // Limpiar modales al navegar entre páginas
+  useEffect(() => {
+    // Pequeño delay para dar tiempo a que React desmonte componentes
+    setTimeout(forceCleanupModals, 200);
+  }, [location.pathname]);
+
   if (isLoading) return <div className="d-flex align-items-center justify-content-center" style={{ minHeight: '100vh' }}>Cargando...</div>;
 
   // Roles con acceso a la gestión operativa (MiddelWare X)
@@ -155,6 +180,18 @@ function App() {
 
             {/* Izquierda: Logo y Título */}
             <div className="d-flex align-items-center gap-2">
+              <button
+                type="button"
+                className="btn btn-sm btn-light border-0 d-none d-xl-inline-flex align-items-center justify-content-center rounded-circle me-1"
+                style={{ width: '38px', height: '38px', color: 'var(--primary-color)', background: 'rgba(5, 150, 105, 0.1)', cursor: 'pointer' }}
+                onClick={() => {
+                  const btn = document.querySelector('.sidebar-collapse-btn');
+                  if (btn) btn.click();
+                }}
+                title="Mostrar / Ocultar menú lateral"
+              >
+                <i className="fa-solid fa-bars-staggered fs-6"></i>
+              </button>
               <img src="/logo.png" alt="Logo BIOLAB" style={{ width: '42px', height: '42px', borderRadius: '50%', objectFit: 'cover' }} />
               <span className="d-none d-sm-inline fw-bold fs-4 lh-1" style={{ color: 'var(--primary-color)', letterSpacing: '2px' }}>BIOLAB</span>
             </div>

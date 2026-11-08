@@ -9,15 +9,17 @@ const ModalConfirmRol = ({ pendingChange, onConfirm, onCancel }) => {
     const { usuario, nuevoRol } = pendingChange;
 
     const overlayStyle = {
-        position: 'fixed', inset: 0, zIndex: 9999,
+        position: 'fixed', inset: 0, zIndex: 10000005,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        background: 'rgba(15,23,42,0.5)', backdropFilter: 'blur(4px)',
-        animation: 'fadeInOverlay 0.2s ease'
+        background: 'rgba(15,23,42,0.65)', backdropFilter: 'blur(6px)',
+        animation: 'fadeInOverlay 0.2s ease',
+        pointerEvents: 'auto'
     };
     const cardStyle = {
-        background: '#fff', borderRadius: '20px', padding: '32px 28px',
-        maxWidth: '420px', width: '90%', boxShadow: '0 20px 60px rgba(0,0,0,0.25)',
-        textAlign: 'center', animation: 'slideInModal 0.25s ease'
+        background: '#fff', borderRadius: '24px', padding: '32px 28px',
+        maxWidth: '440px', width: '90%', boxShadow: '0 25px 60px rgba(0,0,0,0.3)',
+        textAlign: 'center', animation: 'slideInModal 0.25s ease',
+        pointerEvents: 'auto', position: 'relative', zIndex: 10000006
     };
 
     return (
@@ -67,27 +69,31 @@ const ModalConfirmRol = ({ pendingChange, onConfirm, onCancel }) => {
                 {/* Botones */}
                 <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
                     <button
-                        onClick={onCancel}
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); onCancel(); }}
                         style={{
-                            flex: 1, padding: '10px 0', borderRadius: '50px', border: '1.5px solid #e2e8f0',
-                            background: '#f8fafc', color: '#64748b', fontWeight: 600,
-                            fontSize: '0.9rem', cursor: 'pointer', transition: 'all 0.2s'
+                            flex: 1, padding: '11px 0', borderRadius: '50px', border: '1.5px solid #cbd5e1',
+                            background: '#f8fafc', color: '#475569', fontWeight: 600,
+                            fontSize: '0.92rem', cursor: 'pointer', transition: 'all 0.2s',
+                            pointerEvents: 'auto'
                         }}
-                        onMouseEnter={e => { e.target.style.background = '#e2e8f0'; }}
-                        onMouseLeave={e => { e.target.style.background = '#f8fafc'; }}
+                        onMouseEnter={e => { e.currentTarget.style.background = '#e2e8f0'; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = '#f8fafc'; }}
                     >
                         Cancelar
                     </button>
                     <button
-                        onClick={onConfirm}
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); onConfirm(); }}
                         style={{
-                            flex: 1, padding: '10px 0', borderRadius: '50px', border: 'none',
+                            flex: 1, padding: '11px 0', borderRadius: '50px', border: 'none',
                             background: 'linear-gradient(135deg,#059669,#10b981)', color: '#fff',
-                            fontWeight: 600, fontSize: '0.9rem', cursor: 'pointer',
-                            boxShadow: '0 4px 14px rgba(5,150,105,0.4)', transition: 'all 0.2s'
+                            fontWeight: 600, fontSize: '0.92rem', cursor: 'pointer',
+                            boxShadow: '0 4px 14px rgba(5,150,105,0.4)', transition: 'all 0.2s',
+                            pointerEvents: 'auto'
                         }}
-                        onMouseEnter={e => { e.target.style.opacity = '0.9'; }}
-                        onMouseLeave={e => { e.target.style.opacity = '1'; }}
+                        onMouseEnter={e => { e.currentTarget.style.opacity = '0.9'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                        onMouseLeave={e => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.transform = 'translateY(0)'; }}
                     >
                         <i className="fa-solid fa-check me-2"></i>Sí, cambiar
                     </button>

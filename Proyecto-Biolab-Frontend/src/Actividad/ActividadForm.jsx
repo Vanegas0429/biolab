@@ -69,8 +69,8 @@ const ActividadForm = ({ hideModal, refreshList, rowToEdit }) => {
                 });
             }
 
-            refreshList();
-            hideModal();
+            if (hideModal) hideModal();
+            if (refreshList) refreshList();
         } catch (error) {
             console.error(
                 "Error al guardar Actividad:",

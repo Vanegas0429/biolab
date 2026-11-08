@@ -57,8 +57,8 @@ const PracticaForm = ({ hideModal, rowToEdit, refreshList }) => {
                 timer: 2000,
                 showConfirmButton: false
             })
+            hideModal && hideModal()
             refreshList && refreshList()
-            hideModal()
 
         } catch (error) {
             Myswal.fire({
@@ -86,8 +86,8 @@ const PracticaForm = ({ hideModal, rowToEdit, refreshList }) => {
                 timer: 2000,
                 showConfirmButton: false
             })
+                if (hideModal) hideModal();
                 refreshList && refreshList()
-                hideModal();
 
             } catch (error) {
                 console.error("Error actualizar Practica", error.response ? error.response.data : error.message);

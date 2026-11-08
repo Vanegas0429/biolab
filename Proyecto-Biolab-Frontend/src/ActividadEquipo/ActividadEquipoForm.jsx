@@ -188,8 +188,8 @@ const ActividadEquipoForm = ({ hideModal, refreshList, rowToEdit }) => {
                 });
             }
 
-            refreshList && refreshList();
             hideModal && hideModal();
+            refreshList && refreshList();
 
         } catch (error) {
             console.error("Error al guardar Actividad Equipo:", error.response ? error.response.data : error.message);

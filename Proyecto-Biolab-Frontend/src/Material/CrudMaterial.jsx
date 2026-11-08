@@ -3,6 +3,7 @@ import apiAxios from "../api/axiosConfig.js";
 import MaterialForm from "./MaterialForm.jsx";
 import Swal from 'sweetalert2';
 import DataTable from 'react-data-table-component';
+import { safeCloseModal } from "../utils/modalHelper.js";
 
 const API_URL = import.meta.env.VITE_API_URL || "";
 
@@ -46,16 +47,22 @@ const CrudMaterial = ({ userRol }) => {
   const toggleEstado = async (row) => {
     if (userRol === 'solicitante') return;
     const estadoNuevo = row.Estado === 'Activo' ? 'Inactivo' : 'Activo';
+    const isActivar = estadoNuevo === 'Activo';
 
     const result = await Swal.fire({
-      title: `¿${estadoNuevo === 'Activo' ? 'Activar' : 'Inactivar'} material?`,
-      text: row.Nom_Material,
+      title: isActivar ? '¿Activar material?' : '¿Desactivar material?',
+      html: `
+        <p class="mb-2">¿Deseas cambiar el estado de <strong>"${row.Nom_Material}"</strong> a <span class="badge ${isActivar ? 'bg-success' : 'bg-danger'}">${estadoNuevo}</span>?</p>
+        <small class="text-muted d-block mt-2">${isActivar ? '✅ Estará disponible para su uso en el laboratorio e inventario.' : '⚠️ No se podrá solicitar ni asignar en nuevas actividades.'}</small>
+      `,
       icon: 'question',
       showCancelButton: true,
-      confirmButtonColor: '#059669',
-      cancelButtonColor: '#6b7280',
-      confirmButtonText: 'Sí, confirmar',
-      cancelButtonText: 'Cancelar'
+      confirmButtonColor: isActivar ? '#059669' : '#dc2626',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: isActivar ? '<i class="fa-solid fa-check me-1"></i>Sí, activar' : '<i class="fa-solid fa-ban me-1"></i>Sí, desactivar',
+      cancelButtonText: 'Cancelar',
+      allowOutsideClick: true,
+      allowEscapeKey: true
     });
 
     if (!result.isConfirmed) return;
@@ -67,14 +74,16 @@ const CrudMaterial = ({ userRol }) => {
       });
       getAllMaterial();
       Swal.fire({
-        title: 'Estado actualizado',
+        title: isActivar ? '¡Material activado!' : '¡Material desactivado!',
+        text: `El material "${row.Nom_Material}" ahora se encuentra ${estadoNuevo}.`,
         icon: 'success',
-        timer: 1500,
+        timer: 2500,
+        timerProgressBar: true,
         showConfirmButton: false
       });
     } catch (error) {
       console.error("Error actualizando estado:", error);
-      Swal.fire('Error', 'No se pudo actualizar el estado', 'error');
+      Swal.fire('Error', 'No se pudo actualizar el estado del material.', 'error');
     }
   };
 
@@ -129,6 +138,64 @@ const CrudMaterial = ({ userRol }) => {
     input.click();
   };
 
+  const onViewDetails = (row) => {
+    const imgs = parseImages(row.img_material);
+    const hasImages = imgs.length > 0;
+
+    Swal.fire({
+      title: `<div class="d-flex align-items-center justify-content-between pb-2 border-bottom w-100 px-2">
+        <span class="fw-bold text-primary fs-4 text-start me-3"><i class="fa-solid fa-boxes-stacked me-2"></i>${row.Nom_Material || 'Detalles del Material'}</span>
+        <span class="status-badge ${row.Estado === 'Activo' ? 'status-badge-activo' : 'status-badge-inactivo'} px-3 py-2 rounded-pill fs-6">${row.Estado || 'N/A'}</span>
+      </div>`,
+      width: '650px',
+      showConfirmButton: false,
+      showCloseButton: true,
+      html: `
+        <div class="text-start mt-3 px-1" style="font-size: 0.95rem;">
+          <div class="row g-3 mb-3 bg-light p-3 rounded-4 mx-0 shadow-sm border">
+            <div class="col-6">
+              <p class="mb-1 text-muted small fw-semibold"><i class="fa-solid fa-layer-group me-2 text-primary"></i>CLASIFICACIÓN</p>
+              <span class="badge ${row.clasificacion === 'Reutilizable' ? 'bg-info-subtle text-info-emphasis border border-info' : 'bg-secondary-subtle text-secondary-emphasis border border-secondary'} rounded-pill px-3 py-2 fw-semibold">
+                ${row.clasificacion || 'Desechable'}
+              </span>
+            </div>
+            <div class="col-6">
+              <p class="mb-1 text-muted small fw-semibold"><i class="fa-solid fa-images me-2 text-primary"></i>FOTOS REGISTRADAS</p>
+              <h6 class="fw-bold mb-0 text-dark">${imgs.length} imagen(es)</h6>
+            </div>
+          </div>
+
+          <div class="mb-3 p-3 bg-white border rounded-4 shadow-sm">
+            <h6 class="mb-2 text-muted small fw-bold text-uppercase"><i class="fa-solid fa-align-left me-2 text-primary"></i>Descripción del Material</h6>
+            <p class="mb-0 text-secondary" style="white-space: pre-wrap; line-height: 1.6; font-size: 0.92rem;">${row.descripcion || 'Sin descripción disponible.'}</p>
+          </div>
+
+          ${hasImages ? `
+            <div class="text-end mt-3">
+              <button id="swal-material-img-btn" type="button" class="btn btn-outline-primary rounded-pill px-4 py-2 fw-semibold shadow-sm">
+                <i class="fa-solid fa-images me-2"></i>Ver Galería (${imgs.length})
+              </button>
+            </div>
+          ` : ''}
+        </div>
+      `,
+      customClass: {
+        popup: 'rounded-4 border-0 shadow-lg'
+      },
+      didOpen: () => {
+        if (hasImages) {
+          const btn = document.getElementById('swal-material-img-btn');
+          if (btn) {
+            btn.addEventListener('click', () => {
+              Swal.close();
+              openCarousel(row);
+            });
+          }
+        }
+      }
+    });
+  };
+
 
   const deleteImage = async (materialId, filename) => {
     const result = await Swal.fire({
@@ -176,8 +243,7 @@ const CrudMaterial = ({ userRol }) => {
   }, [Material, filterText]);
 
   const hideModal = () => {
-    const btn = document.getElementById('closeModal');
-    if (btn) btn.click();
+    safeCloseModal('exampleModal');
   };
 
   if (loading) {
@@ -241,7 +307,7 @@ const CrudMaterial = ({ userRol }) => {
               name: 'MATERIAL',
               sortable: true,
               grow: 2,
-              minWidth: '220px',
+              minWidth: '240px',
               cell: (row) => {
                 const imgs = parseImages(row.img_material);
                 return (
@@ -252,15 +318,15 @@ const CrudMaterial = ({ userRol }) => {
                           src={`${API_URL}/uploads/${imgs[0]}`}
                           alt={row.Nom_Material}
                           className="rounded-3 shadow-sm border"
-                          style={{ width: '45px', height: '45px', objectFit: 'cover', cursor: 'pointer' }}
+                          style={{ width: '42px', height: '42px', objectFit: 'cover', cursor: 'pointer' }}
                           onClick={() => openCarousel(row)}
                         />
                       ) : (
                         <div
                           className="bg-light text-muted d-flex align-items-center justify-content-center rounded-3 border"
                           style={{
-                            width: '45px',
-                            height: '45px',
+                            width: '42px',
+                            height: '42px',
                             borderStyle: 'dashed !important',
                             cursor: userRol !== 'solicitante' ? 'pointer' : 'default'
                           }}
@@ -284,27 +350,12 @@ const CrudMaterial = ({ userRol }) => {
               }
             },
             {
-              name: 'DESCRIPCIÓN',
-              sortable: true,
-              grow: 3,
-              minWidth: '250px',
-              wrap: true,
-              cell: (row) => (
-                <div style={{ whiteSpace: 'normal', wordBreak: 'break-word', padding: '8px 0', lineHeight: '1.4' }}>
-                  {row.descripcion ? (
-                    <span className="text-secondary">{row.descripcion}</span>
-                  ) : (
-                    <span className="text-muted fst-italic">Sin descripción</span>
-                  )}
-                </div>
-              )
-            },
-            {
               name: 'CLASIFICACIÓN',
               selector: row => row.clasificacion || 'Desechable',
               sortable: true,
+              grow: 1,
+              minWidth: '160px',
               center: true,
-              width: '160px',
               cell: (row) => (
                 <span
                   className={`badge ${
@@ -317,43 +368,57 @@ const CrudMaterial = ({ userRol }) => {
                 </span>
               )
             },
-
             ...(userRol !== 'solicitante' ? [
               {
                 name: 'ESTADO',
                 sortable: true,
                 center: true,
-                width: '150px',
+                width: '140px',
                 cell: (row) => (
                   <span
                     className={`status-badge ${
                       row.Estado === 'Activo' ? 'status-badge-activo' : 'status-badge-inactivo'
                     }`}
                     style={{ cursor: 'pointer' }}
-                    onClick={() => toggleEstado(row)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleEstado(row);
+                    }}
                     title="Clic para cambiar estado"
                   >
                     {row.Estado}
                   </span>
                 )
-              },
-              {
-                name: 'ACCIONES',
-                center: true,
-                width: '120px',
-                cell: (row) => (
-                  <button
-                    className="btn-action btn-action-edit"
-                    onClick={() => setRowToEdit(row)}
-                    data-bs-toggle="modal"
-                    data-bs-target="#exampleModal"
-                    title="Editar"
-                  >
-                    <i className="fa-solid fa-pencil"></i>
-                  </button>
-                )
               }
-            ] : [])
+            ] : []),
+            {
+              name: 'ACCIONES',
+              center: true,
+              width: '130px',
+              cell: (row) => (
+                <div className="d-flex gap-1 justify-content-center">
+                  <button
+                    type="button"
+                    className="btn-action btn-action-view"
+                    onClick={() => onViewDetails(row)}
+                    title="Ver detalles"
+                  >
+                    <i className="fa-solid fa-eye"></i>
+                  </button>
+                  {userRol !== 'solicitante' && (
+                    <button
+                      className="btn-action btn-action-edit"
+                      onClick={() => setRowToEdit(row)}
+                      data-bs-toggle="modal"
+                      data-bs-target="#exampleModal"
+                      title="Editar"
+                    >
+                      <i className="fa-solid fa-pencil"></i>
+                    </button>
+                  )}
+                </div>
+              )
+            }
           ]}
           data={newListMaterial}
           keyField="Id_Material"

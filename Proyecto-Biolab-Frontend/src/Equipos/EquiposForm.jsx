@@ -112,8 +112,8 @@ const EquiposForm = ({ hideModal, rowToEdit, refreshList }) => {
                 });
             }
 
+            if (hideModal) hideModal();
             if (refreshList) await refreshList();
-            hideModal();
         } catch (error) {
             console.error("Error guardando equipo:", error.response?.data || error.message);
             Myswal.fire({

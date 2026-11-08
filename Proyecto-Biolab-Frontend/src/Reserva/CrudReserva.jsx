@@ -6,6 +6,7 @@ import Swal from "sweetalert2";
 import ReservaForm from "./ReservaForm.jsx";
 import ErrorBoundary from "../components/ErrorBoundary.jsx";
 import Calendario from "../Calendario/Calendario.jsx";
+import { safeCloseModal } from "../utils/modalHelper.js";
 
 const CrudReserva = () => {
   const [Reserva, setReserva] = useState([]);
@@ -27,16 +28,22 @@ const CrudReserva = () => {
 
   const toggleBooleano = async (row) => {
     const estadoNuevo = row.Booleano === 'Activo' ? 'Inactivo' : 'Activo';
+    const isActivar = estadoNuevo === 'Activo';
 
     const result = await Swal.fire({
-      title: `¿${estadoNuevo === 'Activo' ? 'Activar' : 'Inactivar'} reserva?`,
-      text: `Reserva ID: ${row.Id_Reserva} - ${row.Nom_Solicitante}`,
+      title: isActivar ? '¿Activar reserva?' : '¿Desactivar reserva?',
+      html: `
+        <p class="mb-2">¿Deseas cambiar el estado de la reserva #${row.Id_Reserva} solicitada por <strong>"${row.Nom_Solicitante}"</strong> a <span class="badge ${isActivar ? 'bg-success' : 'bg-danger'}">${estadoNuevo}</span>?</p>
+        <small class="text-muted d-block mt-2">${isActivar ? '✅ La reserva se mantendrá visible y activa en el calendario.' : '⚠️ La reserva quedará inactiva o archivada en el sistema.'}</small>
+      `,
       icon: 'question',
       showCancelButton: true,
-      confirmButtonColor: '#059669',
-      cancelButtonColor: '#6b7280',
-      confirmButtonText: 'Sí, confirmar',
-      cancelButtonText: 'Cancelar'
+      confirmButtonColor: isActivar ? '#059669' : '#dc2626',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: isActivar ? '<i class="fa-solid fa-check me-1"></i>Sí, activar' : '<i class="fa-solid fa-ban me-1"></i>Sí, desactivar',
+      cancelButtonText: 'Cancelar',
+      allowOutsideClick: true,
+      allowEscapeKey: true
     });
 
     if (!result.isConfirmed) return;
@@ -48,19 +55,22 @@ const CrudReserva = () => {
       });
       fetchReservas();
       Swal.fire({
-        title: 'Estado actualizado',
+        title: isActivar ? '¡Reserva activada!' : '¡Reserva desactivada!',
+        text: `La reserva #${row.Id_Reserva} ahora se encuentra ${estadoNuevo}.`,
         icon: 'success',
-        timer: 1500,
+        timer: 2500,
+        timerProgressBar: true,
         showConfirmButton: false
       });
     } catch (error) {
       console.error("Error actualizando estado:", error);
-      Swal.fire('Error', 'No se pudo actualizar el estado', 'error');
+      Swal.fire('Error', 'No se pudo actualizar el estado de la reserva.', 'error');
     }
   };
 
   // 🔹 Cerrar modal
   const hideModal = () => {
+    safeCloseModal("modalReserva");
     const btn = document.getElementById("closeModal");
     if (btn) btn.click();
     setRowToEdit({});
@@ -236,13 +246,57 @@ const CrudReserva = () => {
       <div className="card border-0 shadow-lg overflow-hidden" style={{ borderRadius: '20px' }}>
         <DataTable
           columns={[
-            { name: "ID", selector: (row) => row?.Id_Reserva ?? "", sortable: true, width: '110px' },
-            { name: "TIPO", selector: (row) => row?.Tip_Reserva ?? "", sortable: true, width: '120px' },
             {
-              name: 'ESTADO RESERVA',
+              name: "SOLICITANTE",
+              sortable: true,
+              grow: 2,
+              minWidth: '220px',
+              cell: (row) => (
+                <div className="py-2">
+                  <div className="fw-bold text-dark">{row?.Nom_Solicitante || 'N/A'}</div>
+                  <small className="text-muted d-block" style={{ fontSize: '0.75rem' }}>
+                    Doc: {row?.Doc_Solicitante || 'N/A'} {row?.Num_Ficha ? `| Ficha: ${row?.Num_Ficha}` : ''}
+                  </small>
+                </div>
+              )
+            },
+            {
+              name: "TIPO",
+              selector: (row) => row?.Tip_Reserva ?? "",
+              sortable: true,
+              grow: 1,
+              minWidth: '150px',
+              cell: (row) => (
+                <span className="fw-medium text-secondary">
+                  <i className="fa-solid fa-tag me-1 text-primary small"></i>
+                  {row?.Tip_Reserva || 'N/A'}
+                </span>
+              )
+            },
+            {
+              name: "FECHA Y HORA",
+              sortable: true,
+              grow: 1,
+              minWidth: '160px',
+              cell: (row) => (
+                <div className="py-1">
+                  <div className="fw-semibold text-dark small">
+                    <i className="fa-regular fa-calendar me-1 text-primary"></i>
+                    {row?.Fec_Reserva || 'N/A'}
+                  </div>
+                  <small className="text-muted" style={{ fontSize: '0.75rem' }}>
+                    <i className="fa-regular fa-clock me-1 text-secondary"></i>
+                    {row?.Hor_Reserva || 'N/A'}
+                  </small>
+                </div>
+              )
+            },
+            {
+              name: 'ESTADO',
               selector: (row) => row?.Des_Estado ?? "",
               sortable: true,
-              width: '160px',
+              center: true,
+              width: '140px',
               cell: row => {
                 const status = row.Des_Estado;
                 let badgeClass = 'bg-secondary';
@@ -254,29 +308,21 @@ const CrudReserva = () => {
                 return <span className={`badge ${badgeClass} rounded-pill`}>{status}</span>;
               }
             },
-            { name: "MOTIVO R/C", selector: (row) => row?.Mot_RecCan ?? "", sortable: true, width: '250px' },
-            { name: "SOLICITANTE", selector: (row) => row?.Nom_Solicitante ?? "", sortable: true, width: '180px' },
-            { name: "FECHA", selector: (row) => row?.Fec_Reserva ?? "", sortable: true, width: '120px' },
-            { name: "HORA", selector: (row) => row?.Hor_Reserva ?? "", sortable: true, width: '120px' },
-            { name: "FICHA", selector: (row) => row?.Num_Ficha ?? "", sortable: true, width: '120px' },
             {
               name: "ACCIONES",
-              center: "true",
-              width: '100px',
+              center: true,
+              width: '110px',
               cell: (row) => (
-                <div className="d-flex gap-2">
-                  <button
-                    type="button"
-                    className="btn-action"
-                    style={{ background: '#64748b', color: 'white' }}
-                    data-bs-toggle="modal"
-                    data-bs-target="#modalReserva"
-                    onClick={() => onView(row)}
-                    title="Ver detalles"
-                  >
-                    <i className="fa-solid fa-eye"></i>
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  className="btn-action btn-action-view"
+                  data-bs-toggle="modal"
+                  data-bs-target="#modalReserva"
+                  onClick={() => onView(row)}
+                  title="Ver detalles de reserva"
+                >
+                  <i className="fa-solid fa-eye"></i>
+                </button>
               ),
             },
           ]}

@@ -207,23 +207,29 @@ const Sup_PlantasForm = ({ hideModal, refreshList, rowToEdit, isViewOnly }) => {
     try {
       if (rowToEdit && rowToEdit.Id_supervision) {
         await actualizarSup_Planta(); // ✏️ EDITAR
+        hideModal();
+        if (refreshList) await refreshList();
         MySwal.fire({
-          title: "Actualizado",
-          text: "Supervisión actualizada",
-          icon: "success"
+          title: "¡Supervisión actualizada!",
+          text: "Los datos de la supervisión se han guardado exitosamente.",
+          icon: "success",
+          timer: 2000,
+          showConfirmButton: false
         });
       } else {
         await crearSup_Planta(); // ➕ NUEVO
+        hideModal();
+        if (refreshList) await refreshList();
         MySwal.fire({
-          title: "Registrado",
-          text: "Supervisión registrada",
-          icon: "success"
+          title: "¡Supervisión registrada!",
+          text: "La nueva supervisión se ha registrado exitosamente.",
+          icon: "success",
+          timer: 2000,
+          showConfirmButton: false
         });
       }
 
       loadedKeyRef.current = null;
-      if (refreshList) await refreshList();
-      hideModal();
     } catch (error) {
       console.error("Error al guardar supervisión:", error);
       MySwal.fire({

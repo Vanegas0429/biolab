@@ -9,6 +9,15 @@ import * as bootstrap from "bootstrap";
 window.bootstrap = bootstrap;
 
 import { BrowserRouter } from 'react-router-dom'
+import { StyleSheetManager } from 'styled-components'
+
+// Filtrar props internas de react-data-table-component para que no ensucien el DOM ni la consola en React 19
+const shouldForwardProp = (prop, defaultValidatorFn) => {
+  if (['grow', 'minWidth', 'center', 'column', 'sortable', 'button'].includes(prop)) {
+    return false;
+  }
+  return typeof defaultValidatorFn === 'function' ? defaultValidatorFn(prop) : true;
+};
 
 // ============================================================
 // Fix: Google Translate rompe React al mover nodos del DOM.
@@ -37,9 +46,11 @@ if (typeof Node !== 'undefined') {
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <BrowserRouter>
-      <App/>
-    </BrowserRouter>
+    <StyleSheetManager shouldForwardProp={shouldForwardProp}>
+      <BrowserRouter>
+        <App/>
+      </BrowserRouter>
+    </StyleSheetManager>
   </React.StrictMode>,
 )
 

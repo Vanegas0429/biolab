@@ -6,6 +6,7 @@ import Sup_PlantasForm from "../Sup_Plantas/Sup_PlantasForm.jsx"
 import Swal from "sweetalert2"
 import { jsPDF } from "jspdf"
 import autoTable from "jspdf-autotable"
+import { safeCloseModal } from "../utils/modalHelper.js"
 
 const formatDateClean = (dateStr) => {
   if (!dateStr) return 'N/A';
@@ -15,6 +16,7 @@ const formatDateClean = (dateStr) => {
 
 const CrudProduccion = () => {
   const [rowToEdit, setRowToEdit] = useState(null)
+  const [isViewOnly, setIsViewOnly] = useState(false)
   const [Produccion, setProduccion] = useState([])
   const [filterText, setFilterText] = useState("")
   const [isLoading, setIsLoading] = useState(false)
@@ -88,24 +90,40 @@ const CrudProduccion = () => {
 
   const toggleEstado = async (row) => {
     const estadoNuevo = row.Estado === 'Activo' ? 'Inactivo' : 'Activo';
+    const isActivar = estadoNuevo === 'Activo';
+
     const result = await Swal.fire({
-      title: `¿${estadoNuevo === 'Activo' ? 'Activar' : 'Inactivar'} producción?`,
-      text: `Lote: ${row.Lote}`,
+      title: isActivar ? '¿Activar lote de producción?' : '¿Desactivar lote de producción?',
+      html: `
+        <p class="mb-2">¿Deseas cambiar el estado de la producción con Lote <strong>"${row.Lote}"</strong> a <span class="badge ${isActivar ? 'bg-success' : 'bg-danger'}">${estadoNuevo}</span>?</p>
+        <small class="text-muted d-block mt-2">${isActivar ? '✅ El lote estará activo para seguimiento de siembras y supervisión.' : '⚠️ El lote quedará pausado o archivado en el sistema.'}</small>
+      `,
       icon: 'question',
       showCancelButton: true,
-      confirmButtonColor: '#059669',
-      cancelButtonColor: '#6b7280',
-      confirmButtonText: 'Sí, confirmar',
-      cancelButtonText: 'Cancelar'
+      confirmButtonColor: isActivar ? '#059669' : '#dc2626',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: isActivar ? '<i class="fa-solid fa-check me-1"></i>Sí, activar' : '<i class="fa-solid fa-ban me-1"></i>Sí, desactivar',
+      cancelButtonText: 'Cancelar',
+      allowOutsideClick: true,
+      allowEscapeKey: true
     });
+
     if (!result.isConfirmed) return;
+
     try {
       await apiAxios.put(`/api/Produccion/${row.Id_produccion}`, { ...row, Estado: estadoNuevo });
       getAllProduccion();
-      Swal.fire({ title: 'Estado actualizado', icon: 'success', timer: 1500, showConfirmButton: false });
+      Swal.fire({
+        title: isActivar ? '¡Producción activada!' : '¡Producción desactivada!',
+        text: `El lote "${row.Lote}" ahora se encuentra ${estadoNuevo}.`,
+        icon: 'success',
+        timer: 2500,
+        timerProgressBar: true,
+        showConfirmButton: false
+      });
     } catch (error) {
       console.error("Error actualizando estado:", error);
-      Swal.fire('Error', 'No se pudo actualizar el estado', 'error');
+      Swal.fire('Error', 'No se pudo actualizar el estado de la producción.', 'error');
     }
   };
 
@@ -118,16 +136,14 @@ const CrudProduccion = () => {
   }, [Produccion, filterText]);
 
   const hideModal = () => {
-    const btn = document.getElementById('closeModal')
-    if (btn) btn.click()
+    safeCloseModal('exampleModal');
   }
 
   const hideSupervisionModal = () => {
     setSelectedProdSupervision(null);
     setSupervisionRowData(null);
-    const btn = document.getElementById('closeSupervisionModal')
-    if (btn) btn.click()
-    getAllProduccion()
+    safeCloseModal('supervisionModal');
+    getAllProduccion();
   }
 
   return (
@@ -162,7 +178,10 @@ const CrudProduccion = () => {
             className="btn btn-primary rounded-pill px-4 shadow-sm"
             data-bs-toggle="modal"
             data-bs-target="#exampleModal"
-            onClick={() => setRowToEdit(null)}
+            onClick={() => {
+              setRowToEdit(null);
+              setIsViewOnly(false);
+            }}
           >
             <i className="fa-solid fa-plus me-2"></i>Nueva Producción
           </button>
@@ -177,31 +196,59 @@ const CrudProduccion = () => {
               name: 'ESPECIE',
               selector: row => row.Especie?.Nom_especie || 'N/A',
               sortable: true,
-              grow: 0.5,
+              grow: 1.5,
+              minWidth: '200px',
               cell: row => (
-                <div className="fw-bold text-dark py-2">{row.Especie?.Nom_especie || 'N/A'}</div>
+                <div className="py-2">
+                  <div className="fw-bold text-dark">{row.Especie?.Nom_especie || 'N/A'}</div>
+                  <small className="text-muted" style={{ fontSize: '0.75rem' }}>
+                    F. Produc: {formatDateClean(row.Fec_produccion)}
+                  </small>
+                </div>
               )
             },
-            { name: 'LOTE', selector: row => row.Lote, sortable: true, width: '100px' },
-            { name: 'TIPO PRODUCCIÓN', selector: row => row.Tip_produccion, sortable: true, grow: 1 },
-            { name: 'CANT. PRODUC. INICIAL', selector: row => row.Can_Produccion || 0, sortable: true, width: '180px', center: true },
-            { name: 'CANT. PRODUC. ACTUAL', selector: row => row.Can_Existente ?? row.Can_Produccion ?? 0, sortable: true, width: '180px', center: true },
             {
-              name: 'FECHA PRODUC.',
-              selector: row => formatDateClean(row.Fec_produccion),
+              name: 'LOTE',
+              selector: row => row.Lote,
               sortable: true,
-              width: '170px'
+              grow: 1,
+              minWidth: '110px',
+              cell: row => <span className="fw-semibold text-secondary">{row.Lote}</span>
+            },
+            {
+              name: 'TIPO PRODUCCIÓN',
+              selector: row => row.Tip_produccion,
+              sortable: true,
+              grow: 1.2,
+              minWidth: '160px'
+            },
+            {
+              name: 'CANT. ACTUAL',
+              selector: row => row.Can_Existente ?? row.Can_Produccion ?? 0,
+              sortable: true,
+              grow: 1,
+              minWidth: '130px',
+              center: true,
+              cell: row => (
+                <span className="badge bg-primary-subtle text-primary border border-primary px-3 py-2 fw-bold">
+                  {row.Can_Existente ?? row.Can_Produccion ?? 0}
+                </span>
+              )
             },
             {
               name: 'ESTADO',
               sortable: true,
-              center: "true",
-              width: '110px',
+              center: true,
+              width: '140px',
               cell: row => (
                 <span
                   className={`status-badge ${row.Estado === 'Activo' ? 'status-badge-activo' : 'status-badge-inactivo'}`}
-                  onClick={() => toggleEstado(row)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleEstado(row);
+                  }}
                   style={{ cursor: 'pointer' }}
+                  title="Clic para cambiar estado"
                 >
                   {row.Estado}
                 </span>
@@ -209,13 +256,29 @@ const CrudProduccion = () => {
             },
             {
               name: 'ACCIONES',
-              center: "true",
-              width: '250px',
+              center: true,
+              width: '180px',
               cell: row => (
-                <div className="d-flex gap-1 align-items-center">
+                <div className="d-flex gap-1 align-items-center justify-content-center">
+                  <button
+                    className="btn-action btn-action-view"
+                    onClick={() => {
+                      setRowToEdit(row);
+                      setIsViewOnly(true);
+                    }}
+                    data-bs-toggle="modal"
+                    data-bs-target="#exampleModal"
+                    title="Ver Detalles de Producción"
+                  >
+                    <i className="fa-solid fa-eye"></i>
+                  </button>
+
                   <button
                     className="btn-action btn-action-edit"
-                    onClick={() => setRowToEdit(row)}
+                    onClick={() => {
+                      setRowToEdit(row);
+                      setIsViewOnly(false);
+                    }}
                     data-bs-toggle="modal"
                     data-bs-target="#exampleModal"
                     title="Editar Producción"
@@ -224,25 +287,23 @@ const CrudProduccion = () => {
                   </button>
 
                   <button
-                    className="btn btn-sm btn-outline-success rounded-pill px-2 py-1 shadow-sm"
-                    style={{ fontSize: '0.75rem' }}
+                    className="btn-action btn-action-success"
                     onClick={() => handleOpenSupervision(row)}
                     data-bs-toggle="modal"
                     data-bs-target="#supervisionModal"
                     title="Agregar Supervisión"
                   >
-                    <i className="fa-solid fa-leaf me-1"></i>Supervisión
+                    <i className="fa-solid fa-leaf"></i>
                   </button>
 
                   <button
-                    className="btn btn-sm btn-outline-primary rounded-pill px-2 py-1 shadow-sm"
-                    style={{ fontSize: '0.75rem' }}
+                    className="btn-action btn-action-primary"
                     onClick={() => handleOpenResumen(row)}
                     data-bs-toggle="modal"
                     data-bs-target="#resumenModal"
                     title="Resumen por Producción"
                   >
-                    <i className="fa-solid fa-chart-pie me-1"></i>Resumen
+                    <i className="fa-solid fa-chart-pie"></i>
                   </button>
                 </div>
               )
@@ -279,7 +340,7 @@ const CrudProduccion = () => {
           <div className="modal-content shadow-lg border-0" style={{ borderRadius: '20px' }}>
             <div className="modal-header bg-primary text-white border-0 py-3" style={{ borderTopLeftRadius: '20px', borderTopRightRadius: '20px' }}>
               <h5 className="modal-title fw-bold">
-                {rowToEdit ? "Editar Producción" : "Agregar Nueva Producción"}
+                {isViewOnly ? "Detalles de Producción" : (rowToEdit ? "Editar Producción" : "Agregar Nueva Producción")}
               </h5>
               <button type="button" className="btn-close btn-close-white shadow-none" data-bs-dismiss="modal" id="closeModal"></button>
             </div>
@@ -288,6 +349,7 @@ const CrudProduccion = () => {
                 hideModal={hideModal}
                 refreshList={getAllProduccion}
                 rowToEdit={rowToEdit}
+                isViewOnly={isViewOnly}
               />
             </div>
           </div>
@@ -510,10 +572,7 @@ const CrudProduccion = () => {
             <div className="modal-body p-4 position-relative">
               {selectedSupDetail && (
                 <Sup_PlantasForm
-                  hideModal={() => {
-                    const btn = document.querySelector("#verSupervisionModal .btn-close");
-                    if (btn) btn.click();
-                  }}
+                  hideModal={() => safeCloseModal('verSupervisionModal')}
                   rowToEdit={selectedSupDetail}
                   isViewOnly={true}
                 />

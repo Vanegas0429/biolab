@@ -150,8 +150,8 @@ const ActividadReactivoForm = ({ hideModal, refreshList, rowToEdit }) => {
                 });
             }
 
-            refreshList && refreshList();
             hideModal && hideModal();
+            refreshList && refreshList();
 
         } catch (error) {
             console.error("Error al guardar Actividad Reactivo:", error.response ? error.response.data : error.message);
