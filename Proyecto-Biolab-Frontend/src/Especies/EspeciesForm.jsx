@@ -77,8 +77,8 @@ const EspeciesForm = ({ hideModal, refreshList, rowToEdit }) => {
                 });
             }
 
+            if (hideModal) hideModal();
             if (refreshList) await refreshList();
-            hideModal();
         } catch (error) {
             console.error("Error al guardar especie:", error);
             MySwal.fire({

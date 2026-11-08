@@ -3,6 +3,7 @@ import apiAxios from "../api/axiosConfig.js";
 import EquiposForm from "./EquiposForm";
 import Swal from 'sweetalert2';
 import DataTable from 'react-data-table-component';
+import { safeCloseModal } from "../utils/modalHelper.js";
 
 const API_URL = import.meta.env.VITE_API_URL || "";
 
@@ -43,23 +44,28 @@ const CrudEquipos = ({ userRol }) => {
   };
 
   const hideModal = () => {
-    const btn = document.getElementById('closeModal');
-    if (btn) btn.click();
+    safeCloseModal('exampleModal');
   };
 
   const toggleEstado = async (row) => {
     if (userRol === 'solicitante') return;
     const estadoNuevo = row.estado === 'Activo' ? 'Inactivo' : 'Activo';
+    const isActivar = estadoNuevo === 'Activo';
 
     const result = await Swal.fire({
-      title: `¿${estadoNuevo === 'Activo' ? 'Activar' : 'Inactivar'} equipo?`,
-      text: `Equipo: ${row.nombre}`,
+      title: isActivar ? '¿Activar equipo?' : '¿Desactivar equipo?',
+      html: `
+        <p class="mb-2">¿Deseas cambiar el estado de <strong>"${row.nombre}"</strong> a <span class="badge ${isActivar ? 'bg-success' : 'bg-danger'}">${estadoNuevo}</span>?</p>
+        <small class="text-muted d-block mt-2">${isActivar ? '✅ El equipo estará habilitado para reservas y actividades de laboratorio.' : '⚠️ El equipo quedará inhabilitado para nuevas reservas y usos.'}</small>
+      `,
       icon: 'question',
       showCancelButton: true,
-      confirmButtonColor: '#059669',
-      cancelButtonColor: '#6b7280',
-      confirmButtonText: 'Sí, confirmar',
-      cancelButtonText: 'Cancelar'
+      confirmButtonColor: isActivar ? '#059669' : '#dc2626',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: isActivar ? '<i class="fa-solid fa-check me-1"></i>Sí, activar' : '<i class="fa-solid fa-ban me-1"></i>Sí, desactivar',
+      cancelButtonText: 'Cancelar',
+      allowOutsideClick: true,
+      allowEscapeKey: true
     });
 
     if (!result.isConfirmed) return;
@@ -71,14 +77,16 @@ const CrudEquipos = ({ userRol }) => {
       });
       getAllEquipos();
       Swal.fire({
-        title: 'Estado actualizado',
+        title: isActivar ? '¡Equipo activado!' : '¡Equipo desactivado!',
+        text: `El equipo "${row.nombre}" ahora se encuentra ${estadoNuevo}.`,
         icon: 'success',
-        timer: 1500,
+        timer: 2500,
+        timerProgressBar: true,
         showConfirmButton: false
       });
     } catch (error) {
       console.error("Error actualizando estado:", error);
-      Swal.fire('Error', 'No se pudo actualizar el estado', 'error');
+      Swal.fire('Error', 'No se pudo actualizar el estado del equipo.', 'error');
     }
   };
 
@@ -246,7 +254,8 @@ const CrudEquipos = ({ userRol }) => {
             {
               name: 'MARCA / GRUPO',
               sortable: true,
-              width: '180px',
+              grow: 1,
+              minWidth: '160px',
               cell: (row) => (
                 <div>
                   <div className="text-dark fw-medium">{row.marca || 'N/A'}</div>
@@ -255,47 +264,11 @@ const CrudEquipos = ({ userRol }) => {
               )
             },
             {
-              name: 'DESCRIPCIÓN DEL EQUIPO',
-              selector: row => row.linea || 'N/A',
-              sortable: true,
-              grow: 2,
-              minWidth: '200px',
-              wrap: true,
-              cell: (row) => (
-                <div style={{
-                  whiteSpace: 'normal',
-                  wordBreak: 'break-word',
-                  padding: '8px 0',
-                  lineHeight: '1.4'
-                }}>
-                  {row.linea || <span className="text-muted fst-italic">Sin descripción</span>}
-                </div>
-              ),
-            },
-            {
-              name: 'CENTRO DE COSTOS',
-              sortable: true,
-              grow: 1,
-              minWidth: '160px',
-              wrap: true,
-              cell: (row) => (
-                <div
-                  style={{
-                    whiteSpace: 'normal',
-                    wordBreak: 'break-word',
-                    padding: '10px 0',
-                    lineHeight: '1.4'
-                  }}
-                >
-                  {row.centro_costos || 'N/A'}
-                </div>
-              ),
-            },
-            {
               name: 'FECHA ADQUISICIÓN',
               selector: row => row.fecha_adquisicion || 'N/A',
               sortable: true,
-              width: '160px'
+              grow: 1,
+              minWidth: '150px'
             },
             ...(userRol !== 'solicitante' ? [
               {
@@ -310,7 +283,10 @@ const CrudEquipos = ({ userRol }) => {
                       row.estado === 'Activo' ? 'status-badge-activo' : 'status-badge-inactivo'
                     }`}
                     style={{ cursor: 'pointer' }}
-                    onClick={() => toggleEstado(row)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleEstado(row);
+                    }}
                     title="Clic para cambiar estado"
                   >
                     {row.estado || 'Activo'}
@@ -321,13 +297,12 @@ const CrudEquipos = ({ userRol }) => {
             {
               name: 'ACCIONES',
               center: true,
-              width: '120px',
+              width: '130px',
               cell: (row) => (
-                <div className="d-flex gap-2">
+                <div className="d-flex gap-1 justify-content-center">
                   <button
                     type="button"
-                    className="btn-action"
-                    style={{ background: '#64748b', color: 'white' }}
+                    className="btn-action btn-action-view"
                     onClick={() => onViewDetails(row)}
                     title="Ver detalles"
                   >

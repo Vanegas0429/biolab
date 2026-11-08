@@ -45,8 +45,8 @@ const EstadoForm = ({ hideModal, rowToEdit, refreshList }) => {
                 });
             }
 
-            if (refreshList) await refreshList();
             if (hideModal) hideModal();
+            if (refreshList) await refreshList();
         } catch (error) {
             console.error("Error registrando Estado:", error.response ? error.response.data : error.message);
             Swal.fire("Error", error.response?.data?.message || "Error al guardar el estado", "error");

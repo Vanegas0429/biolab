@@ -4,6 +4,7 @@ import DataTable from "react-data-table-component";
 import Sup_PlantasForm from "./Sup_PlantasForm.jsx";
 import ProduccionForm from "../Produccion/ProduccionForm.jsx";
 import Swal from "sweetalert2";
+import { safeCloseModal } from "../utils/modalHelper.js";
 
 const CrudSup_Plantas = () => {
   const [Sup_Plantas, setSup_Plantas] = useState([]);
@@ -52,12 +53,14 @@ const CrudSup_Plantas = () => {
       confirmButtonColor: '#059669',
       cancelButtonColor: '#6b7280',
       confirmButtonText: 'Sí, confirmar',
-      cancelButtonText: 'Cancelar'
+      cancelButtonText: 'Cancelar',
+      allowOutsideClick: true,
+      allowEscapeKey: true
     });
     if (!result.isConfirmed) return;
     try {
       await apiAxios.put(`/api/Sup_Plantas/${row.Id_supervision}`, { ...row, Estado: estadoNuevo });
-      getAllSup_Plantas();
+      getAllSup_Plantas(true);
       Swal.fire({ title: 'Estado actualizado', icon: 'success', timer: 1500, showConfirmButton: false });
     } catch (error) {
       console.error("Error actualizando estado:", error);
@@ -75,9 +78,10 @@ const CrudSup_Plantas = () => {
   }, [Sup_Plantas, filterText]);
 
   const hideModal = () => {
-    const btn = document.getElementById('closeModal')
-    if (btn) btn.click()
-  }
+    safeCloseModal('exampleModal');
+    const btn = document.getElementById('closeModal');
+    if (btn) btn.click();
+  };
 
   return (
     <div className="container-fluid py-4 fade-in">
@@ -165,7 +169,7 @@ const CrudSup_Plantas = () => {
               cell: row => (
                 <span
                   className={`status-badge ${row.Estado === 'Activo' ? 'status-badge-activo' : 'status-badge-inactivo'}`}
-                  onClick={() => toggleEstado(row)}
+                  onClick={(e) => { e.stopPropagation(); toggleEstado(row); }}
                   style={{ cursor: 'pointer' }}
                 >
                   {row.Estado}

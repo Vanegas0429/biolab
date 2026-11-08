@@ -3,6 +3,7 @@ import apiAxios from "../api/axiosConfig.js";
 import ReactivosForm from "./ReactivosForm.jsx";
 import Swal from 'sweetalert2';
 import DataTable from 'react-data-table-component';
+import { safeCloseModal } from "../utils/modalHelper.js";
 
 const API_URL = import.meta.env.VITE_API_URL || "";
 
@@ -20,24 +21,40 @@ const CrudReactivos = ({ userRol }) => {
   const toggleEstado = async (row) => {
     if (userRol === 'solicitante') return;
     const estadoNuevo = row.Estado === 'Activo' ? 'Inactivo' : 'Activo';
+    const isActivar = estadoNuevo === 'Activo';
+
     const result = await Swal.fire({
-      title: `¿${estadoNuevo === 'Activo' ? 'Activar' : 'Inactivar'} reactivo?`,
-      text: row.Nom_reactivo,
+      title: isActivar ? '¿Activar reactivo?' : '¿Desactivar reactivo?',
+      html: `
+        <p class="mb-2">¿Deseas cambiar el estado de <strong>"${row.Nom_reactivo}"</strong> a <span class="badge ${isActivar ? 'bg-success' : 'bg-danger'}">${estadoNuevo}</span>?</p>
+        <small class="text-muted d-block mt-2">${isActivar ? '✅ Estará disponible para su uso y selección en el laboratorio.' : '⚠️ No se podrá seleccionar en nuevas actividades del sistema.'}</small>
+      `,
       icon: 'question',
       showCancelButton: true,
-      confirmButtonColor: '#059669',
-      cancelButtonColor: '#6b7280',
-      confirmButtonText: 'Sí, confirmar',
-      cancelButtonText: 'Cancelar'
+      confirmButtonColor: isActivar ? '#059669' : '#dc2626',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: isActivar ? '<i class="fa-solid fa-check me-1"></i>Sí, activar' : '<i class="fa-solid fa-ban me-1"></i>Sí, desactivar',
+      cancelButtonText: 'Cancelar',
+      allowOutsideClick: true,
+      allowEscapeKey: true
     });
+
     if (!result.isConfirmed) return;
+
     try {
       await apiAxios.put(`/api/Reactivo/${row.Id_Reactivo}`, { ...row, Estado: estadoNuevo });
       getAllReactivos();
-      Swal.fire({ title: 'Estado actualizado', icon: 'success', timer: 1500, showConfirmButton: false });
+      Swal.fire({
+        title: isActivar ? '¡Reactivo activado!' : '¡Reactivo desactivado!',
+        text: `El reactivo "${row.Nom_reactivo}" ahora se encuentra ${estadoNuevo}.`,
+        icon: 'success',
+        timer: 2500,
+        timerProgressBar: true,
+        showConfirmButton: false
+      });
     } catch (error) {
       console.error("Error actualizando estado:", error);
-      Swal.fire('Error', 'No se pudo actualizar el estado', 'error');
+      Swal.fire('Error', 'No se pudo actualizar el estado del reactivo.', 'error');
     }
   };
 
@@ -114,8 +131,63 @@ const CrudReactivos = ({ userRol }) => {
   }, [Reactivo, filterText]);
 
   const hideModal = () => {
-    const btn = document.getElementById('closeModal');
-    if (btn) btn.click();
+    safeCloseModal('exampleModal');
+    setRowToEdit(null);
+  };
+
+  const onViewDetails = (row) => {
+    const hasPdf = Boolean(row.Ficha_tecnica);
+
+    Swal.fire({
+      title: `<div class="d-flex align-items-center justify-content-between pb-2 border-bottom w-100 px-2">
+        <span class="fw-bold text-primary fs-4 text-start me-3"><i class="fa-solid fa-flask me-2"></i>${row.Nom_reactivo || 'Detalles del Reactivo'}</span>
+        <span class="status-badge ${row.Estado === 'Activo' ? 'status-badge-activo' : 'status-badge-inactivo'} px-3 py-2 rounded-pill fs-6">${row.Estado || 'N/A'}</span>
+      </div>`,
+      width: '600px',
+      showConfirmButton: false,
+      showCloseButton: true,
+      html: `
+        <div class="text-start mt-3 px-1" style="font-size: 0.95rem;">
+          <div class="row g-3 mb-3 bg-light p-3 rounded-4 mx-0 shadow-sm border">
+            <div class="col-6">
+              <p class="mb-1 text-muted small fw-semibold"><i class="fa-solid fa-signature me-2 text-primary"></i>NOMENCLATURA</p>
+              <h6 class="fw-bold mb-0 text-dark">${row.Nomenclatura || 'N/A'}</h6>
+            </div>
+            <div class="col-6">
+              <p class="mb-1 text-muted small fw-semibold"><i class="fa-solid fa-box-archive me-2 text-primary"></i>PRESENTACIÓN</p>
+              <h6 class="fw-bold mb-0 text-dark">${row.Presentacion || 'N/A'}</h6>
+            </div>
+            <div class="col-12 mt-2 pt-2 border-top">
+              <p class="mb-1 text-muted small fw-semibold"><i class="fa-solid fa-file-lines me-2 text-primary"></i>FICHA TÉCNICA</p>
+              <p class="fw-semibold mb-0 text-dark">${row.Ficha_tecnica ? 'Documento PDF disponible' : 'Sin ficha técnica registrada'}</p>
+            </div>
+          </div>
+          ${hasPdf ? `
+            <div class="text-end mt-3">
+              <button id="swal-reactivo-pdf-btn" type="button" class="btn btn-primary rounded-pill px-4 py-2 fw-semibold shadow-sm">
+                <i class="fa-solid fa-file-pdf me-2 text-white"></i>Ver Ficha Técnica (PDF)
+              </button>
+            </div>
+          ` : ''}
+        </div>
+      `,
+      customClass: {
+        popup: 'rounded-4 border-0 shadow-lg'
+      },
+      didOpen: () => {
+        if (hasPdf) {
+          const btn = document.getElementById('swal-reactivo-pdf-btn');
+          if (btn) {
+            btn.addEventListener('click', () => {
+              Swal.close();
+              setLoadingPdf(true);
+              setPdfUrl(`${API_URL}/uploads/${row.Ficha_tecnica}`);
+              setShowPdf(true);
+            });
+          }
+        }
+      }
+    });
   };
 
   if (loading) return (
@@ -187,74 +259,63 @@ const CrudReactivos = ({ userRol }) => {
               name: 'NOMENCLATURA',
               selector: row => row.Nomenclatura || 'N/A',
               sortable: true,
-              width: '200px'
+              grow: 1.5,
+              minWidth: '180px'
             },
             {
               name: 'PRESENTACIÓN',
               selector: row => row.Presentacion || 'N/A',
               sortable: true,
-              width: '180px'
-            },
-            {
-              name: 'FICHA',
-              center: true,
-              width: '140px',
-              cell: (row) => (
-                row.Ficha_tecnica ? (
-                  <button
-                    className="btn btn-sm btn-outline-primary rounded-pill px-3 shadow-none"
-                    onClick={() => {
-                      setLoadingPdf(true);
-                      setPdfUrl(`${API_URL}/uploads/${row.Ficha_tecnica}`);
-                      setShowPdf(true);
-                    }}
-                    title="Ver Ficha Técnica"
-                  >
-                    <i className="fa-solid fa-file-pdf me-1"></i>PDF
-                  </button>
-                ) : (
-                  userRol !== 'solicitante' ? (
-                    <button className="btn btn-sm text-muted opacity-50" onClick={() => uploadFicha(row)} title="Subir Ficha Técnica">
-                      <i className="fa-solid fa-upload me-1"></i>Subir
-                    </button>
-                  ) : (
-                    <span className="text-muted small fst-italic">Sin ficha</span>
-                  )
-                )
-              )
+              grow: 1.5,
+              minWidth: '180px'
             },
             ...(userRol !== 'solicitante' ? [{
               name: 'ESTADO',
               sortable: true,
               center: true,
-              width: '150px',
+              width: '140px',
               cell: (row) => (
                 <span
                   className={`status-badge ${row.Estado === 'Activo' ? 'status-badge-activo' : 'status-badge-inactivo'}`}
                   style={{ cursor: 'pointer' }}
-                  onClick={() => toggleEstado(row)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleEstado(row);
+                  }}
                   title="Clic para cambiar estado"
                 >
                   {row.Estado}
                 </span>
               )
-            },
+            }] : []),
             {
               name: 'ACCIONES',
               center: true,
               width: '130px',
               cell: (row) => (
-                <button
-                  className="btn-action btn-action-edit"
-                  onClick={() => setRowToEdit(row)}
-                  data-bs-toggle="modal"
-                  data-bs-target="#exampleModal"
-                  title="Editar"
-                >
-                  <i className="fa-solid fa-pencil"></i>
-                </button>
+                <div className="d-flex gap-1 justify-content-center">
+                  <button
+                    type="button"
+                    className="btn-action btn-action-view"
+                    onClick={() => onViewDetails(row)}
+                    title="Ver detalles"
+                  >
+                    <i className="fa-solid fa-eye"></i>
+                  </button>
+                  {userRol !== 'solicitante' && (
+                    <button
+                      className="btn-action btn-action-edit"
+                      onClick={() => setRowToEdit(row)}
+                      data-bs-toggle="modal"
+                      data-bs-target="#exampleModal"
+                      title="Editar"
+                    >
+                      <i className="fa-solid fa-pencil"></i>
+                    </button>
+                  )}
+                </div>
               )
-            }] : [])
+            }
           ]}
           data={newListReactivo}
           keyField="Id_Reactivo"

@@ -3,6 +3,7 @@ import apiAxios from "../api/axiosConfig.js";
 import DataTable from 'react-data-table-component';
 import EspeciesForm from "./EspeciesForm.jsx";
 import Swal from 'sweetalert2';
+import { safeCloseModal } from "../utils/modalHelper.js";
 
 const API_URL = import.meta.env.VITE_API_URL || "";
 
@@ -43,24 +44,40 @@ const CrudEspecie = ({ userRol }) => {
     if (userRol === 'solicitante') return;
 
     const estadoNuevo = row.Estado === 'Activo' ? 'Inactivo' : 'Activo';
+    const isActivar = estadoNuevo === 'Activo';
+
     const result = await Swal.fire({
-      title: `¿${estadoNuevo === 'Activo' ? 'Activar' : 'Inactivar'} especie?`,
-      text: row.Nom_especie,
+      title: isActivar ? '¿Activar especie?' : '¿Desactivar especie?',
+      html: `
+        <p class="mb-2">¿Deseas cambiar el estado de la especie <strong>"${row.Nom_especie}"</strong> a <span class="badge ${isActivar ? 'bg-success' : 'bg-danger'}">${estadoNuevo}</span>?</p>
+        <small class="text-muted d-block mt-2">${isActivar ? '✅ La especie estará disponible para registrar nuevas producciones vegetales.' : '⚠️ No se podrán iniciar nuevas producciones con esta especie.'}</small>
+      `,
       icon: 'question',
       showCancelButton: true,
-      confirmButtonColor: '#059669',
-      cancelButtonColor: '#6b7280',
-      confirmButtonText: 'Sí, confirmar',
-      cancelButtonText: 'Cancelar'
+      confirmButtonColor: isActivar ? '#059669' : '#dc2626',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: isActivar ? '<i class="fa-solid fa-check me-1"></i>Sí, activar' : '<i class="fa-solid fa-ban me-1"></i>Sí, desactivar',
+      cancelButtonText: 'Cancelar',
+      allowOutsideClick: true,
+      allowEscapeKey: true
     });
+
     if (!result.isConfirmed) return;
+
     try {
       await apiAxios.put(`/api/Especie/${row.Id_especie}`, { ...row, Estado: estadoNuevo });
       getAllEspecies();
-      Swal.fire({ title: 'Estado actualizado', icon: 'success', timer: 1500, showConfirmButton: false });
+      Swal.fire({
+        title: isActivar ? '¡Especie activada!' : '¡Especie desactivada!',
+        text: `La especie "${row.Nom_especie}" ahora se encuentra ${estadoNuevo}.`,
+        icon: 'success',
+        timer: 2500,
+        timerProgressBar: true,
+        showConfirmButton: false
+      });
     } catch (error) {
       console.error("Error actualizando estado:", error);
-      Swal.fire('Error', 'No se pudo actualizar el estado', 'error');
+      Swal.fire('Error', 'No se pudo actualizar el estado de la especie.', 'error');
     }
   };
 
@@ -111,6 +128,51 @@ const CrudEspecie = ({ userRol }) => {
     input.click();
   };
 
+  const onViewDetails = (row) => {
+    const imgs = parseImages(row.img_especie);
+    const hasImages = imgs.length > 0;
+
+    Swal.fire({
+      title: `<div class="d-flex align-items-center justify-content-between pb-2 border-bottom w-100 px-2">
+        <span class="fw-bold text-primary fs-4 text-start me-3"><i class="fa-solid fa-seedling me-2"></i>${row.Nom_especie || 'Detalles de la Especie'}</span>
+        <span class="status-badge ${row.Estado === 'Activo' ? 'status-badge-activo' : 'status-badge-inactivo'} px-3 py-2 rounded-pill fs-6">${row.Estado || 'N/A'}</span>
+      </div>`,
+      width: '650px',
+      showConfirmButton: false,
+      showCloseButton: true,
+      html: `
+        <div class="text-start mt-3 px-1" style="font-size: 0.95rem;">
+          <div class="mb-3 p-3 bg-light rounded-4 border">
+            <h6 class="mb-2 text-muted small fw-bold text-uppercase"><i class="fa-solid fa-align-left me-2 text-primary"></i>Descripción de la Especie</h6>
+            <p class="mb-0 text-secondary" style="white-space: pre-wrap; line-height: 1.6; font-size: 0.92rem;">${row.descripcion || 'Sin descripción disponible.'}</p>
+          </div>
+
+          ${hasImages ? `
+            <div class="text-end mt-3">
+              <button id="swal-especie-img-btn" type="button" class="btn btn-outline-primary rounded-pill px-4 py-2 fw-semibold shadow-sm">
+                <i class="fa-solid fa-images me-2"></i>Ver Galería de Fotos (${imgs.length})
+              </button>
+            </div>
+          ` : ''}
+        </div>
+      `,
+      customClass: {
+        popup: 'rounded-4 border-0 shadow-lg'
+      },
+      didOpen: () => {
+        if (hasImages) {
+          const btn = document.getElementById('swal-especie-img-btn');
+          if (btn) {
+            btn.addEventListener('click', () => {
+              Swal.close();
+              openCarousel(row);
+            });
+          }
+        }
+      }
+    });
+  };
+
   const deleteImage = async (especieId, filename) => {
     const result = await Swal.fire({
       title: '¿Estás seguro?',
@@ -155,8 +217,7 @@ const CrudEspecie = ({ userRol }) => {
   }, [Especie, filterText]);
 
   const hideModal = () => {
-    const btn = document.getElementById('closeModal');
-    if (btn) btn.click();
+    safeCloseModal('exampleModal');
   };
 
   return (
@@ -208,24 +269,42 @@ const CrudEspecie = ({ userRol }) => {
               name: 'ESPECIE',
               sortable: true,
               grow: 2,
-              minWidth: '260px',
+              minWidth: '280px',
               cell: (row) => {
                 const imgs = parseImages(row.img_especie);
                 return (
                   <div className="d-flex align-items-center py-2 gap-3">
                     <div className="position-relative flex-shrink-0">
                       {imgs.length > 0 ? (
-                        <img
-                          src={`${API_URL}/uploads/${imgs[0]}`}
-                          alt={row.Nom_especie}
-                          className="rounded-3 shadow-sm border"
-                          style={{ width: '48px', height: '48px', objectFit: 'cover', cursor: 'pointer' }}
-                          onClick={() => openCarousel(row)}
-                        />
+                        <>
+                          <img
+                            src={`${API_URL}/uploads/${imgs[0]}`}
+                            alt={row.Nom_especie}
+                            className="rounded-3 shadow-sm border"
+                            style={{ width: '44px', height: '44px', objectFit: 'cover', cursor: 'pointer' }}
+                            onClick={() => openCarousel(row)}
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none';
+                              const fallback = e.currentTarget.nextElementSibling;
+                              if (fallback) {
+                                fallback.classList.remove('d-none');
+                                fallback.classList.add('d-flex');
+                              }
+                            }}
+                          />
+                          <div
+                            className="bg-light text-muted d-none align-items-center justify-content-center rounded-3 border"
+                            style={{ width: '44px', height: '44px', cursor: userRol !== 'solicitante' ? 'pointer' : 'default' }}
+                            onClick={() => userRol !== 'solicitante' && triggerImageUpload(row)}
+                            title={userRol !== 'solicitante' ? 'Subir imagen' : ''}
+                          >
+                            <i className="fa-solid fa-seedling opacity-50 fs-5"></i>
+                          </div>
+                        </>
                       ) : (
                         <div
                           className="bg-light text-muted d-flex align-items-center justify-content-center rounded-3 border"
-                          style={{ width: '48px', height: '48px', borderStyle: 'dashed !important', cursor: userRol !== 'solicitante' ? 'pointer' : 'default' }}
+                          style={{ width: '44px', height: '44px', borderStyle: 'dashed !important', cursor: userRol !== 'solicitante' ? 'pointer' : 'default' }}
                           onClick={() => userRol !== 'solicitante' && triggerImageUpload(row)}
                           title={userRol !== 'solicitante' ? 'Subir imagen' : ''}
                         >
@@ -247,56 +326,55 @@ const CrudEspecie = ({ userRol }) => {
                 );
               }
             },
-            {
-              name: 'DESCRIPCIÓN',
-              sortable: true,
-              grow: 3,
-              minWidth: '280px',
-              wrap: true,
-              cell: (row) => (
-                <div style={{ whiteSpace: 'normal', wordBreak: 'break-word', padding: '10px 0', lineHeight: '1.4' }}>
-                  {row.descripcion ? (
-                    <span className="text-secondary">{row.descripcion}</span>
-                  ) : (
-                    <span className="text-muted fst-italic">Sin descripción</span>
-                  )}
-                </div>
-              )
-            },
             ...(userRol !== 'solicitante' ? [
               {
                 name: 'ESTADO',
                 sortable: true,
-                center: "true",
-                width: '160px',
+                center: true,
+                width: '140px',
                 cell: (row) => (
                   <span
                     className={`status-badge ${row.Estado === 'Activo' ? 'status-badge-activo' : 'status-badge-inactivo'}`}
-                    onClick={() => toggleEstado(row)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleEstado(row);
+                    }}
                     style={{ cursor: 'pointer' }}
                     title="Clic para cambiar estado"
                   >
                     {row.Estado}
                   </span>
                 )
-              },
-              {
-                name: 'ACCIONES',
-                center: "true",
-                width: '140px',
-                cell: (row) => (
-                  <button
-                    className="btn-action btn-action-edit"
-                    onClick={() => setRowToEdit(row)}
-                    data-bs-toggle="modal"
-                    data-bs-target="#exampleModal"
-                    title="Editar"
-                  >
-                    <i className="fa-solid fa-pencil"></i>
-                  </button>
-                )
               }
-            ] : [])
+            ] : []),
+            {
+              name: 'ACCIONES',
+              center: true,
+              width: '130px',
+              cell: (row) => (
+                <div className="d-flex gap-1 justify-content-center">
+                  <button
+                    type="button"
+                    className="btn-action btn-action-view"
+                    onClick={() => onViewDetails(row)}
+                    title="Ver detalles"
+                  >
+                    <i className="fa-solid fa-eye"></i>
+                  </button>
+                  {userRol !== 'solicitante' && (
+                    <button
+                      className="btn-action btn-action-edit"
+                      onClick={() => setRowToEdit(row)}
+                      data-bs-toggle="modal"
+                      data-bs-target="#exampleModal"
+                      title="Editar"
+                    >
+                      <i className="fa-solid fa-pencil"></i>
+                    </button>
+                  )}
+                </div>
+              )
+            }
           ]}
           data={newListEspecie}
           keyField="Id_especie"
@@ -355,7 +433,15 @@ const CrudEspecie = ({ userRol }) => {
               <button className="carousel-arrow carousel-arrow-left" onClick={carouselPrev}><i className="fa-solid fa-chevron-left"></i></button>
             )}
             <div className="carousel-image-wrapper">
-              <img src={`${API_URL}/uploads/${carouselImages[carouselIndex]}`} alt={`Imagen ${carouselIndex + 1}`} className="carousel-image shadow-lg" />
+              <img
+                src={`${API_URL}/uploads/${carouselImages[carouselIndex]}`}
+                alt={`Imagen ${carouselIndex + 1}`}
+                className="carousel-image shadow-lg"
+                onError={(e) => {
+                  e.currentTarget.alt = "Imagen no disponible";
+                  e.currentTarget.style.opacity = '0.5';
+                }}
+              />
             </div>
             {carouselImages.length > 1 && (
               <button className="carousel-arrow carousel-arrow-right" onClick={carouselNext}><i className="fa-solid fa-chevron-right"></i></button>

@@ -3,6 +3,7 @@ import apiAxios from "../api/axiosConfig.js"
 import DataTable from 'react-data-table-component'
 import ActividadEquipoForm from "./ActividadEquipoForm.jsx"
 import Swal from "sweetalert2"
+import { safeCloseModal } from "../utils/modalHelper.js"
 
 const CrudActividadEquipo = () => {
 
@@ -23,7 +24,9 @@ const CrudActividadEquipo = () => {
       confirmButtonColor: '#059669',
       cancelButtonColor: '#6b7280',
       confirmButtonText: 'Sí, confirmar',
-      cancelButtonText: 'Cancelar'
+      cancelButtonText: 'Cancelar',
+      allowOutsideClick: true,
+      allowEscapeKey: true
     });
     if (!result.isConfirmed) return;
     try {
@@ -142,9 +145,8 @@ const CrudActividadEquipo = () => {
   }
 
   const hideModal = () => {
-    const closeBtn = document.getElementById('closeModal')
-    if (closeBtn) closeBtn.click()
-    getAllActividadEquipo()
+    safeCloseModal('exampleModal')
+    setRowToEdit(null)
   }
 
   return (

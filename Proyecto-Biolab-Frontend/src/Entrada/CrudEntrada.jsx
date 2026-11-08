@@ -3,6 +3,7 @@ import apiAxios from "../api/axiosConfig.js";
 import DataTable from 'react-data-table-component';
 import EntradaForm from "./EntradaForm.jsx";
 import Swal from "sweetalert2";
+import { safeCloseModal } from "../utils/modalHelper.js";
 
 const CrudEntrada = ({ userRol }) => {
   const [rowToEdit, setRowToEdit] = useState(null);
@@ -62,16 +63,22 @@ const CrudEntrada = ({ userRol }) => {
 
   const toggleEstado = async (row) => {
     const estadoNuevo = row.Estado === 'Activo' ? 'Inactivo' : 'Activo';
+    const isActivar = estadoNuevo === 'Activo';
 
     const result = await Swal.fire({
-      title: `¿${estadoNuevo === 'Activo' ? 'Activar' : 'Inactivar'} entrada?`,
-      text: `Lote: ${row.Lote}`,
+      title: isActivar ? '¿Activar entrada de lote?' : '¿Desactivar entrada de lote?',
+      html: `
+        <p class="mb-2">¿Deseas cambiar el estado de la entrada del reactivo <strong>"${row.Nom_reactivo || 'Reactivo'}"</strong> (Lote: <strong>${row.Lote}</strong>) a <span class="badge ${isActivar ? 'bg-success' : 'bg-danger'}">${estadoNuevo}</span>?</p>
+        <small class="text-muted d-block mt-2">${isActivar ? '✅ Este lote de reactivo volverá a estar habilitado para consumos y actividades.' : '⚠️ Este lote quedará deshabilitado temporalmente para uso.'}</small>
+      `,
       icon: 'question',
       showCancelButton: true,
-      confirmButtonColor: '#059669',
-      cancelButtonColor: '#6b7280',
-      confirmButtonText: `Sí, ${estadoNuevo === 'Activo' ? 'activar' : 'inactivar'}`,
-      cancelButtonText: 'Cancelar'
+      confirmButtonColor: isActivar ? '#059669' : '#dc2626',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: isActivar ? '<i class="fa-solid fa-check me-1"></i>Sí, activar' : '<i class="fa-solid fa-ban me-1"></i>Sí, desactivar',
+      cancelButtonText: 'Cancelar',
+      allowOutsideClick: true,
+      allowEscapeKey: true
     });
 
     if (!result.isConfirmed) return;
@@ -79,11 +86,64 @@ const CrudEntrada = ({ userRol }) => {
     try {
       await apiAxios.put(`/api/Entrada/${row.Id_Entrada}`, { ...row, Estado: estadoNuevo });
       getAllEntradas();
-      Swal.fire({ title: 'Estado actualizado', icon: 'success', timer: 1500, showConfirmButton: false });
+      Swal.fire({
+        title: isActivar ? '¡Lote activado!' : '¡Lote desactivado!',
+        text: `El lote "${row.Lote}" ahora se encuentra ${estadoNuevo}.`,
+        icon: 'success',
+        timer: 2500,
+        timerProgressBar: true,
+        showConfirmButton: false
+      });
     } catch (error) {
       console.error("Error actualizando estado:", error);
-      Swal.fire('Error', 'No se pudo actualizar el estado', 'error');
+      Swal.fire('Error', 'No se pudo actualizar el estado de la entrada.', 'error');
     }
+  };
+
+  const onViewDetails = (row) => {
+    Swal.fire({
+      title: `<div class="d-flex align-items-center justify-content-between pb-2 border-bottom w-100 px-2">
+        <span class="fw-bold text-primary fs-4 text-start me-3"><i class="fa-solid fa-box-open me-2"></i>Detalle de Entrada</span>
+        <span class="status-badge ${row.Estado === 'Activo' ? 'status-badge-activo' : 'status-badge-inactivo'} px-3 py-2 rounded-pill fs-6">${row.Estado || 'N/A'}</span>
+      </div>`,
+      width: '640px',
+      showConfirmButton: false,
+      showCloseButton: true,
+      html: `
+        <div class="text-start mt-3 px-1" style="font-size: 0.95rem;">
+          <div class="p-3 bg-light rounded-4 border mb-3">
+            <small class="text-muted d-block fw-semibold"><i class="fa-solid fa-flask me-2 text-primary"></i>REACTIVO</small>
+            <h5 class="fw-bold mb-0 text-dark">${row.Reactivo?.Nom_reactivo || 'N/A'}</h5>
+          </div>
+
+          <div class="row g-3 bg-light p-3 rounded-4 mx-0 shadow-sm border mb-3">
+            <div class="col-6">
+              <p class="mb-1 text-muted small fw-semibold"><i class="fa-solid fa-barcode me-2 text-primary"></i>LOTE</p>
+              <h6 class="fw-bold mb-0 text-dark">${row.Lote || 'N/A'}</h6>
+            </div>
+            <div class="col-6">
+              <p class="mb-1 text-muted small fw-semibold"><i class="fa-solid fa-scale-balanced me-2 text-primary"></i>UNIDAD DE MEDIDA</p>
+              <h6 class="fw-bold mb-0 text-dark">${row.Uni_Medida || 'N/A'}</h6>
+            </div>
+            <div class="col-6">
+              <p class="mb-1 text-muted small fw-semibold"><i class="fa-solid fa-arrow-down-wide-short me-2 text-primary"></i>CANT. INICIAL</p>
+              <h6 class="fw-bold mb-0 text-dark">${row.Can_Inicial || 0} ${row.Uni_Medida || ''}</h6>
+            </div>
+            <div class="col-6">
+              <p class="mb-1 text-muted small fw-semibold"><i class="fa-solid fa-boxes-stacked me-2 text-primary"></i>CANT. EXISTENTE</p>
+              <h6 class="fw-bold mb-0 text-primary">${row.Can_Existente ?? 0} ${row.Uni_Medida || ''}</h6>
+            </div>
+            <div class="col-12 mt-2 pt-2 border-top">
+              <p class="mb-1 text-muted small fw-semibold"><i class="fa-regular fa-calendar-xmark me-2 text-primary"></i>FECHA DE VENCIMIENTO</p>
+              <h6 class="fw-bold mb-0 text-dark">${row.Fec_Vencimiento ? row.Fec_Vencimiento.split('T')[0] : 'Sin fecha registrada'}</h6>
+            </div>
+          </div>
+        </div>
+      `,
+      customClass: {
+        popup: 'rounded-4 border-0 shadow-lg'
+      }
+    });
   };
 
   useEffect(() => {
@@ -111,7 +171,9 @@ const CrudEntrada = ({ userRol }) => {
     }
   };
 
-  const hideModal = () => { document.getElementById('closeModalBtn').click(); };
+  const hideModal = () => {
+    safeCloseModal('exampleModal');
+  };
 
   const filteredEntradas = useMemo(() => {
     const text = filterText.toLowerCase();
@@ -170,8 +232,18 @@ const CrudEntrada = ({ userRol }) => {
         icon: 'warning',
         title: `¡Atención! Hay ${alertasResumen.porVencer.length} lote(s) que están por vencerse`,
         showConfirmButton: false,
+        showCloseButton: true,
         timer: 4500,
-        timerProgressBar: true
+        timerProgressBar: true,
+        background: '#ffffff',
+        color: '#1e293b',
+        didOpen: (toast) => {
+          toast.addEventListener('mouseenter', Swal.stopTimer);
+          toast.addEventListener('mouseleave', Swal.resumeTimer);
+        },
+        didClose: () => {
+          document.body.classList.remove('swal2-toast-shown');
+        }
       });
     }
   }, [alertasResumen.porVencer.length]);
@@ -368,24 +440,32 @@ const CrudEntrada = ({ userRol }) => {
                 name: 'REACTIVO',
                 selector: row => row?.Reactivo?.Nom_reactivo ?? 'N/A',
                 sortable: true,
-                width: '260px',
-                cell: row => <span className="fw-bold text-dark">{row?.Reactivo?.Nom_reactivo ?? 'N/A'}</span>
+                grow: 2,
+                minWidth: '220px',
+                cell: row => (
+                  <div className="py-2">
+                    <span className="fw-bold text-dark">{row?.Reactivo?.Nom_reactivo ?? 'N/A'}</span>
+                    <small className="text-muted d-block" style={{ fontSize: '0.75rem' }}>
+                      Inicial: {row?.Can_Inicial ?? 0} {row?.Uni_Medida ?? ''}
+                    </small>
+                  </div>
+                )
               },
-              { name: 'LOTE', selector: row => row?.Lote ?? 'N/A', sortable: true, width: '130px' },
               {
-                name: 'CANT. INICIAL',
-                selector: row => `${row?.Can_Inicial ?? 0} ${row?.Uni_Medida ?? ''}`,
+                name: 'LOTE',
+                selector: row => row?.Lote ?? 'N/A',
                 sortable: true,
-                width: '140px',
-                center: "true",
-                cell: row => <span className="fw-normal">{row?.Can_Inicial ?? 0} {row?.Uni_Medida ?? ''}</span>
+                grow: 1,
+                minWidth: '120px',
+                cell: row => <span className="fw-semibold text-secondary">{row?.Lote ?? 'N/A'}</span>
               },
               {
                 name: 'CANT. EXISTENTE',
                 selector: row => parseFloat(row?.Can_Existente) || 0,
                 sortable: true,
-                width: '190px',
-                center: "true",
+                grow: 1,
+                minWidth: '150px',
+                center: true,
                 cell: row => {
                   const val = parseFloat(row?.Can_Existente) || 0;
                   const isAgotado = val <= 0;
@@ -402,18 +482,18 @@ const CrudEntrada = ({ userRol }) => {
                   }
 
                   return (
-                    <div className="d-flex align-items-center justify-content-center gap-2 flex-wrap py-1">
-                      <span className="fw-bold" style={{ color: textColor, fontSize: '0.95rem' }}>
+                    <div className="d-flex align-items-center justify-content-center gap-1 flex-wrap py-1">
+                      <span className="fw-bold" style={{ color: textColor, fontSize: '0.9rem' }}>
                         {row?.Can_Existente ?? 0} {row?.Uni_Medida ?? ''}
                       </span>
                       {isAgotado && (
-                        <span className={`badge rounded-pill px-2 py-1 ${pillBg}`} style={{ fontSize: '0.72rem' }}>
-                          <i className="fa-solid fa-ban me-1"></i>Agotado
+                        <span className={`badge rounded-pill px-2 py-0 ${pillBg}`} style={{ fontSize: '0.68rem' }}>
+                          Agotado
                         </span>
                       )}
                       {isBajo && (
-                        <span className={`badge rounded-pill px-2 py-1 ${pillBg}`} style={{ fontSize: '0.72rem' }}>
-                          <i className="fa-solid fa-triangle-exclamation me-1"></i>Poco stock
+                        <span className={`badge rounded-pill px-2 py-0 ${pillBg}`} style={{ fontSize: '0.68rem' }}>
+                          Bajo
                         </span>
                       )}
                     </div>
@@ -424,39 +504,39 @@ const CrudEntrada = ({ userRol }) => {
                 name: 'F. VENCIMIENTO',
                 selector: row => row.Fec_Vencimiento || '',
                 sortable: true,
-                width: '210px',
-                center: "true",
+                grow: 1,
+                minWidth: '150px',
+                center: true,
                 cell: row => {
                   const info = getVencimientoInfo(row.Fec_Vencimiento);
                   if (info.estado === 'vencido') {
                     return (
-                      <div className="p-1 px-2 rounded-3 border border-danger text-danger bg-danger-subtle fw-bold d-inline-block text-center" style={{ fontSize: '0.82rem' }}>
-                        <i className="fa-solid fa-triangle-exclamation me-1"></i>
-                        {info.texto}
-                        <small className="d-block text-danger fw-bold" style={{ fontSize: '0.68rem', letterSpacing: '0.5px' }}>¡VENCIDO!</small>
-                      </div>
+                      <span className="badge bg-danger text-white rounded-pill px-2 py-1" style={{ fontSize: '0.75rem' }}>
+                        <i className="fa-solid fa-triangle-exclamation me-1"></i>Vencido
+                      </span>
                     );
                   } else if (info.estado === 'por_vencer') {
                     return (
-                      <div className="p-1 px-2 rounded-3 border border-warning text-dark bg-warning-subtle fw-bold d-inline-block text-center shadow-sm" style={{ fontSize: '0.82rem' }}>
-                        <i className="fa-solid fa-bell me-1 text-warning"></i>
-                        {info.texto}
-                        <small className="d-block text-warning-emphasis fw-bold" style={{ fontSize: '0.68rem' }}>⚠️ ¡Por vencerse ({info.dias}d)!</small>
-                      </div>
+                      <span className="badge bg-warning text-dark rounded-pill px-2 py-1" style={{ fontSize: '0.75rem' }}>
+                        <i className="fa-solid fa-bell me-1"></i>{info.dias}d
+                      </span>
                     );
                   }
-                  return <span className="text-secondary fw-medium">{info.texto}</span>;
+                  return <span className="text-secondary fw-medium small">{info.texto}</span>;
                 }
               },
               {
                 name: 'ESTADO',
-                center: "true",
-                width: '130px',
+                center: true,
+                width: '140px',
                 cell: row => (
                   <span
                     className={`status-badge ${row.Estado === 'Activo' ? 'status-badge-activo' : 'status-badge-inactivo'}`}
                     style={{ cursor: 'pointer' }}
-                    onClick={() => toggleEstado(row)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleEstado(row);
+                    }}
                     title="Clic para cambiar estado"
                   >
                     {row.Estado}
@@ -465,10 +545,17 @@ const CrudEntrada = ({ userRol }) => {
               },
               {
                 name: 'ACCIONES',
-                center: "true",
-                width: '130px',
+                center: true,
+                width: '150px',
                 cell: row => (
                   <div className="d-flex gap-1 justify-content-center">
+                    <button
+                      className="btn-action btn-action-view"
+                      onClick={() => onViewDetails(row)}
+                      title="Ver detalles"
+                    >
+                      <i className="fa-solid fa-eye"></i>
+                    </button>
                     <button
                       className="btn-action btn-action-edit"
                       onClick={() => setRowToEdit(row)}
@@ -479,7 +566,8 @@ const CrudEntrada = ({ userRol }) => {
                       <i className="fa-solid fa-pencil"></i>
                     </button>
                     <button
-                      className="btn-action btn-action-view"
+                      className="btn-action"
+                      style={{ background: 'rgba(100,116,139,0.15)', color: '#475569' }}
                       onClick={() => openHistoryModal(row)}
                       data-bs-toggle="modal"
                       data-bs-target="#modalHistorial"

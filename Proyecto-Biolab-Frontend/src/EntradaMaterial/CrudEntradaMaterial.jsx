@@ -3,6 +3,7 @@ import apiAxios from "../api/axiosConfig.js";
 import DataTable from 'react-data-table-component';
 import EntradaMaterialForm from "./EntradaMaterialForm.jsx";
 import Swal from "sweetalert2";
+import { safeCloseModal } from "../utils/modalHelper.js";
 
 const CrudEntradaMaterial = ({ userRol }) => {
   const [rowToEdit, setRowToEdit] = useState(null);
@@ -59,16 +60,22 @@ const CrudEntradaMaterial = ({ userRol }) => {
 
   const toggleEstado = async (row) => {
     const estadoNuevo = row.Estado === 'Activo' ? 'Inactivo' : 'Activo';
+    const isActivar = estadoNuevo === 'Activo';
 
     const result = await Swal.fire({
-      title: `¿${estadoNuevo === 'Activo' ? 'Activar' : 'Inactivar'} entrada?`,
-      text: `Material: ${row.Material?.Nom_Material}`,
+      title: isActivar ? '¿Activar entrada de material?' : '¿Desactivar entrada de material?',
+      html: `
+        <p class="mb-2">¿Deseas cambiar el estado de la entrada del material <strong>"${row.Material?.Nom_Material || 'Material'}"</strong> a <span class="badge ${isActivar ? 'bg-success' : 'bg-danger'}">${estadoNuevo}</span>?</p>
+        <small class="text-muted d-block mt-2">${isActivar ? '✅ Este stock de material volverá a estar habilitado para inventario y actividades.' : '⚠️ Este lote de entrada quedará deshabilitado temporalmente.'}</small>
+      `,
       icon: 'question',
       showCancelButton: true,
-      confirmButtonColor: '#059669',
-      cancelButtonColor: '#6b7280',
-      confirmButtonText: `Sí, ${estadoNuevo === 'Activo' ? 'activar' : 'inactivar'}`,
-      cancelButtonText: 'Cancelar'
+      confirmButtonColor: isActivar ? '#059669' : '#dc2626',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: isActivar ? '<i class="fa-solid fa-check me-1"></i>Sí, activar' : '<i class="fa-solid fa-ban me-1"></i>Sí, desactivar',
+      cancelButtonText: 'Cancelar',
+      allowOutsideClick: true,
+      allowEscapeKey: true
     });
 
     if (!result.isConfirmed) return;
@@ -76,16 +83,65 @@ const CrudEntradaMaterial = ({ userRol }) => {
     try {
       await apiAxios.put(`/api/EntradaMaterial/${row.Id_Entrada_Material}`, { ...row, Estado: estadoNuevo });
       getAllEntradasMaterial();
-      Swal.fire({ title: 'Estado actualizado', icon: 'success', timer: 1500, showConfirmButton: false });
+      Swal.fire({
+        title: isActivar ? '¡Entrada activada!' : '¡Entrada desactivada!',
+        text: `La entrada de material #${row.Id_Entrada_Material} ahora se encuentra ${estadoNuevo}.`,
+        icon: 'success',
+        timer: 2500,
+        timerProgressBar: true,
+        showConfirmButton: false
+      });
     } catch (error) {
       console.error("Error actualizando estado:", error);
-      Swal.fire('Error', 'No se pudo actualizar el estado', 'error');
+      Swal.fire('Error', 'No se pudo actualizar el estado de la entrada.', 'error');
     }
   };
 
   const hideModal = () => {
-    const btn = document.getElementById('closeModalBtnEntradaMat');
-    if (btn) btn.click();
+    safeCloseModal('exampleModal');
+  };
+
+  const onViewDetails = (row) => {
+    const isDesechable = (row.Material?.clasificacion || 'Desechable').toLowerCase() === 'desechable';
+    const val = parseFloat(row.Can_Existente ?? row.Can_Inicial) || 0;
+
+    Swal.fire({
+      title: `<div class="d-flex align-items-center justify-content-between pb-2 border-bottom w-100 px-2">
+        <span class="fw-bold text-primary fs-4 text-start me-3"><i class="fa-solid fa-boxes-packing me-2"></i>Detalle de Entrada</span>
+        <span class="status-badge ${row.Estado === 'Activo' ? 'status-badge-activo' : 'status-badge-inactivo'} px-3 py-2 rounded-pill fs-6">${row.Estado || 'N/A'}</span>
+      </div>`,
+      width: '640px',
+      showConfirmButton: false,
+      showCloseButton: true,
+      html: `
+        <div class="text-start mt-3 px-1" style="font-size: 0.95rem;">
+          <div class="p-3 bg-light rounded-4 border mb-3">
+            <small class="text-muted d-block fw-semibold"><i class="fa-solid fa-boxes-stacked me-2 text-primary"></i>MATERIAL</small>
+            <h5 class="fw-bold mb-0 text-dark">${row.Material?.Nom_Material || `Material #${row.Id_Material}`}</h5>
+          </div>
+
+          <div class="row g-3 bg-light p-3 rounded-4 mx-0 shadow-sm border mb-3">
+            <div class="col-6">
+              <p class="mb-1 text-muted small fw-semibold"><i class="fa-solid fa-layer-group me-2 text-primary"></i>CLASIFICACIÓN</p>
+              <span class="badge ${row.Material?.clasificacion === 'Reutilizable' ? 'bg-info-subtle text-info-emphasis border border-info' : 'bg-secondary-subtle text-secondary-emphasis border border-secondary'} rounded-pill px-3 py-2 fw-semibold">
+                ${row.Material?.clasificacion || 'Desechable'}
+              </span>
+            </div>
+            <div class="col-6">
+              <p class="mb-1 text-muted small fw-semibold"><i class="fa-solid fa-arrow-down-wide-short me-2 text-primary"></i>CANT. INGRESADA</p>
+              <h6 class="fw-bold mb-0 text-dark">${row.Can_Inicial ?? 0}</h6>
+            </div>
+            <div class="col-12 mt-2 pt-2 border-top">
+              <p class="mb-1 text-muted small fw-semibold"><i class="fa-solid fa-boxes-stacked me-2 text-primary"></i>CANT. EXISTENTE</p>
+              <h5 class="fw-bold mb-0 text-primary">${val}</h5>
+            </div>
+          </div>
+        </div>
+      `,
+      customClass: {
+        popup: 'rounded-4 border-0 shadow-lg'
+      }
+    });
   };
 
   const filteredEntradas = useMemo(() => {
@@ -236,10 +292,14 @@ const CrudEntradaMaterial = ({ userRol }) => {
             {
               name: 'MATERIAL',
               sortable: true,
-              width: '320px',
+              grow: 2,
+              minWidth: '240px',
               cell: row => (
-                <div className="fw-bold text-dark py-2">
-                  {row.Material?.Nom_Material || `Material #${row.Id_Material}`}
+                <div className="py-2">
+                  <div className="fw-bold text-dark">{row.Material?.Nom_Material || `Material #${row.Id_Material}`}</div>
+                  <small className="text-muted" style={{ fontSize: '0.75rem' }}>
+                    Ingresado: {row.Can_Inicial ?? 0}
+                  </small>
                 </div>
               )
             },
@@ -247,7 +307,9 @@ const CrudEntradaMaterial = ({ userRol }) => {
               name: 'CLASIFICACIÓN',
               selector: row => row.Material?.clasificacion || 'Desechable',
               sortable: true,
-              width: '200px',
+              grow: 1,
+              minWidth: '160px',
+              center: true,
               cell: row => (
                 <span className={`badge ${row.Material?.clasificacion === 'Reutilizable' ? 'bg-info text-dark' : 'bg-secondary'} rounded-pill px-3 py-2 fw-medium`}>
                   {row.Material?.clasificacion || 'Desechable'}
@@ -255,19 +317,12 @@ const CrudEntradaMaterial = ({ userRol }) => {
               )
             },
             {
-              name: 'CANT. INGRESADA',
-              selector: row => row.Can_Inicial,
-              sortable: true,
-              center: true,
-              width: '160px',
-              cell: row => <span className="fw-normal">{row.Can_Inicial}</span>
-            },
-            {
               name: 'CANT. EXISTENTE',
               selector: row => parseFloat(row.Can_Existente ?? row.Can_Inicial) || 0,
               sortable: true,
+              grow: 1,
+              minWidth: '160px',
               center: true,
-              width: '210px',
               cell: row => {
                 const val = parseFloat(row.Can_Existente ?? row.Can_Inicial) || 0;
                 const isDesechable = (row.Material?.clasificacion || 'Desechable').toLowerCase() === 'desechable';
@@ -283,25 +338,25 @@ const CrudEntradaMaterial = ({ userRol }) => {
                 let badgeClass = '';
                 if (isAgotado) {
                   textColor = '#dc2626'; // rojo
-                  badgeClass = 'badge bg-danger text-white rounded-pill px-2 py-1';
+                  badgeClass = 'badge bg-danger text-white rounded-pill px-2 py-0';
                 } else if (isBajo) {
                   textColor = '#d97706'; // amarillo/naranja
-                  badgeClass = 'badge bg-warning text-dark rounded-pill px-2 py-1';
+                  badgeClass = 'badge bg-warning text-dark rounded-pill px-2 py-0';
                 }
 
                 return (
-                  <div className="d-flex align-items-center justify-content-center gap-2 flex-wrap py-1">
-                    <span className="fw-bold" style={{ color: textColor, fontSize: '0.95rem' }}>
+                  <div className="d-flex align-items-center justify-content-center gap-1 flex-wrap py-1">
+                    <span className="fw-bold" style={{ color: textColor, fontSize: '0.9rem' }}>
                       {val}
                     </span>
                     {isAgotado && (
-                      <span className={badgeClass} style={{ fontSize: '0.72rem' }}>
-                        <i className="fa-solid fa-ban me-1"></i>Agotado
+                      <span className={badgeClass} style={{ fontSize: '0.68rem' }}>
+                        Agotado
                       </span>
                     )}
                     {isBajo && (
-                      <span className={badgeClass} style={{ fontSize: '0.72rem' }}>
-                        <i className="fa-solid fa-triangle-exclamation me-1"></i>Por acabarse
+                      <span className={badgeClass} style={{ fontSize: '0.68rem' }}>
+                        Bajo
                       </span>
                     )}
                   </div>
@@ -312,12 +367,16 @@ const CrudEntradaMaterial = ({ userRol }) => {
               name: 'ESTADO',
               sortable: true,
               center: true,
-              width: '150px',
+              width: '140px',
               cell: row => (
                 <span
                   className={`status-badge ${row.Estado === 'Activo' ? 'status-badge-activo' : 'status-badge-inactivo'}`}
                   style={{ cursor: 'pointer' }}
-                  onClick={() => toggleEstado(row)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleEstado(row);
+                  }}
+                  title="Clic para cambiar estado"
                 >
                   {row.Estado}
                 </span>
@@ -326,9 +385,17 @@ const CrudEntradaMaterial = ({ userRol }) => {
             {
               name: 'ACCIONES',
               center: true,
-              width: '140px',
+              width: '150px',
               cell: row => (
                 <div className="d-flex gap-1 justify-content-center">
+                  <button
+                    type="button"
+                    className="btn-action btn-action-view"
+                    onClick={() => onViewDetails(row)}
+                    title="Ver detalles"
+                  >
+                    <i className="fa-solid fa-eye"></i>
+                  </button>
                   <button
                     className="btn-action btn-action-edit"
                     onClick={() => setRowToEdit(row)}
@@ -339,7 +406,8 @@ const CrudEntradaMaterial = ({ userRol }) => {
                     <i className="fa-solid fa-pencil"></i>
                   </button>
                   <button
-                    className="btn-action btn-action-view"
+                    className="btn-action"
+                    style={{ background: 'rgba(100,116,139,0.15)', color: '#475569' }}
                     onClick={() => openHistoryModal(row)}
                     data-bs-toggle="modal"
                     data-bs-target="#modalHistorialMaterial"

@@ -129,8 +129,8 @@ const EntradaForm = ({ hideModal, refreshList, rowToEdit, userRol }) => {
         });
       }
 
+      if (hideModal) hideModal();
       if (refreshList) await refreshList();
-      hideModal();
     } catch (error) {
       console.error("Error al guardar Entrada:", error);
       MySwal.fire({

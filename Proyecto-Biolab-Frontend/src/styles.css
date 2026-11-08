@@ -4,16 +4,22 @@
   --primary-rgb: 5, 150, 105;
   --secondary-color: #0f172a;
   --accent-color: #10b981;
+  --accent-cyan: #06b6d4;
+  --accent-blue: #3b82f6;
+  --accent-purple: #8b5cf6;
+  --gradient-primary: linear-gradient(135deg, #059669 0%, #0d9488 50%, #0284c7 100%);
+  --gradient-sidebar: linear-gradient(180deg, #0b1329 0%, #111e3b 50%, #0f172a 100%);
   --text-dark: #1e293b;
   --text-muted: #64748b;
   --radius-lg: 20px;
   --radius-md: 12px;
   --shadow-premium: 0 20px 25px -5px rgba(0,0,0,0.08), 0 10px 10px -5px rgba(0,0,0,0.04);
+  --shadow-colored: 0 10px 25px -5px rgba(5, 150, 105, 0.28);
 }
 
 html, body {
   font-family: 'Outfit', sans-serif;
-  background: #f1f5f9;
+  background: linear-gradient(135deg, #f0fdf4 0%, #f8fafc 40%, #f0fdfa 100%) fixed;
   color: var(--text-dark);
   min-height: 100vh;
   margin: 0;
@@ -25,6 +31,10 @@ html, body {
 @media (min-width: 1200px) {
   body.has-sidebar {
     padding-left: 280px;
+    transition: padding-left 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  body.has-sidebar.sidebar-collapsed {
+    padding-left: 76px;
   }
 }
 
@@ -55,10 +65,10 @@ html, body {
   left: -300px;
   width: 280px;
   height: 100vh;
-  background: var(--secondary-color);
+  background: var(--gradient-sidebar);
   color: white;
   z-index: 5000002;
-  transition: left 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: left 0.35s cubic-bezier(0.16, 1, 0.3, 1), width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   overflow-y: auto;
   overflow-x: hidden;
   border-right: 1px solid rgba(255,255,255,0.08);
@@ -68,9 +78,54 @@ html, body {
   left: 0;
 }
 
+/* Botón para colapsar en pantallas grandes */
+.sidebar-collapse-btn {
+  position: fixed;
+  top: 76px;
+  left: 264px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+  border: 2.5px solid #ffffff;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  z-index: 5000006;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+  transition: left 0.35s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s ease, background 0.2s ease;
+}
+
+.sidebar-collapse-btn.is-collapsed {
+  left: 60px;
+}
+
+.sidebar-collapse-btn:hover {
+  background: linear-gradient(135deg, #047857 0%, #059669 100%);
+  transform: scale(1.15);
+  box-shadow: 0 6px 18px rgba(5, 150, 105, 0.4);
+}
+
 @media (min-width: 1200px) {
   .sidebar-glass {
     left: 0 !important;
+  }
+  .sidebar-glass.sidebar-collapsed-panel {
+    width: 76px !important;
+  }
+  .sidebar-glass.sidebar-collapsed-panel .sidebar-label {
+    display: none !important;
+  }
+  .sidebar-glass.sidebar-collapsed-panel .nav-link {
+    justify-content: center !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+  .sidebar-glass.sidebar-collapsed-panel .sub-link {
+    margin-left: 0 !important;
   }
   .sidebar-trigger {
     display: none !important;
@@ -92,10 +147,10 @@ html, body {
 }
 
 .sidebar-glass .nav-link {
-  color: rgba(255,255,255,0.7) !important;
-  padding: 0.45rem 0.75rem !important;
+  color: rgba(255,255,255,0.75) !important;
+  padding: 0.5rem 0.85rem !important;
   font-size: 0.85rem !important;
-  border-radius: 10px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   transition: all 0.2s ease;
@@ -104,34 +159,32 @@ html, body {
 
 .sidebar-glass .nav-link:hover {
   color: white !important;
-  background: rgba(255,255,255,0.1) !important;
+  background: linear-gradient(90deg, rgba(5,150,105,0.25) 0%, rgba(16,185,129,0.15) 100%) !important;
+  border-left: 3px solid var(--accent-color);
+  padding-left: calc(0.85rem - 3px) !important;
 }
 
 .main-header {
-  min-height: 60px;
+  min-height: 64px;
   display: flex;
   align-items: center;
-  background: rgba(255,255,255,0.9);
+  background: rgba(255,255,255,0.92);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(0,0,0,0.06);
+  border-bottom: 2px solid rgba(5, 150, 105, 0.12);
   position: sticky;
   top: 0;
   z-index: 3000000;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-}
-
-body.modal-open .main-header {
-  visibility: hidden !important;
-  opacity: 0 !important;
+  box-shadow: 0 4px 16px rgba(5, 150, 105, 0.06), 0 1px 3px rgba(0,0,0,0.03);
 }
 
 .card {
-  background: rgba(255,255,255,0.85) !important;
+  background: rgba(255,255,255,0.95) !important;
   backdrop-filter: blur(10px);
   border-radius: var(--radius-lg) !important;
-  border: 1px solid rgba(255,255,255,0.5) !important;
-  box-shadow: var(--shadow-premium) !important;
+  border: 1px solid rgba(5, 150, 105, 0.1) !important;
+  box-shadow: 0 10px 30px -5px rgba(15, 23, 42, 0.08), 0 4px 12px -2px rgba(5, 150, 105, 0.05) !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
 }
 
 .container-fluid {
@@ -147,55 +200,92 @@ body.modal-open .main-header {
 .text-primary { color: var(--primary-color) !important; }
 
 .btn-primary {
-  background-color: var(--primary-color) !important;
-  border-color: var(--primary-color) !important;
+  background: linear-gradient(135deg, #059669 0%, #0d9488 100%) !important;
+  border: none !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  box-shadow: 0 4px 14px rgba(5, 150, 105, 0.35) !important;
+  transition: all 0.2s ease !important;
 }
 
 .btn-primary:hover {
-  background-color: var(--primary-hover) !important;
-  border-color: var(--primary-hover) !important;
+  background: linear-gradient(135deg, #047857 0%, #0f766e 100%) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 20px rgba(5, 150, 105, 0.45) !important;
+  color: #ffffff !important;
 }
 
 .btn-outline-primary {
   color: var(--primary-color) !important;
   border-color: var(--primary-color) !important;
+  font-weight: 600 !important;
+  transition: all 0.2s ease !important;
 }
 
 .btn-outline-primary:hover {
   background-color: var(--primary-color) !important;
   color: white !important;
+  transform: translateY(-1px) !important;
 }
 
 .modal-header.bg-primary {
-  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%) !important;
+  background: linear-gradient(135deg, #059669 0%, #0d9488 100%) !important;
   border-bottom: none;
 }
 
-.rdt_Table { background: transparent !important; }
+.rdt_Table {
+  background: transparent !important;
+  width: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.rdt_TableHead,
+.rdt_TableBody {
+  width: 100% !important;
+}
 
 .rdt_TableHeadRow {
-  background: var(--secondary-color) !important;
+  background: linear-gradient(90deg, #0f172a 0%, #1e293b 100%) !important;
   color: white !important;
-  min-height: 50px !important;
+  min-height: 52px !important;
+  display: flex !important;
+  width: 100% !important;
+  align-items: center !important;
+  border-bottom: 2px solid rgba(5, 150, 105, 0.2) !important;
 }
 
 .rdt_TableHeadRow [role="columnheader"] {
   color: white !important;
   font-weight: 700 !important;
   text-transform: uppercase;
-  font-size: 0.78rem !important;
+  font-size: 0.8rem !important;
+  letter-spacing: 0.6px;
+  white-space: nowrap !important;
+  overflow: visible !important;
+  text-overflow: unset !important;
 }
 
 .rdt_TableRow {
-  min-height: 56px !important;
-  border-bottom: 1px solid #f1f5f9 !important;
+  min-height: 60px !important;
+  border-bottom: 1px solid #eef2f6 !important;
   transition: all 0.2s ease;
   font-size: 0.88rem !important;
+  display: flex !important;
+  width: 100% !important;
+  align-items: center !important;
 }
 
 .rdt_TableRow:hover {
-  background: rgba(5,150,105,0.04) !important;
+  background: linear-gradient(90deg, rgba(5,150,105,0.06) 0%, rgba(6,182,212,0.04) 100%) !important;
   box-shadow: inset 4px 0 0 var(--primary-color);
+}
+
+.rdt_TableCell,
+.rdt_TableCol {
+  padding-left: 14px !important;
+  padding-right: 14px !important;
+  overflow: visible !important;
 }
 
 .rdt_Pagination {
@@ -217,7 +307,31 @@ body.modal-open .main-header {
   backdrop-filter: blur(6px);
 }
 
-.swal2-container { z-index: 10000000 !important; }
+/* SALVAVIDAS GLOBAL: Si no hay ningún modal con clase .show o el body no tiene modal-open, NINGÚN backdrop puede bloquear la pantalla */
+body:not(.modal-open) .modal-backdrop,
+body:not(:has(.modal.show)) .modal-backdrop,
+.modal-backdrop:not(.show) {
+  display: none !important;
+  pointer-events: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+/* Si no hay modal abierto ni SweetAlert activo, el body NUNCA debe estar bloqueado para scroll e interacción */
+body:not(.modal-open):not(.swal2-shown),
+body:not(:has(.modal.show)):not(.swal2-shown) {
+  overflow: auto !important;
+  overflow-y: auto !important;
+  pointer-events: auto !important;
+}
+
+/* Dropdowns de Bootstrap siempre al frente y totalmente interactivos */
+.dropdown-menu {
+  z-index: 10000002 !important;
+  pointer-events: auto !important;
+}
+
+.swal2-container { z-index: 10000005 !important; }
 
 .image-preview-container { position: relative; display: inline-block; }
 
@@ -338,60 +452,82 @@ body.modal-open .main-header {
    STATUS BADGE (Activo / Inactivo)
    ========================================== */
 .status-badge {
-  padding: 5px 14px;
+  padding: 6px 14px;
   border-radius: 50px;
   font-weight: 700;
   font-size: 0.75rem;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  display: inline-block;
+  letter-spacing: 0.6px;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  white-space: nowrap !important;
+  word-break: keep-all !important;
+  min-width: 84px !important;
+  text-align: center !important;
+  transition: all 0.2s ease !important;
+  cursor: pointer;
+}
+
+.status-badge:hover {
+  transform: translateY(-1px);
 }
 
 .status-badge-activo {
-  background: rgba(5, 150, 105, 0.12);
-  color: #059669;
+  background: linear-gradient(135deg, rgba(5, 150, 105, 0.16) 0%, rgba(16, 185, 129, 0.1) 100%) !important;
+  color: #047857 !important;
+  border: 1px solid rgba(5, 150, 105, 0.3) !important;
+  box-shadow: 0 2px 8px rgba(5, 150, 105, 0.15) !important;
 }
 
 .status-badge-inactivo {
-  background: rgba(239, 68, 68, 0.1);
-  color: #dc2626;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.14) 0%, rgba(220, 38, 38, 0.08) 100%) !important;
+  color: #dc2626 !important;
+  border: 1px solid rgba(239, 68, 68, 0.3) !important;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.12) !important;
 }
 
 /* ==========================================
    BTN-ACTION (Lapiz, Ojito, etc.) 
    ========================================== */
 .btn-action {
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border: none;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   background: rgba(100, 116, 139, 0.1);
   color: #64748b;
-  font-size: 0.85rem;
-  margin: 0 2px;
+  font-size: 0.88rem;
+  margin: 0 3px;
+  flex-shrink: 0 !important;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
 }
 
 .btn-action:hover {
-  transform: scale(1.15);
+  transform: translateY(-2px) scale(1.1);
   color: white;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
-.btn-action-view { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
-.btn-action-view:hover { background: #3b82f6; }
+.btn-action-view { background: rgba(59, 130, 246, 0.12); color: #2563eb; }
+.btn-action-view:hover { background: #2563eb; color: white; }
 
-.btn-action-edit { background: rgba(245, 158, 11, 0.1); color: #d97706; }
-.btn-action-edit:hover { background: #f59e0b; }
+.btn-action-edit { background: rgba(245, 158, 11, 0.12); color: #d97706; }
+.btn-action-edit:hover { background: #f59e0b; color: white; }
 
-.btn-action-delete { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
-.btn-action-delete:hover { background: #ef4444; }
+.btn-action-delete { background: rgba(239, 68, 68, 0.12); color: #dc2626; }
+.btn-action-delete:hover { background: #ef4444; color: white; }
 
-.btn-action-success { background: rgba(5, 150, 105, 0.1); color: #059669; }
-.btn-action-success:hover { background: #059669; }
+.btn-action-success { background: rgba(5, 150, 105, 0.12); color: #059669; }
+.btn-action-success:hover { background: #059669; color: white; }
+
+.btn-action-primary { background: rgba(15, 23, 42, 0.1); color: var(--secondary-color); }
+.btn-action-primary:hover { background: var(--secondary-color); color: white; }
 
 /* ==========================================
    MODAL PDF / CAROUSEL OVERLAY
@@ -591,15 +727,28 @@ body.modal-open .main-header {
    SWEETALERT2 — SISTEMA GLOBAL DE ALERTAS MODERNAS
    ========================================== */
 .swal2-container {
-  z-index: 10000000 !important;
+  z-index: 10000005 !important;
   font-family: 'Outfit', sans-serif !important;
 }
 
+/* Modales de Confirmación y Alertas Regulares: backdrop oscuro elegante */
 .swal2-container.swal2-backdrop-show,
-.swal2-container.swal2-noanimation {
+.swal2-container:not(.swal2-bottom-end):not(.swal2-top-end):not(.swal2-top-start):not(.swal2-bottom-start) {
   background: rgba(15, 23, 42, 0.65) !important;
   backdrop-filter: blur(8px) !important;
   -webkit-backdrop-filter: blur(8px) !important;
+}
+
+/* Toasts flotantes en esquinas: sin backdrop */
+.swal2-container.swal2-top-end,
+.swal2-container.swal2-top-start,
+.swal2-container.swal2-bottom-end,
+.swal2-container.swal2-bottom-start {
+  background: transparent !important;
+  background-color: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
 }
 
 /* Modal Popup Principal */
@@ -610,7 +759,16 @@ body.modal-open .main-header {
   border: 1px solid rgba(226, 232, 240, 0.8) !important;
   box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.25), 0 10px 25px -5px rgba(0, 0, 0, 0.08) !important;
   padding: 2.2rem 2rem !important;
-  animation: swalPopupScale 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+/* Animación de apertura: sólo al abrir (.swal2-show) */
+.swal2-popup.swal2-show {
+  animation: swalPopupScale 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+/* Animación de cierre: garantiza que animationend se dispare siempre y no bloquee el desmonte de SweetAlert */
+.swal2-popup.swal2-hide {
+  animation: swalPopupHide 0.15s cubic-bezier(0.4, 0, 1, 1) forwards !important;
 }
 
 @keyframes swalPopupScale {
@@ -621,6 +779,17 @@ body.modal-open .main-header {
   to {
     opacity: 1;
     transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes swalPopupHide {
+  from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95) translateY(8px);
   }
 }
 

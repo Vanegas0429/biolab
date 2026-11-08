@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import apiAxios from "../api/axiosConfig.js";
 import DataTable from 'react-data-table-component';
 import EstadoForm from './EstadoForm.jsx';
+import { safeCloseModal } from '../utils/modalHelper.js';
 
 const CrudEstado = () => {
   const [Estado, setEstado] = useState([]);
@@ -12,8 +13,11 @@ const CrudEstado = () => {
   useEffect(() => {
     getAllEstado();
 
-    // Auto-refresh cada 15 segundos
+    // Auto-refresh cada 15 segundos si no hay modales abiertos
     const interval = setInterval(() => {
+      if (document.body.classList.contains('modal-open') || document.querySelector('.modal.show') || document.querySelector('.swal2-container')) {
+        return;
+      }
       getAllEstado();
     }, 15000);
 
@@ -32,6 +36,7 @@ const CrudEstado = () => {
   };
 
   const hideModal = () => {
+    safeCloseModal('modalEstado');
     const btn = document.getElementById('closeModalEstado');
     if (btn) btn.click();
     setRowToEdit(null);
