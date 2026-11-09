@@ -485,12 +485,26 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
       setRecursosActividad(data);
 
       const equiposPermitidos = data?.resumen?.equipos ?? [];
-      const materialesPermitidos = data?.resumen?.materiales ?? [];
-      const reactivosPermitidos = data?.resumen?.reactivos ?? [];
+      const materialesDetalle = data?.resumen?.materialesDetalle ?? [];
+      const reactivosDetalle = data?.resumen?.reactivosDetalle ?? [];
 
       setEquipos((prev) => prev.filter((e) => equiposPermitidos.includes(Number(e.Id_Equipo))));
-      setMateriales((prev) => prev.filter((m) => materialesPermitidos.includes(Number(m.Id_Material))));
-      setReactivos((prev) => prev.filter((r) => reactivosPermitidos.includes(Number(r.Id_Reactivo))));
+      setMateriales((prev) =>
+        prev.filter((m) => {
+          if (!data?.resumen?.materiales?.includes(Number(m.Id_Material))) return false;
+          if (isViewOnly) return true;
+          const info = materialesDetalle.find((d) => Number(d.Id_Material) === Number(m.Id_Material));
+          return !info || Number(info.Can_Material) > 0;
+        })
+      );
+      setReactivos((prev) =>
+        prev.filter((r) => {
+          if (!data?.resumen?.reactivos?.includes(Number(r.Id_Reactivo))) return false;
+          if (isViewOnly) return true;
+          const info = reactivosDetalle.find((d) => Number(d.Id_Reactivo) === Number(r.Id_Reactivo));
+          return !info || (Number(info.cantidad_existente) || 0) > 0;
+        })
+      );
     } catch (error) {
       console.error("Error consultando recursos:", error.response?.data ?? error.message);
       Swal.fire(
@@ -553,25 +567,47 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
     const grupo = equiposAgrupados.find((g) => g.nombre === nombre);
     if (!grupo) return;
 
-    // Verificar cuántos ya tenemos seleccionados de este nombre
-    const yaSeleccionados = equipos.filter((e) => {
-      const info = equiposDisponibles.find((ed) => Number(ed.Id_Equipo) === Number(e.Id_Equipo));
-      return info?.nombre === nombre;
-    });
+    setEquipos((prev) => {
+      const getNombre = (e) => {
+        const info = (equiposDisponibles || []).find((ed) => Number(ed.Id_Equipo) === Number(e.Id_Equipo));
+        return (info?.nombre || e.Nom_Equipo || `Equipo ${e.Id_Equipo || ''}`).trim().toLowerCase();
+      };
+      const targetName = nombre.trim().toLowerCase();
 
-    if (yaSeleccionados.length < grupo.items.length) {
-      // Buscar el siguiente ID disponible en el grupo que no esté ya seleccionado
+      const yaSeleccionados = prev.filter((e) => getNombre(e) === targetName);
+      if (yaSeleccionados.length >= grupo.items.length) return prev;
+
       const nextItem = grupo.items.find(
-        (item) => !equipos.some((e) => Number(e.Id_Equipo) === Number(item.Id_Equipo))
+        (item) => !prev.some((e) => Number(e.Id_Equipo) === Number(item.Id_Equipo))
       );
-      if (nextItem) {
-        setEquipos((prev) => [...prev, { Id_Equipo: Number(nextItem.Id_Equipo), Can_Equipos: 1 }]);
+      if (!nextItem) return prev;
+
+      const newItem = { Id_Equipo: Number(nextItem.Id_Equipo), Can_Equipos: 1 };
+
+      // Mantener la contigüidad y orden del grupo en el array
+      let lastIndex = -1;
+      for (let i = prev.length - 1; i >= 0; i--) {
+        if (getNombre(prev[i]) === targetName) {
+          lastIndex = i;
+          break;
+        }
       }
-    }
+
+      if (lastIndex === -1) {
+        return [...prev, newItem];
+      }
+
+      const copy = [...prev];
+      copy.splice(lastIndex + 1, 0, newItem);
+      return copy;
+    });
   };
 
   const actualizarCantidadEquipoPorNombre = (nombre, nuevaCantidad) => {
-    const cant = Number(nuevaCantidad) || 0;
+    if (nuevaCantidad === "") return;
+    let cant = parseInt(nuevaCantidad, 10);
+    if (isNaN(cant) || cant < 1) cant = 1;
+
     const grupo = equiposAgrupados.find((g) => g.nombre === nombre);
     if (!grupo) return;
 
@@ -581,14 +617,8 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
         `Solo hay ${grupo.items.length} equipos de este tipo disponibles.`,
         "warning"
       );
-      return;
+      cant = grupo.items.length;
     }
-
-    // Filtrar los que NO son de este nombre para mantenerlos
-    const otrosEquipos = equipos.filter((e) => {
-      const info = equiposDisponibles.find((ed) => Number(ed.Id_Equipo) === Number(e.Id_Equipo));
-      return info?.nombre !== nombre;
-    });
 
     // Tomar los primeros N items del grupo disponible
     const nuevosItems = grupo.items.slice(0, cant).map((item) => ({
@@ -596,21 +626,60 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
       Can_Equipos: 1,
     }));
 
-    setEquipos([...otrosEquipos, ...nuevosItems]);
+    setEquipos((prev) => {
+      const getNombre = (e) => {
+        const info = (equiposDisponibles || []).find((ed) => Number(ed.Id_Equipo) === Number(e.Id_Equipo));
+        return (info?.nombre || e.Nom_Equipo || `Equipo ${e.Id_Equipo || ''}`).trim().toLowerCase();
+      };
+      const targetName = nombre.trim().toLowerCase();
+
+      const firstIndex = prev.findIndex((e) => getNombre(e) === targetName);
+      if (firstIndex === -1) {
+        return [...prev, ...nuevosItems];
+      }
+
+      // Reemplazar exactamente en la posición donde estaba el primer elemento del grupo para no moverlo
+      const result = [];
+      let inserted = false;
+      for (let i = 0; i < prev.length; i++) {
+        if (getNombre(prev[i]) === targetName) {
+          if (!inserted) {
+            result.push(...nuevosItems);
+            inserted = true;
+          }
+        } else {
+          result.push(prev[i]);
+        }
+      }
+
+      if (!inserted) {
+        result.push(...nuevosItems);
+      }
+
+      return result;
+    });
   };
 
   const eliminarEquipoPorNombre = (nombre) => {
-    setEquipos((prev) =>
-      prev.filter((e) => {
-        const info = equiposDisponibles.find((ed) => Number(ed.Id_Equipo) === Number(e.Id_Equipo));
-        return info?.nombre !== nombre;
-      })
-    );
+    setEquipos((prev) => {
+      const getNombre = (e) => {
+        const info = (equiposDisponibles || []).find((ed) => Number(ed.Id_Equipo) === Number(e.Id_Equipo));
+        return (info?.nombre || e.Nom_Equipo || `Equipo ${e.Id_Equipo || ''}`).trim().toLowerCase();
+      };
+      const targetName = nombre.trim().toLowerCase();
+      return prev.filter((e) => getNombre(e) !== targetName);
+    });
   };
 
   const agregarMaterial = (idMaterial) => {
     const id = Number(idMaterial);
     if (!id) return;
+
+    const info = todosMaterialesDetalle.find((m) => Number(m.Id_Material) === id);
+    if (!info || Number(info.Can_Material) <= 0) {
+      Swal.fire("Sin stock", "Este material no tiene unidades disponibles", "warning");
+      return;
+    }
 
     const existe = materiales.some((m) => Number(m.Id_Material) === id);
     if (existe) return;
@@ -623,7 +692,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
     const cant = Number(cantidad) || 0;
 
     // Buscar el material en los detalles de recursos para saber el stock real
-    const materialInfo = materialesDisponibles.find(m => Number(m.Id_Material) === id);
+    const materialInfo = todosMaterialesDetalle.find((m) => Number(m.Id_Material) === id);
     const stockDisponible = materialInfo ? Number(materialInfo.Can_Material) : 99999;
 
     if (cant > stockDisponible) {
@@ -648,6 +717,12 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
     const id = Number(idReactivo);
     if (!id) return;
 
+    const info = todosReactivosDetalle.find((r) => Number(r.Id_Reactivo) === id);
+    if (!info || (Number(info.cantidad_existente) || 0) <= 0) {
+      Swal.fire("Sin stock", "Este reactivo no tiene stock disponible", "warning");
+      return;
+    }
+
     const existe = reactivos.some((r) => Number(r.Id_Reactivo) === id);
     if (existe) return;
 
@@ -657,7 +732,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
   const actualizarCantidadReactivo = (idReactivo, cantidad) => {
     const id = Number(idReactivo);
     const cant = parseDecimal(cantidad);
-    const info = reactivosDisponibles.find(r => Number(r.Id_Reactivo) === id);
+    const info = todosReactivosDetalle.find((r) => Number(r.Id_Reactivo) === id);
     const stockDisponible = info && info.cantidad_existente !== undefined ? Number(info.cantidad_existente) : 99999;
 
     if (cant > stockDisponible) {
@@ -728,20 +803,20 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
   const equiposDisponibles = useMemo(() => recursosActividad?.resumen?.equiposDetalle ?? [], [recursosActividad]);
 
   const equiposAgrupados = useMemo(() => {
-    const groups = {};
+    const groupsMap = new Map();
     (equiposDisponibles || []).forEach((eq) => {
       if (!eq) return;
       const name = eq.nombre || `Equipo ${eq.Id_Equipo || ''}`;
-      if (!groups[name]) {
-        groups[name] = { nombre: name, items: [] };
+      if (!groupsMap.has(name)) {
+        groupsMap.set(name, { nombre: name, items: [] });
       }
-      groups[name].items.push(eq);
+      groupsMap.get(name).items.push(eq);
     });
-    return Object.values(groups);
+    return Array.from(groupsMap.values()).filter((g) => g.items && g.items.length > 0);
   }, [equiposDisponibles]);
 
   const selectedEquiposAgrupados = useMemo(() => {
-    const groups = {};
+    const groupsMap = new Map();
     (equipos || []).forEach((e) => {
       if (!e) return;
       const dbInfo = (equiposDisponibles || []).find(
@@ -755,16 +830,47 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
       };
 
       const name = info.nombre || `Equipo ${e.Id_Equipo || ''}`;
-      if (!groups[name]) {
-        groups[name] = { nombre: name, items: [] };
+      if (!groupsMap.has(name)) {
+        groupsMap.set(name, { nombre: name, items: [] });
       }
-      groups[name].items.push({ ...e, info });
+      groupsMap.get(name).items.push({ ...e, info });
     });
-    return Object.values(groups);
+    return Array.from(groupsMap.values());
   }, [equipos, equiposDisponibles]);
 
-  const materialesDisponibles = useMemo(() => recursosActividad?.resumen?.materialesDetalle ?? [], [recursosActividad]);
-  const reactivosDisponibles = useMemo(() => recursosActividad?.resumen?.reactivosDetalle ?? [], [recursosActividad]);
+  const todosMaterialesDetalle = useMemo(() => recursosActividad?.resumen?.materialesDetalle ?? [], [recursosActividad]);
+  const todosReactivosDetalle = useMemo(() => recursosActividad?.resumen?.reactivosDetalle ?? [], [recursosActividad]);
+
+  // Solo materiales con stock > 0 para selección y despliegue
+  const materialesDisponibles = useMemo(() => {
+    return (todosMaterialesDetalle || []).filter((m) => Number(m.Can_Material) > 0);
+  }, [todosMaterialesDetalle]);
+
+  // Solo reactivos con stock > 0 para selección y despliegue
+  const reactivosDisponibles = useMemo(() => {
+    return (todosReactivosDetalle || []).filter((r) => (Number(r.cantidad_existente) || 0) > 0);
+  }, [todosReactivosDetalle]);
+
+  // Limpiar automáticamente de la selección cualquier material o reactivo con stock 0
+  useEffect(() => {
+    if (isViewOnly) return;
+    if (todosMaterialesDetalle.length > 0) {
+      setMateriales((prev) =>
+        prev.filter((item) => {
+          const info = todosMaterialesDetalle.find((m) => Number(m.Id_Material) === Number(item.Id_Material));
+          return !info || Number(info.Can_Material) > 0;
+        })
+      );
+    }
+    if (todosReactivosDetalle.length > 0) {
+      setReactivos((prev) =>
+        prev.filter((item) => {
+          const info = todosReactivosDetalle.find((r) => Number(r.Id_Reactivo) === Number(item.Id_Reactivo));
+          return !info || (Number(info.cantidad_existente) || 0) > 0;
+        })
+      );
+    }
+  }, [todosMaterialesDetalle, todosReactivosDetalle, isViewOnly]);
 
   useEffect(() => {
     if (!Id_Estado && nombreEstadoActual) {
@@ -776,25 +882,31 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
   }, [Id_Estado, nombreEstadoActual, catalogoEstados]);
 
   const seleccionarTodosEquipos = () => {
-    const nuevosEquipos = equiposDisponibles.map(eq => ({
-      Id_Equipo: Number(eq.Id_Equipo),
-      Can_Equipos: 1
-    }));
+    const idsValidos = new Set();
+    equiposAgrupados.forEach((g) => {
+      g.items.forEach((item) => idsValidos.add(Number(item.Id_Equipo)));
+    });
+    const nuevosEquipos = equiposDisponibles
+      .filter((eq) => idsValidos.has(Number(eq.Id_Equipo)))
+      .map((eq) => ({
+        Id_Equipo: Number(eq.Id_Equipo),
+        Can_Equipos: 1,
+      }));
     setEquipos(nuevosEquipos);
   };
 
   const seleccionarTodosMateriales = () => {
-    const nuevosMateriales = materialesDisponibles.map(mat => ({
+    const nuevosMateriales = materialesDisponibles.map((mat) => ({
       Id_Material: Number(mat.Id_Material),
-      Can_Materiales: 1
+      Can_Materiales: 1,
     }));
     setMateriales(nuevosMateriales);
   };
 
   const seleccionarTodosReactivos = () => {
-    const nuevosReactivos = reactivosDisponibles.map(reac => ({
+    const nuevosReactivos = reactivosDisponibles.map((reac) => ({
       Id_Reactivo: Number(reac.Id_Reactivo),
-      Can_Reactivo: 0.1
+      Can_Reactivo: 0.1,
     }));
     setReactivos(nuevosReactivos);
   };
@@ -839,7 +951,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
 
       // Validar cantidades de materiales contra stock
       for (const mat of materiales) {
-        const info = materialesDisponibles.find(m => Number(m.Id_Material) === Number(mat.Id_Material));
+        const info = todosMaterialesDetalle.find(m => Number(m.Id_Material) === Number(mat.Id_Material));
         if (info && Number(mat.Can_Materiales) > Number(info.Can_Material)) {
           Swal.fire("Error de Stock", `El material '${info.Nom_Material}' solo tiene ${info.Can_Material} unidades disponibles.`, "error");
           return;
@@ -848,7 +960,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
 
       // Validar cantidades de reactivos contra stock
       for (const reac of reactivos) {
-        const info = reactivosDisponibles.find(r => Number(r.Id_Reactivo) === Number(reac.Id_Reactivo));
+        const info = todosReactivosDetalle.find(r => Number(r.Id_Reactivo) === Number(reac.Id_Reactivo));
         const cantReac = parseDecimal(reac.Can_Reactivo);
         if (info && cantReac > Number(info.cantidad_existente)) {
           Swal.fire("Error de Stock", `El reactivo '${info.Nom_reactivo || info.Nom_Reactivo}' solo tiene ${info.cantidad_existente} ${info.Uni_Medida || ''} disponibles.`, "error");
@@ -877,11 +989,21 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
           : [],
       materiales:
         Tip_Reserva === "Practica"
-          ? materiales.filter((m) => Number(m.Can_Materiales) > 0)
+          ? materiales.filter((m) => {
+              const info = todosMaterialesDetalle.find((md) => Number(md.Id_Material) === Number(m.Id_Material));
+              const hasStock = info ? Number(info.Can_Material) > 0 : true;
+              return Number(m.Can_Materiales) > 0 && hasStock;
+            })
           : [],
       reactivos:
         Tip_Reserva === "Practica"
-          ? reactivos.filter((r) => parseDecimal(r.Can_Reactivo) > 0).map(r => ({ ...r, Can_Reactivo: parseDecimal(r.Can_Reactivo) }))
+          ? reactivos
+              .filter((r) => {
+                const info = todosReactivosDetalle.find((rd) => Number(rd.Id_Reactivo) === Number(r.Id_Reactivo));
+                const hasStock = info ? (Number(info.cantidad_existente) || 0) > 0 : true;
+                return parseDecimal(r.Can_Reactivo) > 0 && hasStock;
+              })
+              .map((r) => ({ ...r, Can_Reactivo: parseDecimal(r.Can_Reactivo) }))
           : [],
     };
 
@@ -1256,11 +1378,11 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
                   <option value="">Selecciona un equipo</option>
                   {equiposAgrupados.map((g) => (
                     <option key={g.nombre} value={g.nombre}>
-                      {g.nombre}
+                      {g.nombre} ({g.items.length} disponibles)
                     </option>
                   ))}
                 </select>
-                {equiposDisponibles.length > 0 && (
+                {equiposAgrupados.length > 0 && (
                   <button
                     type="button"
                     className="btn btn-sm btn-outline-primary mt-2 w-100"
@@ -1286,7 +1408,7 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
                   <option value="">Selecciona un material</option>
                   {materialesDisponibles.map((mat) => (
                     <option key={mat.Id_Material} value={mat.Id_Material}>
-                      {mat.Nom_Material}
+                      {mat.Nom_Material} (Stock: {mat.Can_Material})
                     </option>
                   ))}
                 </select>
@@ -1337,7 +1459,13 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
                 <div className="col-md-4">
                   <h6>Equipos seleccionados</h6>
                   {selectedEquiposAgrupados.length === 0 && <p className="text-muted">No hay equipos seleccionados</p>}
-                  {selectedEquiposAgrupados.map((group) => {
+                  {selectedEquiposAgrupados
+                    .filter((group) => {
+                      if (isViewOnly) return true;
+                      const availableGroup = equiposAgrupados.find(g => g.nombre === group.nombre);
+                      return availableGroup ? availableGroup.items.length > 0 : group.items.length > 0;
+                    })
+                    .map((group) => {
                     const availableGroup = equiposAgrupados.find(g => g.nombre === group.nombre);
                     const maxStock = availableGroup ? availableGroup.items.length : group.items.length;
                     const firstItem = group.items[0];
@@ -1398,8 +1526,14 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
                 <div className="col-md-4">
                   <h6>Materiales seleccionados</h6>
                   {materiales.length === 0 && <p className="text-muted">No hay materiales seleccionados</p>}
-                  {materiales.map((item) => {
-                    const info = materialesDisponibles.find(m => Number(m.Id_Material) === Number(item.Id_Material));
+                  {materiales
+                    .filter((item) => {
+                      if (isViewOnly) return true;
+                      const info = todosMaterialesDetalle.find(m => Number(m.Id_Material) === Number(item.Id_Material));
+                      return !info || Number(info.Can_Material) > 0;
+                    })
+                    .map((item) => {
+                    const info = todosMaterialesDetalle.find(m => Number(m.Id_Material) === Number(item.Id_Material));
                     const maxStock = info ? Number(info.Can_Material) : 0;
 
                     return (
@@ -1454,8 +1588,14 @@ const ReservaForm = ({ hideModal, rowToEdit = {}, estados = [], isViewOnly = fal
                 <div className="col-md-4">
                   <h6>Reactivos seleccionados</h6>
                   {reactivos.length === 0 && <p className="text-muted">No hay reactivos seleccionados</p>}
-                  {reactivos.map((item) => {
-                    const info = reactivosDisponibles.find(r => Number(r.Id_Reactivo) === Number(item.Id_Reactivo)) || {};
+                  {reactivos
+                    .filter((item) => {
+                      if (isViewOnly) return true;
+                      const info = todosReactivosDetalle.find(r => Number(r.Id_Reactivo) === Number(item.Id_Reactivo));
+                      return !info || (Number(info.cantidad_existente) || 0) > 0;
+                    })
+                    .map((item) => {
+                    const info = todosReactivosDetalle.find(r => Number(r.Id_Reactivo) === Number(item.Id_Reactivo)) || {};
                     const stockDisponible = info.cantidad_existente !== undefined ? info.cantidad_existente : 0;
                     const uniMedida = info.Uni_Medida || item.Uni_Medida || '';
 
