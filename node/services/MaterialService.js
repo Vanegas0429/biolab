@@ -22,18 +22,15 @@ class MaterialService {
         return await MaterialModel.create(data)
     }
     async update(id, data) {
+        await this.getById(id);
         if (data.Nom_Material && typeof data.Nom_Material === 'string') {
             const trimmed = data.Nom_Material.trim();
             if (trimmed) {
                 data.Nom_Material = trimmed.charAt(0).toUpperCase() + trimmed.slice(1).toLowerCase();
             }
         }
-        const result = await MaterialModel.update(data, {where: { Id_Material: id}})
-        const updated = result[0]
-
-        if (updated === 0) throw new Error("Material no encontrada o sin cambios")
-
-            return true
+        await MaterialModel.update(data, {where: { Id_Material: id}})
+        return true
     }
     async delete(id) {
         const deleted = await MaterialModel.destroy({where: { Id_Material: id }})

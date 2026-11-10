@@ -16,7 +16,32 @@ const CrudEquipos = ({ userRol }) => {
   // Estado para modal PDF
   const [showPdf, setShowPdf] = useState(false);
   const [pdfUrl, setPdfUrl] = useState("");
+  const [pdfFileName, setPdfFileName] = useState("ficha_tecnica.pdf");
   const [loadingPdf, setLoadingPdf] = useState(false);
+
+  const handleDownloadPdf = async (url, fileName = "ficha_tecnica.pdf") => {
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error("No se pudo descargar el archivo");
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = fileName;
+      link.target = "_blank";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
 
   useEffect(() => {
     getAllEquipos();
@@ -144,9 +169,12 @@ const CrudEquipos = ({ userRol }) => {
           </div>
 
           ${hasPdf ? `
-            <div class="text-end">
+            <div class="d-flex justify-content-end gap-2 flex-wrap">
               <button id="swal-pdf-btn" type="button" class="btn btn-primary rounded-pill px-4 py-2 fw-semibold shadow-sm">
                 <i class="fa-solid fa-file-pdf me-2 text-white"></i>Ver Ficha Técnica (PDF)
+              </button>
+              <button id="swal-pdf-download-btn" type="button" class="btn btn-outline-success rounded-pill px-4 py-2 fw-semibold shadow-sm">
+                <i class="fa-solid fa-download me-2"></i>Descargar PDF
               </button>
             </div>
           ` : ''}
@@ -156,13 +184,22 @@ const CrudEquipos = ({ userRol }) => {
         popup: 'rounded-4 border-0 shadow-lg'
       },
       didOpen: () => {
+        const cleanName = `Ficha_Tecnica_${(row.nombre || 'Equipo').replace(/\s+/g, '_')}.pdf`;
+        const fileUrl = `${API_URL}/uploads/${row.ficha_tecnica}`;
         const pdfBtn = document.getElementById('swal-pdf-btn');
         if (pdfBtn) {
           pdfBtn.addEventListener('click', () => {
             Swal.close();
             setLoadingPdf(true);
-            setPdfUrl(`${API_URL}/uploads/${row.ficha_tecnica}`);
+            setPdfFileName(cleanName);
+            setPdfUrl(fileUrl);
             setShowPdf(true);
+          });
+        }
+        const downloadBtn = document.getElementById('swal-pdf-download-btn');
+        if (downloadBtn) {
+          downloadBtn.addEventListener('click', () => {
+            handleDownloadPdf(fileUrl, cleanName);
           });
         }
       }
@@ -375,7 +412,18 @@ const CrudEquipos = ({ userRol }) => {
           <div className="pdf-modal-container shadow-lg position-relative" onClick={(e) => e.stopPropagation()}>
             <div className="pdf-modal-header">
               <span className="pdf-modal-title"><i className="fa-solid fa-file-pdf me-2"></i>Ficha Técnica</span>
-              <button className="pdf-modal-close" onClick={() => setShowPdf(false)}><i className="fa-solid fa-xmark"></i></button>
+              <div className="d-flex align-items-center gap-2">
+                <button
+                  type="button"
+                  className="btn btn-sm btn-light rounded-pill px-3 py-1 fw-semibold d-flex align-items-center gap-2 shadow-sm"
+                  onClick={() => handleDownloadPdf(pdfUrl, pdfFileName)}
+                  title="Descargar Ficha Técnica"
+                >
+                  <i className="fa-solid fa-download text-primary"></i>
+                  <span>Descargar PDF</span>
+                </button>
+                <button className="pdf-modal-close" onClick={() => setShowPdf(false)} title="Cerrar"><i className="fa-solid fa-xmark"></i></button>
+              </div>
             </div>
             {loadingPdf && (
               <div className="position-absolute top-50 start-50 translate-middle d-flex flex-column align-items-center justify-content-center bg-white p-4 rounded-3 shadow z-3">

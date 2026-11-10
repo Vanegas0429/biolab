@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import apiAxios from "../api/axiosConfig.js";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 
 const EquiposForm = ({ hideModal, rowToEdit, refreshList }) => {
     const Myswal = withReactContent(Swal);
+    const fileInputRef = useRef(null);
 
     const [nombre, setNombre] = useState("");
     const [placa, setPlaca] = useState("");
@@ -39,10 +40,22 @@ const EquiposForm = ({ hideModal, rowToEdit, refreshList }) => {
         setLinea(rowToEdit.linea || "");
         setCentroCostos(rowToEdit.centro_costos || "");
         setSerial(rowToEdit.serial || "");
-        setVidaUtil(rowToEdit.vida_util || "");
-        setValorUnitario(rowToEdit.valor_unitario ? String(Math.round(Number(rowToEdit.valor_unitario))) : "");
-        setFechaAdquisicion(rowToEdit.fecha_adquisicion || "");
+        setVidaUtil(rowToEdit.vida_util !== null && rowToEdit.vida_util !== undefined ? String(rowToEdit.vida_util) : "");
+        setValorUnitario(
+            rowToEdit.valor_unitario !== null && rowToEdit.valor_unitario !== undefined && rowToEdit.valor_unitario !== ""
+                ? String(Math.round(Number(rowToEdit.valor_unitario)))
+                : ""
+        );
+        setFechaAdquisicion(
+            rowToEdit.fecha_adquisicion && rowToEdit.fecha_adquisicion !== "0000-00-00"
+                ? rowToEdit.fecha_adquisicion
+                : ""
+        );
         setEstado(rowToEdit.estado || "Activo");
+        setFichaTecnica(null);
+        if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+        }
 
         setTextFormButton("Actualizar");
     };
@@ -60,6 +73,9 @@ const EquiposForm = ({ hideModal, rowToEdit, refreshList }) => {
         setFechaAdquisicion("");
         setEstado("Activo");
         setFichaTecnica(null);
+        if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+        }
 
         setTextFormButton("Enviar");
     };
@@ -76,10 +92,10 @@ const EquiposForm = ({ hideModal, rowToEdit, refreshList }) => {
         formData.append("linea", linea);
         formData.append("centro_costos", centro_costos);
         formData.append("serial", serial);
-        formData.append("vida_util", vida_util);
-        formData.append("valor_unitario", valor_unitario ? String(Math.round(Number(valor_unitario))) : "0");
-        formData.append("fecha_adquisicion", fecha_adquisicion);
-        formData.append("estado", estado);
+        formData.append("vida_util", vida_util !== "" ? String(vida_util) : "");
+        formData.append("valor_unitario", valor_unitario !== "" ? String(Math.round(Number(valor_unitario))) : "");
+        formData.append("fecha_adquisicion", fecha_adquisicion || "");
+        formData.append("estado", estado || "Activo");
 
         if (fichaTecnica) {
             formData.append("ficha_tecnica", fichaTecnica);
@@ -118,7 +134,7 @@ const EquiposForm = ({ hideModal, rowToEdit, refreshList }) => {
             console.error("Error guardando equipo:", error.response?.data || error.message);
             Myswal.fire({
                 title: "Error",
-                text: "Ocurrió un error al guardar el equipo",
+                text: error.response?.data?.message || "Ocurrió un error al guardar el equipo",
                 icon: "error"
             });
         } finally {
@@ -160,20 +176,6 @@ const EquiposForm = ({ hideModal, rowToEdit, refreshList }) => {
                         onChange={(e) => setPlaca(e.target.value)}
                         placeholder="Ej: 1029384"
                     />
-                </div>
-
-                {/* Estado Activo / Inactivo */}
-                <div className="col-md-6">
-                    <label className="form-label fw-bold">Estado:</label>
-                    <select
-                        className="form-select rounded-pill shadow-sm px-3"
-                        value={estado}
-                        onChange={(e) => setEstado(e.target.value)}
-                        required
-                    >
-                        <option value="Activo">Activo</option>
-                        <option value="Inactivo">Inactivo</option>
-                    </select>
                 </div>
 
                 {/* Serial */}
@@ -262,15 +264,22 @@ const EquiposForm = ({ hideModal, rowToEdit, refreshList }) => {
                 </div>
 
                 {/* Ficha Técnica (PDF) */}
-                <div className="col-md-12">
+                <div className="col-md-6">
                     <label className="form-label fw-bold">Ficha Técnica (PDF):</label>
                     <input
+                        ref={fileInputRef}
                         type="file"
                         className="form-control rounded-pill shadow-sm px-3"
                         accept=".pdf"
                         onChange={(e) => setFichaTecnica(e.target.files[0] || null)}
                     />
-                    {rowToEdit?.ficha_tecnica && (
+                    {fichaTecnica && (
+                        <small className="text-success d-block mt-1 ps-2">
+                            <i className="fa-solid fa-check-circle me-1"></i>
+                            Archivo seleccionado: {fichaTecnica.name}
+                        </small>
+                    )}
+                    {!fichaTecnica && rowToEdit?.ficha_tecnica && (
                         <small className="text-muted d-block mt-1 ps-2">
                             <i className="fa-solid fa-file-pdf text-danger me-1"></i>
                             El equipo ya cuenta con una ficha técnica guardada. Selecciona un archivo nuevo solo si deseas reemplazarla.

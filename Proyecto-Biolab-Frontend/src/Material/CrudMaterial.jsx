@@ -350,6 +350,30 @@ const CrudMaterial = ({ userRol }) => {
               }
             },
             {
+              name: 'DESCRIPCIÓN',
+              selector: row => row.descripcion || '',
+              sortable: true,
+              grow: 2,
+              minWidth: '220px',
+              cell: (row) => (
+                <div
+                  className="text-muted py-2"
+                  style={{
+                    fontSize: '0.88rem',
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    lineHeight: '1.4'
+                  }}
+                  title={row.descripcion || 'Sin descripción'}
+                >
+                  {row.descripcion ? row.descripcion : <span className="fst-italic opacity-75">Sin descripción</span>}
+                </div>
+              )
+            },
+            {
               name: 'CLASIFICACIÓN',
               selector: row => row.clasificacion || 'Desechable',
               sortable: true,

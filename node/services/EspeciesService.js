@@ -16,12 +16,9 @@ class EspecieService {
         return await EspecieModel.create(data)
     }
     async update(id, data) {
-        const result = await EspecieModel.update(data, {where: { Id_especie: id}})
-        const updated = result[0]
-
-        if (updated === 0) throw new Error("Especie no encontrada o sin cambios")
-
-            return true
+        await this.getById(id);
+        await EspecieModel.update(data, {where: { Id_especie: id}})
+        return true
     }
     async delete(id) {
         const deleted = await EspecieModel.destroy({where: { Id_especie: id }})
